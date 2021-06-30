@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "listas",
+  "info": {
+    "name": "Listas",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string",
+      "required": true,
+      "minLength": 5,
+      "unique": false
+    },
+    "usuario": {
+      "via": "lista",
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "expedientes": {
+      "via": "lista",
+      "collection": "expedientes"
+    }
+  }
+}

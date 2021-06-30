@@ -1,0 +1,47 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - ./backend:/srv/app
+    ports:
+      - '1337:1337'
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+        - 5432:5432
+    volumes:
+      - ./backend/data:/var/lib/postgresql/data
+  
+  frontend:
+    build:
+      context: ./frontend
+    environment: 
+      NODE_ORACLEDB_USER: ${NODE_ORACLEDB_USER}
+      NODE_ORACLEDB_PASSWORD: ${NODE_ORACLEDB_PASSWORD}
+      NODE_ORACLEDB_CONNECTIONSTRING: ${NODE_ORACLEDB_CONNECTIONSTRING}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      DATABASE_URL: ${DATABASE_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+    ports: 
+      - 3000:3000
+    depends_on:
+      - postgres

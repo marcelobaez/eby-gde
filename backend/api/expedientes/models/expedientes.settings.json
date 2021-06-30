@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "expedientes",
+  "info": {
+    "name": "Expedientes",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "id_expediente": {
+      "type": "biginteger",
+      "required": true
+    },
+    "lista": {
+      "via": "expedientes",
+      "model": "listas"
+    },
+    "usuario": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "duracion_esperada": {
+      "type": "integer"
+    }
+  }
+}

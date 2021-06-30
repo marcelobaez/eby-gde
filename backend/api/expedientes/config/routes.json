@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/expedientes",
+      "handler": "expedientes.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/expedientes/count",
+      "handler": "expedientes.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/expedientes/:id",
+      "handler": "expedientes.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/expedientes",
+      "handler": "expedientes.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/expedientes/:id",
+      "handler": "expedientes.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/expedientes/:id",
+      "handler": "expedientes.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}
