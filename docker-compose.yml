@@ -16,9 +16,11 @@ services:
       - '1337:1337'
     depends_on:
       - postgres
+    restart: always
 
   postgres:
     image: postgres
+    restart: always
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
@@ -31,6 +33,7 @@ services:
   frontend:
     build:
       context: ./frontend
+    restart: always
     environment: 
       NODE_ORACLEDB_USER: ${NODE_ORACLEDB_USER}
       NODE_ORACLEDB_PASSWORD: ${NODE_ORACLEDB_PASSWORD}
