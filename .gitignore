@@ -1,1 +1,5 @@
 .env
+*.pfx
+*.crt
+*.rsa
+.DS_Store

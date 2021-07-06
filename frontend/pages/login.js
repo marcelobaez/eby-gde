@@ -1,6 +1,6 @@
 import { Layout, Button, Row, Col, Typography, Space, Card } from "antd";
 import { WindowsOutlined } from "@ant-design/icons";
-import { providers, signIn, getSession, csrfToken } from "next-auth/client";
+import { signIn, getSession } from "next-auth/client";
 import Image from "next/image";
 
 const { Footer, Content } = Layout;
@@ -51,9 +51,7 @@ export const getServerSideProps = async (context) => {
 
   return {
     props: {
-      session: null,
-      providers: await providers(context),
-      csrfToken: await csrfToken(context),
+      session: null
     },
   };
 };

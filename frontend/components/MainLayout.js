@@ -19,7 +19,6 @@ export function MainLayout({ children, title = "This is the default title" }) {
   const [session] = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelected] = useState(["0"]);
-  const router = useRouter();
 
   const handleCollapse = (collapsed) => {
     setCollapsed(collapsed);
