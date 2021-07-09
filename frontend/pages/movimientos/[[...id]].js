@@ -22,7 +22,7 @@ import esLocale from "date-fns/locale/es";
 import { useState } from "react";
 
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export default function Movimiento() {
   const router = useRouter();
@@ -176,6 +176,7 @@ export default function Movimiento() {
                 dataSource={filtered}
                 pagination={false}
                 size="middle"
+                rowKey='ID_MOV'
               />
             )}
           </Card>

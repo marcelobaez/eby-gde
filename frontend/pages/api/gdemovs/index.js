@@ -16,7 +16,7 @@ export default async function movsHandler(req, res) {
     });
 
     const sql = `select * from 
-    (select ee.id, ee.descripcion, mov.expediente, mov.motivo, mov.usuario, mov.estado, ee.fecha_creacion, mov.id_expediente, mov.ord_hist,mov.descripcion_reparticion_destin,mov.destinatario,mov.fecha_operacion, row_number ()  
+    (select mov.id as id_mov, ee.id, ee.descripcion, mov.expediente, mov.motivo, mov.usuario, mov.estado, ee.fecha_creacion, mov.id_expediente, mov.ord_hist,mov.descripcion_reparticion_destin,mov.destinatario,mov.fecha_operacion, row_number ()  
     over (partition by id_expediente order by ord_hist desc)
     rn from ee_ged.historialoperacion mov 
     INNER JOIN ee_ged.ee_expediente_electronico ee ON ee.id = mov.id_expediente

@@ -34,7 +34,6 @@
   "devDependencies": {
     "eslint": "^7.29.0",
     "eslint-config-next": "^11.0.1",
-    "miragejs": "^0.1.41",
     "postcss-preset-env": "^6.7.0"
   }
 }

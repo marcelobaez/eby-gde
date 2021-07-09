@@ -2,13 +2,13 @@ import { EyeOutlined, FlagOutlined } from "@ant-design/icons";
 
 export const menuItems = [
   {
-    key: "0",
+    key: "home",
     href: "/",
     title: "Seguimiento",
     icon: <EyeOutlined />,
   },
   {
-    key: "1",
+    key: "movimientos",
     href: "/movimientos",
     title: "Movimientos",
     icon: <FlagOutlined />,

@@ -19,7 +19,7 @@ import { setStatus, getStatusByGivenDates } from "../utils/index";
 import Link from "next/link";
 import axios from "axios";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 export function TableMov({ data }) {
   const [visible, setVisible] = useState(false);
@@ -70,7 +70,6 @@ export function TableMov({ data }) {
   const updateExpMutation = useMutation(
     (body) => {
       const { id, duracion_esperada } = body;
-      console.log({ duracion_esperada });
       return axios.put(`/api/expedientes/${id}`, {
         duracion_esperada,
       });
@@ -106,7 +105,7 @@ export function TableMov({ data }) {
       title: "Expediente",
       dataIndex: "EXPEDIENTE",
       key: "EXPEDIENTE",
-      width: 200,
+      width: 220,
       render: (text, record) => (
         <Link href={`/movimientos/${record.ID}`}>
           <a>{text}</a>
@@ -183,7 +182,7 @@ export function TableMov({ data }) {
       key: "DESTINATARIO",
       width: 300,
       render: (text, record) => (
-        <Text>{`${text} (${record.descripcion_reparticion_destin})`}</Text>
+        <Text>{`${text}${record.descripcion_reparticion_destin ? ` (${record.descripcion_reparticion_destin})}` : ''}`}</Text>
       ),
     },
     {

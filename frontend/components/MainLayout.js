@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { Layout, Menu, Badge } from "antd";
+import { Layout, Menu } from "antd";
 import {
   UserOutlined,
   FolderOpenOutlined,
-  BellOutlined,
   NotificationOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
@@ -16,13 +15,24 @@ import { menuItems } from "../lib/navigation";
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 export function MainLayout({ children, title = "This is the default title" }) {
+  const router = useRouter();
   const [session] = useSession();
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedItem, setSelected] = useState(["0"]);
+  const [selectedItem, setSelected] = useState(["home"]);
 
   const handleCollapse = (collapsed) => {
     setCollapsed(collapsed);
   };
+
+  useEffect(() => {
+    const path = router.pathname.split('/');
+    if (path[1].length > 0) {
+      setSelected([path[1]]);
+    } else {
+      setSelected(['home']);
+    }
+
+  }, [router.pathname])
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -38,10 +48,6 @@ export function MainLayout({ children, title = "This is the default title" }) {
           theme="dark"
           defaultOpenKeys={["sub1"]}
           mode="inline"
-          onClick={({ key }) => {
-            console.log(key);
-            setSelected([key]);
-          }}
           selectedKeys={selectedItem}
         >
           <SubMenu key="sub1" icon={<FolderOpenOutlined />} title="Expedientes">
@@ -58,21 +64,16 @@ export function MainLayout({ children, title = "This is the default title" }) {
       <Layout className="site-layout">
         <Header style={{ padding: 0, background: "#fff" }}>
           <Menu mode="horizontal" style={{ float: "right" }}>
-            <Menu.Item disabled key="1">
-              <Badge size="small" count={5}>
-                <BellOutlined />
-              </Badge>
-            </Menu.Item>
             <SubMenu
               key="SubMenu"
               icon={<UserOutlined />}
               title={session?.user?.name}
             >
-              <Menu.Item key="0" icon={<NotificationOutlined />} disabled>
+              <Menu.Item key="3" icon={<NotificationOutlined />} disabled>
                 Mis alertas (Proximamente)
               </Menu.Item>
               <Menu.Divider />
-              <Menu.Item key="1" icon={<LogoutOutlined />}>
+              <Menu.Item key="4" icon={<LogoutOutlined />}>
                 <a href="#" onClick={() => signOut()}>
                   Salir
                 </a>

@@ -11,6 +11,7 @@ FROM marcelobaez/oracle-ic19:0.1.0 AS builder
 WORKDIR /app
 COPY . .
 COPY --from=deps /app/node_modules ./node_modules
+ENV NEXT_PUBLIC_SITE_URL 'https://expedientes.eby.org.ar'
 RUN yarn build && yarn install --production --ignore-scripts --prefer-offline
 
 # Production image, copy all the files and run next
@@ -36,6 +37,6 @@ EXPOSE 3000
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry.
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED 1
 
 CMD ["yarn", "start"]

@@ -1,6 +1,8 @@
 import axios from "axios";
 import qs from "qs";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
 export const getListas = async () => {
   const { data: listas } = await axios.get(`api/listas`);
 
@@ -38,14 +40,14 @@ export const getListas = async () => {
 
 export const getMovs = async () => {
   const { data: expedientes } = await axios.get(
-    `http://localhost:3000/api/expedientes`
+    `${siteUrl}/api/expedientes`
   );
 
   if (expedientes.length > 0) {
     const expIds = expedientes.map((exp) => exp.id_expediente);
 
     const { data: gdeexps } = await axios.get(
-      `http://localhost:3000/api/gdemovs`,
+      `${siteUrl}/api/gdemovs`,
       {
         params: {
           expIds,
