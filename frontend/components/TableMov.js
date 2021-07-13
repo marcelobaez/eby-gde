@@ -10,7 +10,7 @@ import {
   Popconfirm,
   message,
 } from "antd";
-import { formatDistanceToNow, parseISO, format } from "date-fns";
+import { formatDistanceToNow, parseISO, format, differenceInDays } from "date-fns";
 import esLocale from "date-fns/locale/es";
 import { ModalSetDate } from "./ModalSetDate";
 import { useQueryClient, useMutation } from "react-query";
@@ -124,19 +124,29 @@ export function TableMov({ data }) {
       dataIndex: "FECHA_CREACION",
       key: "Lifetime",
       width: 160,
-      render: (text, record) => (
+      render: (text, record) => {
+        const color = getStatusByGivenDates(record.FECHA_CREACION, record.duracion_esperada);
+        return (record.ESTADO !== 'Guarda Temporal' && record.duracion_esperada && color === 'red') ? (
+        <Badge count={differenceInDays(new Date(), parseISO(record.FECHA_CREACION, "P", {locale: esLocale})) - record.duracion_esperada} size="small">
+          <Tag
+            color={color}
+            style={{ textTransform: "capitalize" }}
+          >
+            {formatDistanceToNow(parseISO(text, "P"), {
+              locale: esLocale,
+            })}
+          </Tag>
+        </Badge>
+      ) : (
         <Tag
-          color={getStatusByGivenDates(
-            record.FECHA_CREACION,
-            record.duracion_esperada
-          )}
+          color={color}
           style={{ textTransform: "capitalize" }}
         >
           {formatDistanceToNow(parseISO(text, "P"), {
             locale: esLocale,
           })}
         </Tag>
-      ),
+      )},
     },
     {
       title: "Estado",

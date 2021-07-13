@@ -18,6 +18,21 @@ export const getCountByState = (data, state) => {
   return data.reduce((a, v) => (v.ESTADO === state ? a + 1 : a), 0);
 };
 
+export const getCountDelayed = (data) => {
+  const filtered = data.filter(item => item.duracion_esperada !== null)
+  return filtered.reduce((a, v) => (differenceInDays(new Date(), parseISO(v.FECHA_CREACION, "P", {locale: esLocale})) > v.duracion_esperada ? a + 1 : a), 0);
+}
+
+export const getCountWarn = (data) => {
+  const filtered = data.filter(item => item.duracion_esperada !== null)
+  return filtered.reduce((a, v) => (differenceInDays(new Date(), parseISO(v.FECHA_CREACION, "P", {locale: esLocale})) === v.duracion_esperada ? a + 1 : a), 0);
+}
+
+export const getCountOnTime = (data) => {
+  const filtered = data.filter(item => item.duracion_esperada !== null)
+  return filtered.reduce((a, v) => (differenceInDays(new Date(), parseISO(v.FECHA_CREACION, "P", {locale: esLocale})) < v.duracion_esperada ? a + 1 : a), 0);
+}
+
 export const getStatusByGivenDates = (initial, expected) => {
   if (expected) {
     const elapsed = differenceInDays(

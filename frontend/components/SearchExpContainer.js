@@ -5,7 +5,7 @@ import { TableMov } from "./TableMov";
 import { EmptyItems } from "./EmptyItems";
 import { useState } from "react";
 import { useQueryClient, useMutation } from "react-query";
-import { getCountByState } from "../utils/index";
+import { getCountByState, getCountDelayed, getCountWarn, getCountOnTime } from "../utils/index";
 import axios from "axios";
 
 export function SearchExpContainer({ data }) {
@@ -81,7 +81,7 @@ export function SearchExpContainer({ data }) {
           bordered={false}
           style={{ width: "100%", minHeight: "300px" }}
         >
-          <Row gutter={[16, 16]} justify="center">
+          <Row gutter={[16, 16]}>
             {data[0].expedientes.length > 0 && (
               <>
                 <Col span={6}>
@@ -90,25 +90,24 @@ export function SearchExpContainer({ data }) {
                     value={data[0].expedientes.length}
                   />
                 </Col>
-                <Col span={6}>
+                {/* <Col span={6}>
                   <Statistic
                     title="Iniciacion"
                     value={getCountByState(data[0].expedientes, "Iniciacion")}
                   />
-                </Col>
+                </Col> */}
                 <Col span={6}>
                   <Statistic
-                    title="En trámite"
-                    value={getCountByState(data[0].expedientes, "Tramitación")}
+                    title="En término"
+                    valueStyle={{color: '#389e0d'}}
+                    value={getCountOnTime(data[0].expedientes)}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
-                    title="Guarda temporal"
-                    value={getCountByState(
-                      data[0].expedientes,
-                      "Guarda Temporal"
-                    )}
+                    title="Fuera de término"
+                    valueStyle={{color: '#cf1322'}}
+                    value={getCountDelayed(data[0].expedientes)}
                   />
                 </Col>
               </>
