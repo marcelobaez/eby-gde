@@ -5,7 +5,7 @@ import { TableMov } from "./TableMov";
 import { EmptyItems } from "./EmptyItems";
 import { useState } from "react";
 import { useQueryClient, useMutation } from "react-query";
-import { getCountByState, getCountDelayed, getCountWarn, getCountOnTime } from "../utils/index";
+import { getCountDelayed, getCountOnTime } from "../utils/index";
 import axios from "axios";
 
 export function SearchExpContainer({ data }) {

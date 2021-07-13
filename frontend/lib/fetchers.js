@@ -1,5 +1,8 @@
 import axios from "axios";
 import qs from "qs";
+import { parseISO, differenceInDays, formatDistance } from "date-fns";
+import { setStatus, getStatusByGivenDates } from "../utils/index";
+import esLocale from "date-fns/locale/es";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -28,6 +31,10 @@ export const getListas = async () => {
           ...exp,
           id_exp_list: matchingEl.id,
           duracion_esperada: matchingEl.duracion_esperada,
+          lifetime: formatDistance(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION), {locale: esLocale}),
+          stateColor: setStatus(exp.ESTADO),
+          lifetimeColor: matchingEl.duracion_esperada ? getStatusByGivenDates(exp.FECHA_CREACION, exp.FECHA_OPERACION, matchingEl.duracion_esperada) : '',
+          daysOverdue: (matchingEl.duracion_esperada && exp.ESTADO !== 'Guarda Temporal') ? differenceInDays(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION)) - matchingEl.duracion_esperada : null
         };
       });
 

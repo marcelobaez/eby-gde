@@ -10,12 +10,11 @@ import {
   Popconfirm,
   message,
 } from "antd";
-import { formatDistanceToNow, parseISO, format, differenceInDays } from "date-fns";
+import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
 import { ModalSetDate } from "./ModalSetDate";
 import { useQueryClient, useMutation } from "react-query";
 import { useState } from "react";
-import { setStatus, getStatusByGivenDates } from "../utils/index";
 import Link from "next/link";
 import axios from "axios";
 
@@ -125,26 +124,21 @@ export function TableMov({ data }) {
       key: "Lifetime",
       width: 160,
       render: (text, record) => {
-        const color = getStatusByGivenDates(record.FECHA_CREACION, record.duracion_esperada);
-        return (record.ESTADO !== 'Guarda Temporal' && record.duracion_esperada && color === 'red') ? (
-        <Badge count={differenceInDays(new Date(), parseISO(record.FECHA_CREACION, "P", {locale: esLocale})) - record.duracion_esperada} size="small">
+        return record.daysOverdue ? (
+        <Badge count={record.daysOverdue} size="small">
           <Tag
-            color={color}
+            color={record.lifetimeColor}
             style={{ textTransform: "capitalize" }}
           >
-            {formatDistanceToNow(parseISO(text, "P"), {
-              locale: esLocale,
-            })}
+            {record.lifetime}
           </Tag>
         </Badge>
       ) : (
         <Tag
-          color={color}
+          color={record.lifetimeColor}
           style={{ textTransform: "capitalize" }}
         >
-          {formatDistanceToNow(parseISO(text, "P"), {
-            locale: esLocale,
-          })}
+          {record.lifetime}
         </Tag>
       )},
     },
@@ -153,9 +147,9 @@ export function TableMov({ data }) {
       key: "ESTADO",
       dataIndex: "ESTADO",
       width: 150,
-      render: (text) => (
+      render: (text, record) => (
         <span>
-          <Badge status={setStatus(text)} />
+          <Badge status={record.stateColor} />
           {text}
         </span>
       ),

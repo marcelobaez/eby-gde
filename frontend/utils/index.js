@@ -20,27 +20,21 @@ export const getCountByState = (data, state) => {
 
 export const getCountDelayed = (data) => {
   const filtered = data.filter(item => item.duracion_esperada !== null)
-  return filtered.reduce((a, v) => (differenceInDays(new Date(), parseISO(v.FECHA_CREACION, "P", {locale: esLocale})) > v.duracion_esperada ? a + 1 : a), 0);
+  return filtered.reduce((a, v) => (differenceInDays(parseISO(v.FECHA_OPERACION), parseISO(v.FECHA_CREACION)) > v.duracion_esperada ? a + 1 : a), 0);
 }
 
 export const getCountWarn = (data) => {
   const filtered = data.filter(item => item.duracion_esperada !== null)
-  return filtered.reduce((a, v) => (differenceInDays(new Date(), parseISO(v.FECHA_CREACION, "P", {locale: esLocale})) === v.duracion_esperada ? a + 1 : a), 0);
+  return filtered.reduce((a, v) => (differenceInDays(parseISO(v.FECHA_OPERACION), parseISO(v.FECHA_CREACION)) === v.duracion_esperada ? a + 1 : a), 0);
 }
 
 export const getCountOnTime = (data) => {
   const filtered = data.filter(item => item.duracion_esperada !== null)
-  return filtered.reduce((a, v) => (differenceInDays(new Date(), parseISO(v.FECHA_CREACION, "P", {locale: esLocale})) < v.duracion_esperada ? a + 1 : a), 0);
+  return filtered.reduce((a, v) => (differenceInDays(parseISO(v.FECHA_OPERACION), parseISO(v.FECHA_CREACION)) < v.duracion_esperada ? a + 1 : a), 0);
 }
 
-export const getStatusByGivenDates = (initial, expected) => {
-  if (expected) {
-    const elapsed = differenceInDays(
-      new Date(),
-      parseISO(initial, "P", {
-        locale: esLocale,
-      })
-    );
+export const getStatusByGivenDates = (initial, last, expected) => {
+    const elapsed = differenceInDays(parseISO(last), parseISO(initial));
 
     if (elapsed < expected) {
       return "green";
@@ -49,7 +43,4 @@ export const getStatusByGivenDates = (initial, expected) => {
     } else {
       return "red";
     }
-  } else {
-    return "";
-  }
 };
