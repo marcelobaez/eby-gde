@@ -81,3 +81,28 @@ export const getMovs = async () => {
 
   return expedientes;
 };
+
+export const getMovsById = async (id) => {
+  const { data: expedientes } = await axios.get(
+    `${siteUrl}/api/expedientes`
+  );
+
+  if (expedientes.length > 0) {
+    const { data: gdeexps } = await axios.get(`${siteUrl}/api/gdemovs/${id}`);
+
+    const normalizedExps = gdeexps.map((exp) => {
+      const matchingEl = expedientes.find(
+        (el) => parseInt(el.id_expediente) === exp.ID
+      );
+
+      return {
+        ...exp,
+        id_exp_list: matchingEl.id
+      };
+    });
+
+    return normalizedExps;
+  }
+
+  return expedientes;
+};

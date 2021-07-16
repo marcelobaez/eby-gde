@@ -6,5 +6,5 @@ module.exports = ({ env }) => ({
       secret: env('ADMIN_JWT_SECRET', '31cdd2534d8d369d36c418a5b36c012b'),
     },
   },
-  url: 'https://gdeapi.eby.org.ar'
+  url: env('NEXT_PUBLIC_API_URL', 'http://localhost:1337')
 });

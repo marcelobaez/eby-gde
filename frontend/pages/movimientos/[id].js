@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { getSession } from "next-auth/client";
 import { QueryClient, useQuery } from "react-query";
 import { dehydrate } from "react-query/hydration";
-import { getMovs } from "../../lib/fetchers";
+import { getMovsById } from "../../lib/fetchers";
 import { MainLayout } from "../../components/MainLayout";
 import {
   Row,
@@ -10,8 +10,6 @@ import {
   Card,
   Skeleton,
   Alert,
-  Select,
-  Space,
   Typography,
   Badge,
   Table,
@@ -21,28 +19,13 @@ import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
 import { useState } from "react";
 
-const { Option } = Select;
 const { Text } = Typography;
 
 export default function Movimiento() {
   const router = useRouter();
-  const [filtered, setFiltered] = useState([]);
-  const [expId, setExpId] = useState(null);
+  const [expId, setExpId] = useState(router.query.id);
 
-  const { data, status } = useQuery("movs", () => getMovs(), {
-    onSuccess: (data) => {
-      const { id } = router.query;
-      if (id) {
-        const idExp = parseInt(id[0], 10);
-        setExpId(expId);
-        const filteredData = data.filter((item) => item.ID === idExp);
-        setFiltered(filteredData);
-      } else {
-        const filteredData = data.filter((item) => item.ID === data[0].ID);
-        setFiltered(filteredData);
-      }
-    },
-  });
+  const { data, status } = useQuery(["movs", expId], () => getMovsById(expId));
 
   if (status === "loading") {
     return (
@@ -65,55 +48,12 @@ export default function Movimiento() {
     );
   }
 
-  const handleChange = (value) => {
-    setExpId(value);
-    const filteredData = data.filter((item) => item.ID === value);
-    setFiltered(filteredData);
-  };
-
-  const distinct = [];
-  const map = new Map();
-  for (const item of data) {
-    if (!map.has(item.ID)) {
-      map.set(item.ID, true);
-      distinct.push({
-        id: item.ID,
-        exp: item.EXPEDIENTE,
-      });
-    }
-  }
-
-  let defaultValue;
-
-  if (filtered.length > 0) {
-    if (expId) {
-      const matchingEl = distinct.find((item) => item.id === expId);
-      defaultValue = matchingEl.exp;
-    } else {
-      defaultValue = distinct[0].exp;
-    }
-  }
-
-  const SelectMenu = () => {
-    return filtered.length > 0 ? (
-      <Space>
-        Movimientos expediente:
-        <Select
-          defaultValue={defaultValue}
-          style={{ width: 240 }}
-          onChange={handleChange}
-        >
-          {distinct.map((exp) => (
-            <Option key={exp.id} value={exp.id}>
-              {exp.exp}
-            </Option>
-          ))}
-        </Select>
-      </Space>
-    ) : null;
-  };
-
   const columns = [
+    {
+      title: 'Orden',
+      dataIndex: 'ORD_HIST',
+      key: 'ORD_HIST'
+    },
     {
       title: "Fecha",
       dataIndex: "FECHA_OPERACION",
@@ -158,11 +98,11 @@ export default function Movimiento() {
       <Row gutter={[16, 16]} justify="center">
         <Col span={24}>
           <Card
-            title={<SelectMenu />}
+            title={`Movimientos expediente: ${data[0].EXPEDIENTE}`}
             bordered={false}
             style={{ width: "100%", minHeight: "300px" }}
           >
-            {filtered.length === 0 && (
+            {data.length === 0 && (
               <Alert
                 message="Aun no agregó expedientes"
                 description="Diríjase a la pestaña Seguimiento y agregue uno para seguirlo"
@@ -170,11 +110,10 @@ export default function Movimiento() {
                 showIcon
               />
             )}
-            {filtered.length > 0 && (
+            {data.length > 0 && (
               <Table
                 columns={columns}
-                dataSource={filtered}
-                pagination={false}
+                dataSource={data}
                 size="middle"
                 rowKey='ID_MOV'
               />
@@ -188,6 +127,7 @@ export default function Movimiento() {
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
+  const { id } = context.query
 
   if (!session) {
     return {
@@ -200,7 +140,7 @@ export async function getServerSideProps(context) {
 
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery("movs", () => getMovs());
+  await queryClient.prefetchQuery(["movs", id], () => getMovsById(id));
 
   return {
     props: {

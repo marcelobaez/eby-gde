@@ -7,10 +7,10 @@ export const menuItems = [
     title: "Seguimiento",
     icon: <EyeOutlined />,
   },
-  {
-    key: "movimientos",
-    href: "/movimientos",
-    title: "Movimientos",
-    icon: <FlagOutlined />,
-  },
+  // {
+  //   key: "movimientos",
+  //   href: "/movimientos",
+  //   title: "Movimientos",
+  //   icon: <FlagOutlined />,
+  // },
 ];

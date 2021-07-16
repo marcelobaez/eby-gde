@@ -1,8 +1,12 @@
 const oracledb = require("oracledb");
 
-export default async function movsHandler(req, res) {
+export default async function handler(req, res) {
   let connection;
-  let { id } = req.query;
+  let ids = req.query["expIds[]"];
+
+  if (Array.isArray(ids)) {
+    ids = ids.join(" ,");
+  }
 
   try {
     connection = await oracledb.getConnection({
@@ -11,10 +15,8 @@ export default async function movsHandler(req, res) {
       connectString: process.env.NODE_ORACLEDB_CONNECTIONSTRING,
     });
 
-    const sql = `select mov.id as id_mov, ee.id, ee.descripcion, mov.expediente, mov.usuario, mov.motivo, mov.estado, ee.fecha_creacion, mov.id_expediente, mov.ord_hist,mov.descripcion_reparticion_destin,mov.destinatario,mov.fecha_operacion from ee_ged.historialoperacion mov 
-    INNER JOIN ee_ged.ee_expediente_electronico ee ON ee.id = mov.id_expediente
-    where id_expediente = ${id}
-    order by ord_hist desc`;
+    const sql = `select * from ee_ged.ee_expediente_electronico
+    where id in (${ids})`;
 
     const result = await connection.execute(sql, [], {
       outFormat: oracledb.OUT_FORMAT_OBJECT,

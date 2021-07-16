@@ -90,12 +90,6 @@ export function SearchExpContainer({ data }) {
                     value={data[0].expedientes.length}
                   />
                 </Col>
-                {/* <Col span={6}>
-                  <Statistic
-                    title="Iniciacion"
-                    value={getCountByState(data[0].expedientes, "Iniciacion")}
-                  />
-                </Col> */}
                 <Col span={6}>
                   <Statistic
                     title="En término"
@@ -117,7 +111,11 @@ export function SearchExpContainer({ data }) {
                 <TableMov data={movs} />
               </Col>
             )}
-            {!movs.length && <EmptyItems />}
+            {!movs.length && (
+              <Col offset={8} span={8}>
+                <EmptyItems />  
+              </Col>
+            )}
           </Row>
         </Card>
       </Col>
