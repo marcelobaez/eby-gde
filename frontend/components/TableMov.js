@@ -124,7 +124,7 @@ export function TableMov({ data }) {
       key: "Lifetime",
       width: 160,
       render: (text, record) => {
-        return record.daysOverdue ? (
+        return record.lifetimeColor === 'red' ? (
         <Badge count={record.daysOverdue} size="small">
           <Tag
             color={record.lifetimeColor}
