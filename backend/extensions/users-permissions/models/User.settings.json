@@ -59,12 +59,15 @@
       "plugin": "users-permissions",
       "configurable": false
     },
-    "lista": {
-      "via": "usuario",
-      "model": "listas"
-    },
     "expedientes": {
       "collection": "expedientes"
+    },
+    "listas": {
+      "via": "usuario",
+      "collection": "listas"
+    },
+    "name": {
+      "type": "string"
     }
   }
 }

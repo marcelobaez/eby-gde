@@ -1,4 +1,4 @@
-import { Row, Col, Empty, message, Card, Statistic } from "antd";
+import { Row, Col, Empty, message, Card, Statistic, PageHeader } from "antd";
 import { SearchExpForm } from "./SearchExpForm";
 import { TableResults } from "./TableResults";
 import { TableMov } from "./TableMov";
@@ -8,8 +8,10 @@ import { useQueryClient, useMutation } from "react-query";
 import { getCountDelayed, getCountOnTime } from "../utils/index";
 import axios from "axios";
 
+const queryKey = 'expedientes';
+
 export function SearchExpContainer({ data }) {
-  const movs = data[0].expedientes;
+  const movs = data.expedientes;
   const queryClient = useQueryClient();
   const [searchData, setSearchData] = useState([]);
   const [showEmpty, setShowEmpty] = useState(false);
@@ -17,23 +19,24 @@ export function SearchExpContainer({ data }) {
   const [isSearching, setIsSearching] = useState(false);
 
   const addExpMutation = useMutation(
-    (id) =>
-      axios.post("/api/expedientes", { id_expediente: id, lista: data[0].id }),
+    (id) => {
+      return axios.post("/api/expedientes", { id_expediente: id, lista: data.id })
+    },
     {
       // Optimistically update the cache value on mutate, but store
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries("listas");
+        await queryClient.cancelQueries(queryKey);
 
-        const previousValue = queryClient.getQueryData("listas");
+        const previousValue = queryClient.getQueryData(queryKey);
 
         return previousValue;
       },
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData("listas", previousValue);
+        queryClient.setQueryData(queryKey, previousValue);
       },
       onSuccess: (data, variables, context) => {
         message.success("Agregado a la lista");
@@ -41,7 +44,7 @@ export function SearchExpContainer({ data }) {
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries("listas");
+        queryClient.invalidateQueries(queryKey);
       },
     }
   );
@@ -54,7 +57,7 @@ export function SearchExpContainer({ data }) {
       `/api/gdeexps/${year}/${number}`
     );
 
-    queryClient.invalidateQueries("listas");
+    queryClient.invalidateQueries(queryKey);
 
     setIsSearching(false);
 
@@ -75,33 +78,39 @@ export function SearchExpContainer({ data }) {
 
   return (
     <Row gutter={[16, 16]} justify="center">
+      <Col key='list-header' span={24}>
+        <PageHeader
+          onBack={() => window.history.back()}
+          title="Listas de seguimiento"
+          subTitle={data.titulo}
+        />
+      </Col>
       <Col span={24}>
         <Card
-          title={data[0].titulo}
           bordered={false}
           style={{ width: "100%", minHeight: "300px" }}
         >
           <Row gutter={[16, 16]}>
-            {data[0].expedientes.length > 0 && (
+            {data.expedientes.length > 0 && (
               <>
                 <Col span={6}>
                   <Statistic
                     title="Siguiendo"
-                    value={data[0].expedientes.length}
+                    value={data.expedientes.length}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
                     title="En término"
                     valueStyle={{color: '#389e0d'}}
-                    value={getCountOnTime(data[0].expedientes)}
+                    value={getCountOnTime(data.expedientes)}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
                     title="Fuera de término"
                     valueStyle={{color: '#cf1322'}}
-                    value={getCountDelayed(data[0].expedientes)}
+                    value={getCountDelayed(data.expedientes)}
                   />
                 </Col>
               </>

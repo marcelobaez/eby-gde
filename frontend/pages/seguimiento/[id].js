@@ -1,13 +1,21 @@
-import { MainLayout } from "../components/MainLayout";
-import { SearchExpContainer } from "../components/SearchExpContainer";
+import { useState, useEffect } from "react";
+import { MainLayout } from "../../components/MainLayout";
+import { SearchExpContainer } from "../../components/SearchExpContainer";
 import { Alert, Skeleton } from "antd";
 import { QueryClient, useQuery } from "react-query";
 import { dehydrate } from "react-query/hydration";
-import { getExps } from "../lib/fetchers";
+import { getListInfoByID } from "../../lib/fetchers";
 import { getSession } from "next-auth/client";
+import { useRouter } from "next/router";
 
-export default function Index() {
-  const { data, status } = useQuery("expedientes", getExps);
+export default function SegByID() {
+  const router = useRouter();
+  const [listId, setListId] = useState(router.query.id);
+  const { data, status } = useQuery(["expedientes", listId], () => getListInfoByID(listId));
+
+  useEffect(() => {
+    setListId(router.query.id)
+  }, [router.query.id])
 
   if (status === "loading") {
     return (
@@ -39,6 +47,7 @@ export default function Index() {
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
+  const { id } = context.query
 
   if (!session) {
     return {
@@ -51,7 +60,7 @@ export async function getServerSideProps(context) {
 
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery("expedientes", getExps);
+  await queryClient.prefetchQuery(["expedientes", id], () => getListInfoByID(id));
 
   return {
     props: {

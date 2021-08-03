@@ -19,7 +19,7 @@
       "unique": false
     },
     "usuario": {
-      "via": "lista",
+      "via": "listas",
       "plugin": "users-permissions",
       "model": "user"
     },

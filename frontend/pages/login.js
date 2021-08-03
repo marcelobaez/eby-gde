@@ -43,7 +43,7 @@ export const getServerSideProps = async (context) => {
   if (session && session.jwt) {
     return {
       redirect: {
-        destination: "/",
+        destination: "/seguimiento",
         permanent: false,
       },
     };

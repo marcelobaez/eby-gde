@@ -5,20 +5,24 @@ import {
   FolderOpenOutlined,
   NotificationOutlined,
   LogoutOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/client";
 import { useRouter } from "next/router";
-import { menuItems } from "../lib/navigation";
+import { useQuery } from "react-query";
+import { getListas } from '../lib/fetchers';
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
+
 export function MainLayout({ children, title = "This is the default title" }) {
   const router = useRouter();
   const [session] = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelected] = useState(["home"]);
+  const { data, status } = useQuery("listas", getListas);
 
   const handleCollapse = (collapsed) => {
     setCollapsed(collapsed);
@@ -46,18 +50,16 @@ export function MainLayout({ children, title = "This is the default title" }) {
         </div>
         <Menu
           theme="dark"
-          defaultOpenKeys={["sub1"]}
+          defaultOpenKeys={["sub1", "home"]}
           mode="inline"
           selectedKeys={selectedItem}
         >
           <SubMenu key="sub1" icon={<FolderOpenOutlined />} title="Expedientes">
-            {menuItems.map((item) => (
-              <Menu.Item icon={item.icon} key={item.key}>
-                <Link href={item.href}>
-                  <a>{item.title}</a>
-                </Link>
-              </Menu.Item>
-            ))}
+            <Menu.Item key='seguimiento' icon={<EyeOutlined />}>
+              <Link href='/seguimiento'>
+                <a>Seguimiento</a>
+              </Link>
+            </Menu.Item>
           </SubMenu>
         </Menu>
       </Sider>
