@@ -11,7 +11,7 @@ import axios from "axios";
 const queryKey = 'expedientes';
 
 export function SearchExpContainer({ data }) {
-  const movs = data.expedientes;
+  const movs = data.expedientes || [];
   const queryClient = useQueryClient();
   const [searchData, setSearchData] = useState([]);
   const [showEmpty, setShowEmpty] = useState(false);
@@ -88,29 +88,28 @@ export function SearchExpContainer({ data }) {
       <Col span={24}>
         <Card
           bordered={false}
-          style={{ width: "100%", minHeight: "300px" }}
         >
           <Row gutter={[16, 16]}>
-            {data.expedientes.length > 0 && (
+            {movs.length > 0 && (
               <>
                 <Col span={6}>
                   <Statistic
                     title="Siguiendo"
-                    value={data.expedientes.length}
+                    value={movs.length}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
                     title="En término"
                     valueStyle={{color: '#389e0d'}}
-                    value={getCountOnTime(data.expedientes)}
+                    value={getCountOnTime(movs)}
                   />
                 </Col>
                 <Col span={6}>
                   <Statistic
                     title="Fuera de término"
                     valueStyle={{color: '#cf1322'}}
-                    value={getCountDelayed(data.expedientes)}
+                    value={getCountDelayed(movs)}
                   />
                 </Col>
               </>
@@ -120,7 +119,7 @@ export function SearchExpContainer({ data }) {
                 <TableMov data={movs} />
               </Col>
             )}
-            {!movs.length && (
+            {movs.length === 0 && (
               <Col offset={8} span={8}>
                 <EmptyItems />  
               </Col>

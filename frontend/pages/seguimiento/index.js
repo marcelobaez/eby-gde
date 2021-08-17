@@ -1,10 +1,11 @@
-import { Card, Col, Row, Skeleton, Alert, PageHeader, Space, Button, message, Typography, Popconfirm } from 'antd';
+import { Card, Col, Row, Skeleton, Alert, PageHeader, Space, Button, message, Typography, Popconfirm, Tooltip } from 'antd';
 import { MainLayout } from "../../components/MainLayout";
 import { ModalCreateList } from '../../components/ModalCreateList'
 import { useQuery, QueryClient, useQueryClient, useMutation } from "react-query";
 import { dehydrate } from "react-query/hydration";
 import { getListas } from '../../lib/fetchers';
 import { getSession } from "next-auth/client";
+import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -14,6 +15,7 @@ const { Paragraph } = Typography;
 export default function Seguimiento() {
   const { data, status } = useQuery("listas", getListas);
   const queryClient = useQueryClient();
+  const router = useRouter()
 
   const updateListMutation = useMutation(
     (body) => {
@@ -100,7 +102,6 @@ export default function Seguimiento() {
 
   const handleDelete = id => {
     removeListMutation.mutate(id)
-    console.log(id)
   }
 
   return (
@@ -108,7 +109,7 @@ export default function Seguimiento() {
       <Row gutter={16}>
         <Col key='list-header' span={24}>
           <PageHeader
-            onBack={() => window.history.back()}
+            onBack={router.asPath === '/seguimiento' ? null : window.history.back()}
             title="Listas de seguimiento"
             extra={[<ModalCreateList key='create-list'/>]}
           />
@@ -119,11 +120,20 @@ export default function Seguimiento() {
               <Card 
                 title={<Paragraph editable={{ onChange: (value) => handleEdit(list.id, value) }}>{list.titulo}</Paragraph>} 
                 bordered={false} 
+                hoverable
                 extra={
                   <Space>
-                    <Popconfirm okType='danger' onConfirm={() => handleDelete(list.id)} title="Está seguro？Esta acción no es reversible" okText="Eliminar" cancelText="No">
-                      <Button type="link" danger icon={<DeleteOutlined />}></Button>
-                    </Popconfirm>
+                    {
+                      data.length === 1 ? (
+                        <Tooltip title="No puede eliminar la unica lista">
+                          <Button disabled type="link" danger icon={<DeleteOutlined />} />
+                        </Tooltip>
+                      ) : (
+                        <Popconfirm okType='danger' onConfirm={() => handleDelete(list.id)} title="Está seguro？Esta acción no es reversible" okText="Eliminar" cancelText="No">
+                          <Button type="link" danger icon={<DeleteOutlined />}></Button>
+                        </Popconfirm>
+                      )
+                    }
                     <Link href={`/seguimiento/${list.id}`}><a>Ver</a></Link>
                   </Space>
                 }>

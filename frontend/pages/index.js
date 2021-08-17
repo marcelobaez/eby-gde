@@ -38,24 +38,31 @@ export default function Index() {
 }
 
 export async function getServerSideProps(context) {
-  const session = await getSession(context);
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  const queryClient = new QueryClient();
-
-  await queryClient.prefetchQuery("expedientes", getExps);
-
   return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
+    redirect: {
+      destination: "/seguimiento",
+      permanent: false,
     },
   };
+
+  // const session = await getSession(context);
+
+  // if (!session) {
+  //   return {
+  //     redirect: {
+  //       destination: "/login",
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // const queryClient = new QueryClient();
+
+  // await queryClient.prefetchQuery("expedientes", getExps);
+
+  // return {
+  //   props: {
+  //     dehydratedState: dehydrate(queryClient),
+  //   },
+  // };
 }

@@ -67,6 +67,34 @@ module.exports = {
     return sanitizeEntity(entity, { model: strapi.models.listas });
   },
 
+  async delete(ctx) {
+    const { id } = ctx.params;
+
+    const [lista] = await strapi.services.listas.find({
+      id: ctx.params.id,
+      'usuario.id': ctx.state.user.id,
+    });
+
+    if (!lista) {
+      return ctx.unauthorized(`No tienes permisos para editar esta lista`);
+    }
+
+    // No permitir la eliminacion de todas las listas (debe quedar al menos una)
+    const listCount = await strapi.query('listas').count();
+
+    if (listCount === 1) return ctx.unauthorized('Debe quedar al menos una lista');
+
+    // Eliminar los expedientes asociados a la lista
+    const expIds = lista.expedientes.map(exp => exp.id)
+
+    if (expIds.length > 0) {
+      await strapi.query('expedientes').delete({ id_in: [...expIds] });
+    }
+
+    const entity = await strapi.services.listas.delete({ id });
+    return sanitizeEntity(entity, { model: strapi.models.listas });
+  },
+
   async update(ctx) {
     const { id } = ctx.params;
 
