@@ -45,23 +45,23 @@ export function TableMov({ data }) {
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries("listas");
+        await queryClient.cancelQueries("expedientes");
 
-        const previousValue = queryClient.getQueryData("listas");
+        const previousValue = queryClient.getQueryData("expedientes");
 
         return previousValue;
       },
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData("listas", previousValue);
+        queryClient.setQueryData("expedientes", previousValue);
       },
       onSuccess: (data, variables, context) => {
         message.success("Quitado de la lista");
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries("listas");
+        queryClient.invalidateQueries("expedientes");
       },
     }
   );
@@ -78,23 +78,23 @@ export function TableMov({ data }) {
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries("listas");
+        await queryClient.cancelQueries("expedientes");
 
-        const previousValue = queryClient.getQueryData("listas");
+        const previousValue = queryClient.getQueryData("expedientes");
 
         return previousValue;
       },
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData("listas", previousValue);
+        queryClient.setQueryData("expedientes", previousValue);
       },
       onSuccess: (data, variables, context) => {
         message.success("Actualizado");
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries("listas");
+        queryClient.invalidateQueries("expedientes");
       },
     }
   );
@@ -128,7 +128,8 @@ export function TableMov({ data }) {
         <Badge count={record.daysOverdue} size="small">
           <Tag
             color={record.lifetimeColor}
-            style={{ textTransform: "capitalize" }}
+            className='lifetime'
+            // style={{ textTransform: "capitalize" }}
           >
             {record.lifetime}
           </Tag>
@@ -136,7 +137,8 @@ export function TableMov({ data }) {
       ) : (
         <Tag
           color={record.lifetimeColor}
-          style={{ textTransform: "capitalize" }}
+          className='lifetime'
+          // style={{ textTransform: "capitalize" }}
         >
           {record.lifetime}
         </Tag>
@@ -245,6 +247,15 @@ export function TableMov({ data }) {
         onCreate={onCreate}
         value={value}
       />
+      <style jsx>
+        {
+          `
+          .lifetime::first-letter {
+            text-transform: uppercase;
+          }
+          `
+        }
+      </style>
     </>
   );
 }

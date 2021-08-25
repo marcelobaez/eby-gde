@@ -21,11 +21,11 @@ export default NextAuth({
     session: async (session, user) => {
       session.jwt = user.jwt;
       session.id = user.id;
-      return Promise.resolve(session);
+
+      return session;
     },
     jwt: async (token, user, account) => {
-      const isSignIn = user ? true : false;
-      if (isSignIn) {
+      if (account) {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/callback?access_token=${account?.accessToken}`
         );
@@ -33,7 +33,7 @@ export default NextAuth({
         token.jwt = data.jwt;
         token.id = data.user.id;
       }
-      return Promise.resolve(token);
+      return token;
     },
   },
 });

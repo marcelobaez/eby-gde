@@ -3,11 +3,11 @@ import { SearchExpContainer } from "../components/SearchExpContainer";
 import { Alert, Skeleton } from "antd";
 import { QueryClient, useQuery } from "react-query";
 import { dehydrate } from "react-query/hydration";
-import { getListas } from "../lib/fetchers";
+import { getExps } from "../lib/fetchers";
 import { getSession } from "next-auth/client";
 
 export default function Index() {
-  const { data, status } = useQuery("listas", getListas);
+  const { data, status } = useQuery("expedientes", getExps);
 
   if (status === "loading") {
     return (
@@ -38,24 +38,31 @@ export default function Index() {
 }
 
 export async function getServerSideProps(context) {
-  const session = await getSession(context);
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  const queryClient = new QueryClient();
-
-  await queryClient.prefetchQuery("listas", getListas);
-
   return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
+    redirect: {
+      destination: "/seguimiento",
+      permanent: false,
     },
   };
+
+  // const session = await getSession(context);
+
+  // if (!session) {
+  //   return {
+  //     redirect: {
+  //       destination: "/login",
+  //       permanent: false,
+  //     },
+  //   };
+  // }
+
+  // const queryClient = new QueryClient();
+
+  // await queryClient.prefetchQuery("expedientes", getExps);
+
+  // return {
+  //   props: {
+  //     dehydratedState: dehydrate(queryClient),
+  //   },
+  // };
 }

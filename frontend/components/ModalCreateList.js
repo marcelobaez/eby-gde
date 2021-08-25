@@ -1,13 +1,18 @@
 import React, { useState } from "react";
-import { Button, Modal, Form, Input } from "antd";
+import { Button, Modal, Form, Input, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import {
+  useQueryClient,
+  useMutation
+} from 'react-query';
+import axios from "axios";
 
 const CollectionCreateForm = ({ visible, onCreate, onCancel }) => {
   const [form] = Form.useForm();
   return (
     <Modal
       visible={visible}
-      title="Create nueva lista"
+      title="Crear nueva lista"
       okText="Crear"
       cancelText="Cancelar"
       onCancel={onCancel}
@@ -27,12 +32,9 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }) => {
         form={form}
         layout="vertical"
         name="form_in_modal"
-        initialValues={{
-          modifier: "public",
-        }}
       >
         <Form.Item
-          name="title"
+          name="titulo"
           label="Nombre"
           rules={[
             {
@@ -48,12 +50,41 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }) => {
   );
 };
 
-export const ModalCreateList = ({ handleAddPane }) => {
+export const ModalCreateList = () => {
   const [visible, setVisible] = useState(false);
+  const queryClient = useQueryClient()
+
+  const addListMutation = useMutation(
+    body => axios.post('/api/listas', { titulo: body.titulo }),
+    {
+      // Optimistically update the cache value on mutate, but store
+      // the old value and return it so that it's accessible in case of
+      // an error
+      onMutate: async text => {
+        await queryClient.cancelQueries('listas')
+
+        const previousValue = queryClient.getQueryData('listas')
+
+        return previousValue
+      },
+      // On failure, roll back to the previous value
+      onError: (err, variables, previousValue) => {
+        message.error(err.response.data);
+        queryClient.setQueryData('listas', previousValue)
+      },
+      onSuccess: (data, variables, context) => {
+        message.success("Lista creada!");
+      },
+      // After success or failure, refetch the todos query
+      onSettled: () => {
+        queryClient.invalidateQueries('listas')
+      },
+    }
+  )
 
   const onCreate = (values) => {
+    addListMutation.mutate({titulo: values.titulo})
     setVisible(false);
-    handleAddPane(values);
   };
 
   return (
@@ -61,6 +92,7 @@ export const ModalCreateList = ({ handleAddPane }) => {
       <Button
         type="primary"
         icon={<PlusOutlined />}
+        size='large'
         onClick={() => {
           setVisible(true);
         }}

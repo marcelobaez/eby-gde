@@ -7,13 +7,56 @@ import esLocale from "date-fns/locale/es";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export const getListas = async () => {
-  const { data: listas } = await axios.get(`api/listas`);
+  const { data } = await axios.get(`${siteUrl}/api/listas`);
+
+  return data;
+}
+
+export const getListInfoByID = async id => {
+  const { data } = await axios.get(`${siteUrl}/api/listas/${id}`);
+
+  const expIds = data.expedientes.map((exp) => exp.id_expediente);
+
+  if (expIds.length > 0) {
+    const { data: expedientes } = await axios.get(`${siteUrl}/api/gdeexps`, {
+      params: {
+        expIds,
+      },
+      paramsSerializer: function (params) {
+        return qs.stringify(params, { arrayFormat: "brackets" });
+      },
+    });
+
+    const normalizedExps = expedientes.map((exp) => {
+      const matchingEl = data.expedientes.find(
+        (el) => parseInt(el.id_expediente) === exp.ID
+      );
+
+      return {
+        ...exp,
+        id_exp_list: matchingEl.id,
+        duracion_esperada: matchingEl.duracion_esperada,
+        lifetime: formatDistance(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION), {locale: esLocale}),
+        stateColor: setStatus(exp.ESTADO),
+        lifetimeColor: matchingEl.duracion_esperada ? getStatusByGivenDates(exp.FECHA_CREACION, exp.FECHA_OPERACION, matchingEl.duracion_esperada) : '',
+        daysOverdue: (matchingEl.duracion_esperada && exp.ESTADO !== 'Guarda Temporal') ? differenceInDays(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION)) - matchingEl.duracion_esperada : null
+      };
+    });
+
+    data.expedientes = normalizedExps;
+  }
+
+  return data;
+}
+
+export const getExps = async () => {
+  const { data: listas } = await axios.get(`${siteUrl}/api/listas`);
 
   if (listas.length) {
     const expIds = listas[0].expedientes.map((exp) => exp.id_expediente);
 
     if (expIds.length > 0) {
-      const { data: expedientes } = await axios.get(`/api/gdeexps`, {
+      const { data: expedientes } = await axios.get(`${siteUrl}/api/gdeexps`, {
         params: {
           expIds,
         },
