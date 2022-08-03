@@ -27,7 +27,7 @@ export const SearchExpForm = ({ handleSubmit, handleReset, isSearching }) => {
           onFinish={onFinish}
           form={form}
           initialValues={{
-            year: 2021,
+            year: new Date().getFullYear(),
           }}
           requiredMark={false}
         >
@@ -37,7 +37,7 @@ export const SearchExpForm = ({ handleSubmit, handleReset, isSearching }) => {
             label="Año"
             rules={[{ required: true, message: "El año es obligatorio!" }]}
           >
-            <InputNumber min={2018} max={2021} />
+            <InputNumber min={2018} max={2051} />
           </Form.Item>
           <Form.Item
             tooltip={{
