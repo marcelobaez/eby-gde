@@ -1,21 +1,41 @@
-import { Card, Col, Row, Skeleton, Alert, PageHeader, Space, Button, message, Typography, Popconfirm, Tooltip } from 'antd';
+import {
+  Card,
+  Col,
+  Row,
+  Skeleton,
+  Alert,
+  PageHeader,
+  Space,
+  Button,
+  message,
+  Typography,
+  Popconfirm,
+  Tooltip,
+} from "antd";
 import { MainLayout } from "../../components/MainLayout";
-import { ModalCreateList } from '../../components/ModalCreateList'
-import { useQuery, QueryClient, useQueryClient, useMutation } from "react-query";
+import { ModalCreateList } from "../../components/ModalCreateList";
+import {
+  useQuery,
+  QueryClient,
+  useQueryClient,
+  useMutation,
+} from "react-query";
 import { dehydrate } from "react-query/hydration";
-import { getListas } from '../../lib/fetchers';
+import { getListas } from "../../lib/fetchers";
 import { getSession } from "next-auth/client";
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { DeleteOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 const { Paragraph } = Typography;
 
-export default function Seguimiento() {
-  const { data, status } = useQuery("listas", getListas);
+export default function Seguimiento(props) {
+  const { data, status } = useQuery("listas", getListas, {
+    enabled: !!props.session,
+  });
   const queryClient = useQueryClient();
-  const router = useRouter()
+  const router = useRouter();
 
   const updateListMutation = useMutation(
     (body) => {
@@ -97,54 +117,80 @@ export default function Seguimiento() {
   }
 
   const handleEdit = (id, value) => {
-    updateListMutation.mutate({id, titulo: value})
-  }
+    updateListMutation.mutate({ id, titulo: value });
+  };
 
-  const handleDelete = id => {
-    removeListMutation.mutate(id)
-  }
+  const handleDelete = (id) => {
+    removeListMutation.mutate(id);
+  };
 
   return (
     <MainLayout>
       <Row gutter={16}>
-        <Col key='list-header' span={24}>
+        <Col key="list-header" span={24}>
           <PageHeader
-            onBack={router.asPath === '/seguimiento' ? null : window.history.back()}
+            onBack={
+              router.asPath === "/seguimiento" ? null : window.history.back()
+            }
             title="Listas de seguimiento"
-            extra={[<ModalCreateList key='create-list'/>]}
+            extra={[<ModalCreateList key="create-list" />]}
           />
         </Col>
-        {
-          data.map(list => (
-            <Col key={list.id} span={8}>
-              <Card 
-                title={<Paragraph editable={{ onChange: (value) => handleEdit(list.id, value) }}>{list.titulo}</Paragraph>} 
-                bordered={false} 
-                hoverable
-                extra={
-                  <Space>
-                    {
-                      data.length === 1 ? (
-                        <Tooltip title="No puede eliminar la unica lista">
-                          <Button disabled type="link" danger icon={<DeleteOutlined />} />
-                        </Tooltip>
-                      ) : (
-                        <Popconfirm okType='danger' onConfirm={() => handleDelete(list.id)} title="Está seguro？Esta acción no es reversible" okText="Eliminar" cancelText="No">
-                          <Button type="link" danger icon={<DeleteOutlined />}></Button>
-                        </Popconfirm>
-                      )
-                    }
-                    <Link href={`/seguimiento/${list.id}`}><a>Ver</a></Link>
-                  </Space>
-                }>
-                {`${list.expedientes.length > 0 ? `Siguiendo ${list.expedientes.length} expediente(s)`: 'Sin expedientes'}`}
-              </Card>
-            </Col>
-          ))
-        }
+        {data.map((list) => (
+          <Col key={list.id} span={8}>
+            <Card
+              title={
+                <Paragraph
+                  editable={{ onChange: (value) => handleEdit(list.id, value) }}
+                >
+                  {list.titulo}
+                </Paragraph>
+              }
+              bordered={false}
+              hoverable
+              extra={
+                <Space>
+                  {data.length === 1 ? (
+                    <Tooltip title="No puede eliminar la unica lista">
+                      <Button
+                        disabled
+                        type="link"
+                        danger
+                        icon={<DeleteOutlined />}
+                      />
+                    </Tooltip>
+                  ) : (
+                    <Popconfirm
+                      okType="danger"
+                      onConfirm={() => handleDelete(list.id)}
+                      title="Está seguro？Esta acción no es reversible"
+                      okText="Eliminar"
+                      cancelText="No"
+                    >
+                      <Button
+                        type="link"
+                        danger
+                        icon={<DeleteOutlined />}
+                      ></Button>
+                    </Popconfirm>
+                  )}
+                  <Link href={`/seguimiento/${list.id}`}>
+                    <a>Ver</a>
+                  </Link>
+                </Space>
+              }
+            >
+              {`${
+                list.expedientes.length > 0
+                  ? `Siguiendo ${list.expedientes.length} expediente(s)`
+                  : "Sin expedientes"
+              }`}
+            </Card>
+          </Col>
+        ))}
       </Row>
     </MainLayout>
-  )
+  );
 }
 
 export async function getServerSideProps(context) {
@@ -159,13 +205,9 @@ export async function getServerSideProps(context) {
     };
   }
 
-  const queryClient = new QueryClient();
-
-  await queryClient.prefetchQuery("listas", getListas);
-
   return {
     props: {
-      dehydratedState: dehydrate(queryClient),
+      session,
     },
   };
 }

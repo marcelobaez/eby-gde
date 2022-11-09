@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
           res.status(200).json(data);
         } catch (error) {
-          console.log(error.response.data.message);
+          console.log(error);
           res.status(error.response.status).send(error.response.data.message);
         }
         break;
@@ -47,7 +47,8 @@ export default async function handler(req, res) {
         res.status(405).end(`Method ${method} Not Allowed`);
     }
   } else {
+    console.log("No hay sesion!!");
     res.status(401);
+    res.end();
   }
-  res.end();
 }

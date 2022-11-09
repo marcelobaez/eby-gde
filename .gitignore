@@ -5,3 +5,4 @@
 *.key
 .DS_Store
 data
+.vscode

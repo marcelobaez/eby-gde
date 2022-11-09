@@ -6,37 +6,36 @@ import {
   NotificationOutlined,
   LogoutOutlined,
   EyeOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/client";
 import { useRouter } from "next/router";
-import { useQuery } from "react-query";
-import { getListas } from '../lib/fetchers';
+import { useHasDocsPermissions } from "../hooks/useDocPermission";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
 export function MainLayout({ children, title = "This is the default title" }) {
   const router = useRouter();
-  const [session] = useSession();
+  const [session, loading] = useSession();
+  const hasDocPermissions = useHasDocsPermissions();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelected] = useState(["home"]);
-  const { data, status } = useQuery("listas", getListas);
 
   const handleCollapse = (collapsed) => {
     setCollapsed(collapsed);
   };
 
   useEffect(() => {
-    const path = router.pathname.split('/');
+    const path = router.pathname.split("/");
     if (path[1].length > 0) {
       setSelected([path[1]]);
     } else {
-      setSelected(['home']);
+      setSelected(["home"]);
     }
-
-  }, [router.pathname])
+  }, [router.pathname]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -55,11 +54,18 @@ export function MainLayout({ children, title = "This is the default title" }) {
           selectedKeys={selectedItem}
         >
           <SubMenu key="sub1" icon={<FolderOpenOutlined />} title="Expedientes">
-            <Menu.Item key='seguimiento' icon={<EyeOutlined />}>
-              <Link href='/seguimiento'>
+            <Menu.Item key="seguimiento" icon={<EyeOutlined />}>
+              <Link href="/seguimiento">
                 <a>Seguimiento</a>
               </Link>
             </Menu.Item>
+            {hasDocPermissions && (
+              <Menu.Item key="documentos" icon={<SearchOutlined />}>
+                <Link href="/documentos">
+                  <a>Docs historicos</a>
+                </Link>
+              </Menu.Item>
+            )}
           </SubMenu>
         </Menu>
       </Sider>
