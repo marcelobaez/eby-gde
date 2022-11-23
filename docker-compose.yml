@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   backend:
     build:
@@ -28,15 +28,15 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-        - 5433:5432
+      - 5433:5432
     volumes:
       - ./data:/var/lib/postgresql/data
-  
+
   frontend:
     build:
       context: ./frontend
     restart: always
-    environment: 
+    environment:
       NODE_ORACLEDB_USER: ${NODE_ORACLEDB_USER}
       NODE_ORACLEDB_PASSWORD: ${NODE_ORACLEDB_PASSWORD}
       NODE_ORACLEDB_CONNECTIONSTRING: ${NODE_ORACLEDB_CONNECTIONSTRING}
@@ -46,11 +46,13 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       DATABASE_URL: ${DATABASE_URL}
       NEXTAUTH_URL: ${NEXTAUTH_URL}
+      DOCS_API_KEY: ${DOCS_API_KEY}
+      NEXT_PUBLIC_GROUP_ID: ${NEXT_PUBLIC_GROUP_ID}
     depends_on:
       - postgres
-  
+
   nginx:
-    build: 
+    build:
       context: ./nginx
     ports:
       - 80:80
@@ -58,5 +60,5 @@ services:
     depends_on:
       - frontend
       - backend
-    volumes: 
+    volumes:
       - ./certs:/etc/nginx/certs

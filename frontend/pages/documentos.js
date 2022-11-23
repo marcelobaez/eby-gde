@@ -16,6 +16,7 @@ import { FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useState } from "react";
 import { getSession } from "next-auth/client";
+import { getCookie } from "cookies-next";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -187,7 +188,11 @@ export default function Documents(props) {
               renderItem={(item) => (
                 <List.Item
                   actions={[
-                    <a href={fileUrl} download={item.title}>
+                    <a
+                      href={fileUrl}
+                      download={item.title}
+                      key="list-download-link"
+                    >
                       Descargar archivo
                     </a>,
                   ]}
@@ -218,13 +223,35 @@ export async function getServerSideProps(context) {
       },
     };
   } else {
+    const expDate = getCookie("tknExp", { req: context.req, res: context.res });
+    let azureToken = getCookie("azureTkn", {
+      req: context.req,
+      res: context.res,
+    });
+
+    if (Date.now() < expDate) {
+      // try to renew token
+      const { data: tokenData } = await axios.post(
+        "http://localhost:3000/api/refreshToken",
+        { token: session.refreshToken }
+      );
+
+      azureToken = tokenData.token;
+    }
+
     // verificar que el usuario pertenezca al grupo correcto
     const { data: groupData } = await axios.get(
       `https://graph.microsoft.com/v1.0/users/${session.azureId}/memberOf`,
       {
-        headers: { Authorization: `Bearer ${session.azureJwt}` },
+        headers: {
+          Authorization: `Bearer ${getCookie("azureTkn", {
+            req: context.req,
+            res: context.res,
+          })}`,
+        },
       }
     );
+
     const hasDocsPermissions = groupData.value.some(
       (item) =>
         item["@odata.type"] === "#microsoft.graph.group" &&

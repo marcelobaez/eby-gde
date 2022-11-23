@@ -82,7 +82,12 @@ export function MainLayout({ children, title = "This is the default title" }) {
               </Menu.Item>
               <Menu.Divider />
               <Menu.Item key="4" icon={<LogoutOutlined />}>
-                <a href="#" onClick={() => signOut()}>
+                <a
+                  href="#"
+                  onClick={() => {
+                    signOut();
+                  }}
+                >
                   Salir
                 </a>
               </Menu.Item>

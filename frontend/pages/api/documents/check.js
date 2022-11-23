@@ -1,7 +1,9 @@
 import axios from "axios";
 import { getSession } from "next-auth/client";
+import { getCookie } from "cookies-next";
 
 const url = "http://192.168.161.50:4000/document/check";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 const handler = async (req, res) => {
   const session = await getSession({ req });
@@ -9,12 +11,38 @@ const handler = async (req, res) => {
   if (session) {
     try {
       // verificar que el usuario pertenezca al grupo correcto
+      const expDate = getCookie("tknExp", {
+        req,
+        res,
+      });
+      let azureToken = getCookie("azureTkn", {
+        req,
+        res,
+      });
+
+      if (Date.now() < expDate) {
+        // try to renew token
+        const { data: tokenData } = await axios.post(
+          `${siteUrl}/api/refreshToken`,
+          { token: session.refreshToken }
+        );
+
+        azureToken = tokenData.token;
+      }
+
+      // verificar que el usuario pertenezca al grupo correcto
       const { data: groupData } = await axios.get(
         `https://graph.microsoft.com/v1.0/users/${session.azureId}/memberOf`,
         {
-          headers: { Authorization: `Bearer ${session.azureJwt}` },
+          headers: {
+            Authorization: `Bearer ${getCookie("azureTkn", {
+              req,
+              res,
+            })}`,
+          },
         }
       );
+
       const hasDocsPermissions = groupData.value.some(
         (item) =>
           item["@odata.type"] === "#microsoft.graph.group" &&
@@ -44,8 +72,6 @@ const handler = async (req, res) => {
           location,
         },
       });
-
-      console.log(response);
 
       res.json({ url: response.data });
     } catch (error) {

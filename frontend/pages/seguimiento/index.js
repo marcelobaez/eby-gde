@@ -14,13 +14,7 @@ import {
 } from "antd";
 import { MainLayout } from "../../components/MainLayout";
 import { ModalCreateList } from "../../components/ModalCreateList";
-import {
-  useQuery,
-  QueryClient,
-  useQueryClient,
-  useMutation,
-} from "react-query";
-import { dehydrate } from "react-query/hydration";
+import { useQuery, useQueryClient, useMutation } from "react-query";
 import { getListas } from "../../lib/fetchers";
 import { getSession } from "next-auth/client";
 import { useRouter } from "next/router";
