@@ -35,10 +35,7 @@ const handler = async (req, res) => {
         `https://graph.microsoft.com/v1.0/users/${session.azureId}/memberOf`,
         {
           headers: {
-            Authorization: `Bearer ${getCookie("azureTkn", {
-              req,
-              res,
-            })}`,
+            Authorization: `Bearer ${azureToken})}`,
           },
         }
       );

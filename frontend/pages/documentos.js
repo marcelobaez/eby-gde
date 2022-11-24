@@ -244,10 +244,7 @@ export async function getServerSideProps(context) {
       `https://graph.microsoft.com/v1.0/users/${session.azureId}/memberOf`,
       {
         headers: {
-          Authorization: `Bearer ${getCookie("azureTkn", {
-            req: context.req,
-            res: context.res,
-          })}`,
+          Authorization: `Bearer ${azureToken}`,
         },
       }
     );

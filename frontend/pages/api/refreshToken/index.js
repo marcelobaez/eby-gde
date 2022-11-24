@@ -21,7 +21,7 @@ const handler = async (req, res) => {
   );
 
   // set Azure-AD access token in a secure cookie
-  setCookie("azureTkn", refreshedTokens.access_tokenn, {
+  setCookie("azureTkn", refreshedTokens.access_token, {
     req,
     res,
     httpOnly: true,

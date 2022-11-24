@@ -6,6 +6,7 @@ import { getCookie } from "cookies-next";
 
 const pipeline = promisify(stream.pipeline);
 const url = "http://192.168.161.50:4000/document";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 const handler = async (req, res) => {
   const session = await getSession({ req });
@@ -24,7 +25,7 @@ const handler = async (req, res) => {
     if (Date.now() < expDate) {
       // try to renew token
       const { data: tokenData } = await axios.post(
-        "http://localhost:3000/api/refreshToken",
+        `${siteUrl}/api/refreshToken`,
         { token: session.refreshToken }
       );
 
@@ -36,10 +37,7 @@ const handler = async (req, res) => {
       `https://graph.microsoft.com/v1.0/users/${session.azureId}/memberOf`,
       {
         headers: {
-          Authorization: `Bearer ${getCookie("azureTkn", {
-            req,
-            res,
-          })}`,
+          Authorization: `Bearer ${azureToken})}`,
         },
       }
     );
