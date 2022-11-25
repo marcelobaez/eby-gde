@@ -34,10 +34,10 @@ const handler = async (req, res) => {
 
     // verificar que el usuario pertenezca al grupo correcto
     const { data: groupData } = await axios.get(
-      `https://graph.microsoft.com/v1.0/users/${session.azureId}/memberOf`,
+      `https://graph.microsoft.com/v1.0/users/${session.azureId}/transitiveMemberOf`,
       {
         headers: {
-          Authorization: `Bearer ${azureToken})}`,
+          Authorization: `Bearer ${azureToken}`,
         },
       }
     );
