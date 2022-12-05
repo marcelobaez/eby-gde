@@ -13,11 +13,19 @@ import {
   Typography,
   Badge,
   Table,
+  Button,
+  Tooltip,
 } from "antd";
 import { setStatus } from "../../utils/index";
 import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
 import { useState } from "react";
+import ReactExport from "react-export-excel";
+import { FileExcelOutlined } from "@ant-design/icons";
+
+const ExcelFile = ReactExport.ExcelFile;
+const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
+const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
 
 const { Text } = Typography;
 
@@ -26,6 +34,8 @@ export default function Movimiento() {
   const [expId, setExpId] = useState(router.query.id);
 
   const { data, status } = useQuery(["movs", expId], () => getMovsById(expId));
+
+  console.log(data);
 
   if (status === "loading") {
     return (
@@ -50,9 +60,9 @@ export default function Movimiento() {
 
   const columns = [
     {
-      title: 'Orden',
-      dataIndex: 'ORD_HIST',
-      key: 'ORD_HIST'
+      title: "Orden",
+      dataIndex: "ORD_HIST",
+      key: "ORD_HIST",
     },
     {
       title: "Fecha",
@@ -101,6 +111,35 @@ export default function Movimiento() {
             title={`Movimientos expediente: ${data[0].EXPEDIENTE}`}
             bordered={false}
             style={{ width: "100%", minHeight: "300px" }}
+            extra={
+              <ExcelFile
+                filename={`Movimientos expediente: ${data[0].EXPEDIENTE}`}
+                element={
+                  <Button
+                    disabled={data.length === 0}
+                    icon={<FileExcelOutlined />}
+                  >
+                    Exportar
+                  </Button>
+                }
+              >
+                <ExcelSheet data={data} name="Movimientos">
+                  <ExcelColumn label="Orden" value="ORD_HIST" />
+                  <ExcelColumn
+                    label="Fecha"
+                    value={(col) =>
+                      format(parseISO(col.FECHA_OPERACION), "P", {
+                        locale: esLocale,
+                      })
+                    }
+                  />
+                  <ExcelColumn label="Motivo" value="MOTIVO" />
+                  <ExcelColumn label="Emisor" value="USUARIO" />
+                  <ExcelColumn label="Destino" value="DESTINATARIO" />
+                  <ExcelColumn label="Estado" value="ESTADO" />
+                </ExcelSheet>
+              </ExcelFile>
+            }
           >
             {data.length === 0 && (
               <Alert
@@ -115,7 +154,7 @@ export default function Movimiento() {
                 columns={columns}
                 dataSource={data}
                 size="middle"
-                rowKey='ID_MOV'
+                rowKey="ID_MOV"
               />
             )}
           </Card>
@@ -127,7 +166,7 @@ export default function Movimiento() {
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
-  const { id } = context.query
+  const { id } = context.query;
 
   if (!session) {
     return {
