@@ -20,7 +20,7 @@ import { setStatus } from "../../utils/index";
 import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
 import { useState } from "react";
-import ReactExport from "react-export-excel";
+import ReactExport from "react-data-export";
 import { FileExcelOutlined } from "@ant-design/icons";
 
 const ExcelFile = ReactExport.ExcelFile;
