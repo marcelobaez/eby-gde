@@ -22,7 +22,7 @@ const handler = async (req, res) => {
       res,
     });
 
-    if (Date.now() < expDate) {
+    if (Date.now() > expDate) {
       // try to renew token
       const { data: tokenData } = await axios.post(
         `${siteUrl}/api/refreshToken`,

@@ -11,7 +11,7 @@ const handler = async (req, res) => {
     const expDate = getCookie("tknExp", { req, res });
     let azureToken = getCookie("azureTkn", { req, res });
 
-    if (Date.now() < expDate) {
+    if (Date.now() > expDate) {
       // try to renew token
       const { data: tokenData } = await axios.post(
         `${siteUrl}/api/refreshToken`,

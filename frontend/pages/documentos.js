@@ -229,7 +229,7 @@ export async function getServerSideProps(context) {
       res: context.res,
     });
 
-    if (Date.now() < expDate) {
+    if (Date.now() > expDate) {
       // try to renew token
       const { data: tokenData } = await axios.post(
         "http://localhost:3000/api/refreshToken",
