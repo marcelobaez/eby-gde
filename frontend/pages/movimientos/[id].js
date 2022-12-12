@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { getSession } from "next-auth/client";
 import { QueryClient, useQuery } from "react-query";
 import { dehydrate } from "react-query/hydration";
-import { getMovsById } from "../../lib/fetchers";
+import { getMovsById, getDocsById } from "../../lib/fetchers";
 import { MainLayout } from "../../components/MainLayout";
 import {
   Row,
@@ -14,7 +14,7 @@ import {
   Badge,
   Table,
   Button,
-  Tooltip,
+  Tabs,
 } from "antd";
 import { setStatus } from "../../utils/index";
 import { parseISO, format } from "date-fns";
@@ -33,9 +33,12 @@ export default function Movimiento() {
   const router = useRouter();
   const [expId, setExpId] = useState(router.query.id);
 
-  const { data, status } = useQuery(["movs", expId], () => getMovsById(expId));
+  const [activeKey, setActiveKey] = useState("item-1");
 
-  console.log(data);
+  const { data, status } = useQuery(["movs", expId], () => getMovsById(expId));
+  const { data: docsData, status: docStatus } = useQuery(["docs", expId], () =>
+    getDocsById(expId)
+  );
 
   if (status === "loading") {
     return (
@@ -57,6 +60,69 @@ export default function Movimiento() {
       </MainLayout>
     );
   }
+
+  const MovExport = () => (
+    <ExcelFile
+      filename={`Movimientos Expediente: ${data[0].EXPEDIENTE}`}
+      element={
+        <Button disabled={data.length === 0} icon={<FileExcelOutlined />}>
+          Exportar
+        </Button>
+      }
+    >
+      <ExcelSheet data={data} name="Movimientos">
+        <ExcelColumn label="Orden" value="ORD_HIST" />
+        <ExcelColumn
+          label="Fecha"
+          value={(col) =>
+            format(parseISO(col.FECHA_OPERACION), "P", {
+              locale: esLocale,
+            })
+          }
+        />
+        <ExcelColumn label="Motivo" value="MOTIVO" />
+        <ExcelColumn label="Emisor" value="USUARIO" />
+        <ExcelColumn label="Destino" value="DESTINATARIO" />
+        <ExcelColumn label="Estado" value="ESTADO" />
+      </ExcelSheet>
+    </ExcelFile>
+  );
+
+  const DocsExport = () => (
+    <ExcelFile
+      filename={`Documentos Expediente: ${data[0].EXPEDIENTE}`}
+      element={
+        <Button disabled={docsData.length === 0} icon={<FileExcelOutlined />}>
+          Exportar
+        </Button>
+      }
+    >
+      <ExcelSheet data={docsData} name="Documentos">
+        <ExcelColumn
+          label="Orden"
+          value={(col) => parseInt(col.POSICION) + 1}
+        />
+        <ExcelColumn label="Documento" value="NOMBRE_ARCHIVO" />
+        <ExcelColumn label="Motivo" value="MOTIVO" />
+        <ExcelColumn
+          label="Fecha Asociacion"
+          value={(col) =>
+            format(parseISO(col.FECHA_ASOCIACION), "P", {
+              locale: esLocale,
+            })
+          }
+        />
+        <ExcelColumn
+          label="Fecha Creacion"
+          value={(col) =>
+            format(parseISO(col.FECHA_CREACION), "P", {
+              locale: esLocale,
+            })
+          }
+        />
+      </ExcelSheet>
+    </ExcelFile>
+  );
 
   const columns = [
     {
@@ -103,43 +169,61 @@ export default function Movimiento() {
     },
   ];
 
+  const columnsDocs = [
+    {
+      title: "Orden",
+      dataIndex: "POSICION",
+      key: "POSICION",
+      render: (text) => <Text>{parseInt(text) + 1}</Text>,
+    },
+    {
+      title: "Documento",
+      dataIndex: "NOMBRE_ARCHIVO",
+      width: 320,
+      key: "NOMBRE_ARCHIVO",
+    },
+    {
+      title: "Motivo",
+      dataIndex: "MOTIVO",
+      key: "MOTIVO",
+      width: 320,
+      ellipsis: true,
+    },
+    {
+      title: "Fecha Asociacion",
+      dataIndex: "FECHA_ASOCIACION",
+      key: "FECHA_ASOCIACION",
+      render: (text) => (
+        <Text>
+          {format(parseISO(text), "P", {
+            locale: esLocale,
+          })}
+        </Text>
+      ),
+    },
+    {
+      title: "Fecha Creacion",
+      dataIndex: "FECHA_CREACION",
+      key: "FECHA_CREACION",
+      render: (text) => (
+        <Text>
+          {format(parseISO(text), "P", {
+            locale: esLocale,
+          })}
+        </Text>
+      ),
+    },
+  ];
+
   return (
     <MainLayout>
       <Row gutter={[16, 16]} justify="center">
         <Col span={24}>
           <Card
-            title={`Movimientos expediente: ${data[0].EXPEDIENTE}`}
+            title={`Expediente: ${data[0].EXPEDIENTE}`}
             bordered={false}
             style={{ width: "100%", minHeight: "300px" }}
-            extra={
-              <ExcelFile
-                filename={`Movimientos expediente: ${data[0].EXPEDIENTE}`}
-                element={
-                  <Button
-                    disabled={data.length === 0}
-                    icon={<FileExcelOutlined />}
-                  >
-                    Exportar
-                  </Button>
-                }
-              >
-                <ExcelSheet data={data} name="Movimientos">
-                  <ExcelColumn label="Orden" value="ORD_HIST" />
-                  <ExcelColumn
-                    label="Fecha"
-                    value={(col) =>
-                      format(parseISO(col.FECHA_OPERACION), "P", {
-                        locale: esLocale,
-                      })
-                    }
-                  />
-                  <ExcelColumn label="Motivo" value="MOTIVO" />
-                  <ExcelColumn label="Emisor" value="USUARIO" />
-                  <ExcelColumn label="Destino" value="DESTINATARIO" />
-                  <ExcelColumn label="Estado" value="ESTADO" />
-                </ExcelSheet>
-              </ExcelFile>
-            }
+            extra={activeKey === "item-1" ? <MovExport /> : <DocsExport />}
           >
             {data.length === 0 && (
               <Alert
@@ -150,12 +234,24 @@ export default function Movimiento() {
               />
             )}
             {data.length > 0 && (
-              <Table
-                columns={columns}
-                dataSource={data}
-                size="middle"
-                rowKey="ID_MOV"
-              />
+              <Tabs activeKey={activeKey} onChange={setActiveKey}>
+                <Tabs.TabPane tab="Movimientos" key="item-1">
+                  <Table
+                    columns={columns}
+                    dataSource={data}
+                    size="middle"
+                    rowKey="ID_MOV"
+                  />
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Documentos" key="item-2">
+                  <Table
+                    columns={columnsDocs}
+                    dataSource={docsData}
+                    size="middle"
+                    rowKey="ID"
+                  />
+                </Tabs.TabPane>
+              </Tabs>
             )}
           </Card>
         </Col>

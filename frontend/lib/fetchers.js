@@ -4,15 +4,15 @@ import { parseISO, differenceInDays, formatDistance } from "date-fns";
 import { setStatus, getStatusByGivenDates } from "../utils/index";
 import esLocale from "date-fns/locale/es";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const getListas = async () => {
   const { data } = await axios.get(`${siteUrl}/api/listas`);
 
   return data;
-}
+};
 
-export const getListInfoByID = async id => {
+export const getListInfoByID = async (id) => {
   const { data } = await axios.get(`${siteUrl}/api/listas/${id}`);
 
   const expIds = data.expedientes.map((exp) => exp.id_expediente);
@@ -36,10 +36,26 @@ export const getListInfoByID = async id => {
         ...exp,
         id_exp_list: matchingEl.id,
         duracion_esperada: matchingEl.duracion_esperada,
-        lifetime: formatDistance(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION), {locale: esLocale}),
+        lifetime: formatDistance(
+          parseISO(exp.FECHA_OPERACION),
+          parseISO(exp.FECHA_CREACION),
+          { locale: esLocale }
+        ),
         stateColor: setStatus(exp.ESTADO),
-        lifetimeColor: matchingEl.duracion_esperada ? getStatusByGivenDates(exp.FECHA_CREACION, exp.FECHA_OPERACION, matchingEl.duracion_esperada) : '',
-        daysOverdue: (matchingEl.duracion_esperada && exp.ESTADO !== 'Guarda Temporal') ? differenceInDays(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION)) - matchingEl.duracion_esperada : null
+        lifetimeColor: matchingEl.duracion_esperada
+          ? getStatusByGivenDates(
+              exp.FECHA_CREACION,
+              exp.FECHA_OPERACION,
+              matchingEl.duracion_esperada
+            )
+          : "",
+        daysOverdue:
+          matchingEl.duracion_esperada && exp.ESTADO !== "Guarda Temporal"
+            ? differenceInDays(
+                parseISO(exp.FECHA_OPERACION),
+                parseISO(exp.FECHA_CREACION)
+              ) - matchingEl.duracion_esperada
+            : null,
       };
     });
 
@@ -47,7 +63,7 @@ export const getListInfoByID = async id => {
   }
 
   return data;
-}
+};
 
 export const getExps = async () => {
   const { data: listas } = await axios.get(`${siteUrl}/api/listas`);
@@ -74,10 +90,26 @@ export const getExps = async () => {
           ...exp,
           id_exp_list: matchingEl.id,
           duracion_esperada: matchingEl.duracion_esperada,
-          lifetime: formatDistance(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION), {locale: esLocale}),
+          lifetime: formatDistance(
+            parseISO(exp.FECHA_OPERACION),
+            parseISO(exp.FECHA_CREACION),
+            { locale: esLocale }
+          ),
           stateColor: setStatus(exp.ESTADO),
-          lifetimeColor: matchingEl.duracion_esperada ? getStatusByGivenDates(exp.FECHA_CREACION, exp.FECHA_OPERACION, matchingEl.duracion_esperada) : '',
-          daysOverdue: (matchingEl.duracion_esperada && exp.ESTADO !== 'Guarda Temporal') ? differenceInDays(parseISO(exp.FECHA_OPERACION), parseISO(exp.FECHA_CREACION)) - matchingEl.duracion_esperada : null
+          lifetimeColor: matchingEl.duracion_esperada
+            ? getStatusByGivenDates(
+                exp.FECHA_CREACION,
+                exp.FECHA_OPERACION,
+                matchingEl.duracion_esperada
+              )
+            : "",
+          daysOverdue:
+            matchingEl.duracion_esperada && exp.ESTADO !== "Guarda Temporal"
+              ? differenceInDays(
+                  parseISO(exp.FECHA_OPERACION),
+                  parseISO(exp.FECHA_CREACION)
+                ) - matchingEl.duracion_esperada
+              : null,
         };
       });
 
@@ -89,24 +121,19 @@ export const getExps = async () => {
 };
 
 export const getMovs = async () => {
-  const { data: expedientes } = await axios.get(
-    `${siteUrl}/api/expedientes`
-  );
+  const { data: expedientes } = await axios.get(`${siteUrl}/api/expedientes`);
 
   if (expedientes.length > 0) {
     const expIds = expedientes.map((exp) => exp.id_expediente);
 
-    const { data: gdeexps } = await axios.get(
-      `${siteUrl}/api/gdemovs`,
-      {
-        params: {
-          expIds,
-        },
-        paramsSerializer: function (params) {
-          return qs.stringify(params, { arrayFormat: "brackets" });
-        },
-      }
-    );
+    const { data: gdeexps } = await axios.get(`${siteUrl}/api/gdemovs`, {
+      params: {
+        expIds,
+      },
+      paramsSerializer: function (params) {
+        return qs.stringify(params, { arrayFormat: "brackets" });
+      },
+    });
 
     const normalizedExps = gdeexps.map((exp) => {
       const matchingEl = expedientes.find(
@@ -126,9 +153,7 @@ export const getMovs = async () => {
 };
 
 export const getMovsById = async (id) => {
-  const { data: expedientes } = await axios.get(
-    `${siteUrl}/api/expedientes`
-  );
+  const { data: expedientes } = await axios.get(`${siteUrl}/api/expedientes`);
 
   if (expedientes.length > 0) {
     const { data: gdeexps } = await axios.get(`${siteUrl}/api/gdemovs/${id}`);
@@ -140,7 +165,7 @@ export const getMovsById = async (id) => {
 
       return {
         ...exp,
-        id_exp_list: matchingEl.id
+        id_exp_list: matchingEl.id,
       };
     });
 
@@ -148,4 +173,10 @@ export const getMovsById = async (id) => {
   }
 
   return expedientes;
+};
+
+export const getDocsById = async (id) => {
+  const { data: gdedocs } = await axios.get(`${siteUrl}/api/gdedocs/${id}`);
+
+  return gdedocs;
 };
