@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "listas",
+  "info": {
+    "singularName": "lista",
+    "pluralName": "listas",
+    "displayName": "Lista",
+    "name": "lista"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string",
+      "required": true,
+      "minLength": 5,
+      "unique": false
+    },
+    "usuario": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "listas"
+    },
+    "expedientes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::expediente.expediente",
+      "mappedBy": "lista"
+    }
+  }
+}

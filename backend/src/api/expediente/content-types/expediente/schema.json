@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "expedientes",
+  "info": {
+    "singularName": "expediente",
+    "pluralName": "expedientes",
+    "displayName": "Expediente",
+    "name": "expediente"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "id_expediente": {
+      "type": "biginteger",
+      "required": true
+    },
+    "lista": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::lista.lista",
+      "inversedBy": "expedientes"
+    },
+    "usuario": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "duracion_esperada": {
+      "type": "integer"
+    }
+  }
+}
