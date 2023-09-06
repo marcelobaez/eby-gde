@@ -9,7 +9,7 @@ export default async function movsHandler(req, res) {
   }
 
   try {
-    oracledb.initOracleClient();
+    oracledb.initOracleClient({ libDir: "/opt/oracle/instantclient_21_11" });
     connection = await oracledb.getConnection({
       user: process.env.NODE_ORACLEDB_USER,
       password: process.env.NODE_ORACLEDB_PASSWORD,
