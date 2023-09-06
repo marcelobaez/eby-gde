@@ -10,14 +10,20 @@ module.exports = createCoreController(
   "api::expediente.expediente",
   ({ strapi }) => ({
     async create(ctx) {
-      let newExp = ctx.request.body;
+      let newExp = ctx.request.body.data;
+
+      console.log("newExp", newExp);
 
       const expedientes = await strapi.entityService.findMany(
         "api::expediente.expediente",
         {
           filters: {
-            id_expediente: newExp.id_expediente,
-            lista: newExp.lista,
+            id_expediente: {
+              $eq: newExp.id_expediente,
+            },
+            lista: {
+              id: { $eq: newExp.lista },
+            },
             usuario: {
               id: {
                 $eq: ctx.state.user.id,
@@ -27,6 +33,8 @@ module.exports = createCoreController(
           limit: 1,
         }
       );
+
+      console.log("expedientes", expedientes);
 
       if (expedientes.length > 0) {
         return ctx.send(
@@ -39,6 +47,7 @@ module.exports = createCoreController(
 
       newExp.usuario = ctx.state.user.id;
       newExp.publishedAt = new Date();
+      console.log(newExp);
       const entry = await strapi.entityService.create(
         "api::expediente.expediente",
         { data: newExp }
@@ -63,7 +72,7 @@ module.exports = createCoreController(
             },
           },
           start: 0,
-          limit: 100,
+          limit: 10000,
         }
       );
 
@@ -128,7 +137,7 @@ module.exports = createCoreController(
         "api::expediente.expediente",
         id,
         {
-          data: ctx.request.body,
+          data: ctx.request.body.data,
         }
       );
       const sanitizedResults = await this.sanitizeOutput(entry, ctx);

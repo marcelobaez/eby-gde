@@ -1,8 +1,11 @@
 version: "3"
 services:
   backend:
+    container_name: eby-exp-backend
     build:
       context: ./backend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     environment:
       DATABASE_CLIENT: postgres
       DATABASE_NAME: ${DATABASE_NAME}
@@ -12,29 +15,27 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_KEYS: ${APP_KEYS}
+      API_TOKEN_SALT: ${API_TOKEN_SALT}
     volumes:
-      - ./backend:/srv/backend
-    depends_on:
-      - postgres
-    restart: always
-    ports:
-      - 3000:3000
+      - ./backend/config:/srv/backend/config
+      - ./backend/src:/srv/backend/src
+      - ./backend/package.json:/srv/backend/package.json
+      - ./backend/package-lock.json:/opt/package-lock.json
 
-  postgres:
-    image: postgres
+      - ./backend/.env:/srv/backend/.env
+      - ./backend/public/uploads:/srv/backend/public/uploads
     restart: always
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-      - 5433:5432
-    volumes:
-      - ./data:/var/lib/postgresql/data
+      - "1337:1337"
 
   frontend:
+    container_name: eby-exp-frontend
     build:
       context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     restart: always
     environment:
       NODE_ORACLEDB_USER: ${NODE_ORACLEDB_USER}
@@ -44,12 +45,11 @@ services:
       AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      DATABASE_URL: ${DATABASE_URL}
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       DOCS_API_KEY: ${DOCS_API_KEY}
       NEXT_PUBLIC_GROUP_ID: ${NEXT_PUBLIC_GROUP_ID}
-    depends_on:
-      - postgres
+      NEXTAUTH_URL_INTERNAL: ${NEXTAUTH_URL_INTERNAL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
 
   nginx:
     build:
