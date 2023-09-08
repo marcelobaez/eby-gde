@@ -50,6 +50,8 @@ services:
       NEXT_PUBLIC_GROUP_ID: ${NEXT_PUBLIC_GROUP_ID}
       NEXTAUTH_URL_INTERNAL: ${NEXTAUTH_URL_INTERNAL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    ports:
+      - "3000:3000"
 
   nginx:
     build:

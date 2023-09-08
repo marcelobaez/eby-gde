@@ -5,7 +5,7 @@ export default async function movsHandler(req, res) {
   let { id } = req.query;
 
   try {
-    oracledb.initOracleClient({ libDir: "/opt/oracle/instantclient_21_11" });
+    oracledb.initOracleClient();
     connection = await oracledb.getConnection({
       user: process.env.NODE_ORACLEDB_USER,
       password: process.env.NODE_ORACLEDB_PASSWORD,

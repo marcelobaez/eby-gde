@@ -1,7 +1,4 @@
-FROM marcelobaez/oracle7-slim-node16 AS base
-
-# Step 1. Rebuild the source code only when needed
-FROM base AS builder
+FROM marcelobaez/oracle8-ic-node16
 
 WORKDIR /app
 
@@ -25,9 +22,12 @@ COPY next.config.js .
 # https://github.com/vercel/next.js/discussions/14030
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 # Next.js collects completely anonymous telemetry data about general usage. Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line to disable telemetry at build time
 ENV NEXT_TELEMETRY_DISABLED 1
+
+# Note: Don't expose ports here, Compose will handle that for us
 
 # Build Next.js based on the preferred package manager
 RUN \
@@ -37,33 +37,10 @@ RUN \
   else yarn build; \
   fi
 
-# Note: It is not necessary to add an intermediate step that does a full copy of `node_modules` here
-
-# Step 2. Production image, copy all the files and run next
-FROM base AS runner
-
-WORKDIR /app
-
-# Don't run production as root
-RUN groupadd -r -g 1001 nodejs
-RUN useradd -r -u 1001 nextjs
-USER nextjs
-
-COPY --from=builder /app/public ./public
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# COPY --from=builder --chown=nextjs:nodejs /app/.next/server/edge-chunks ./.next/server/edge-chunks
-
-# Environment variables must be redefined at run time
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-
-# Uncomment the following line to disable telemetry at run time
-ENV NEXT_TELEMETRY_DISABLED 1
-
-# Note: Don't expose ports here, Compose will handle that for us
-
-CMD ["node", "server.js"]
+# Start Next.js based on the preferred package manager
+CMD \
+  if [ -f yarn.lock ]; then yarn start; \
+  elif [ -f package-lock.json ]; then npm run start; \
+  elif [ -f pnpm-lock.yaml ]; then pnpm start; \
+  else yarn start; \
+  fi
