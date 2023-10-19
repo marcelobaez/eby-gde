@@ -6,6 +6,8 @@ import {
   LogoutOutlined,
   EyeOutlined,
   SearchOutlined,
+  ContainerOutlined,
+  ApartmentOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -65,18 +67,21 @@ export function MainLayout({ children, title = "This is the default title" }) {
               children: [
                 {
                   key: "seguimiento",
-                  label: "Seguimiento",
                   icon: <EyeOutlined />,
                   label: <Link href="/seguimiento">Seguimiento</Link>,
                 },
                 hasDocPermissions
                   ? {
                       key: "documentos",
-                      label: "Documentos",
                       icon: <SearchOutlined />,
                       label: <Link href="/documentos">Docs historicos</Link>,
                     }
                   : null,
+                {
+                  key: "asociaciones",
+                  label: <Link href="/asociaciones">Jerarquias</Link>,
+                  icon: <ApartmentOutlined />,
+                },
               ],
             },
           ]}

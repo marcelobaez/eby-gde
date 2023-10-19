@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_relations_exp_rels",
+  "info": {
+    "displayName": "ExpRel",
+    "icon": "archive"
+  },
+  "options": {},
+  "attributes": {
+    "expId": {
+      "type": "biginteger",
+      "required": true,
+      "unique": true
+    },
+    "descripcion": {
+      "type": "string"
+    },
+    "notas": {
+      "type": "string"
+    }
+  }
+}

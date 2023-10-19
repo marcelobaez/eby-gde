@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Form, InputNumber, Button, Row, Col } from "antd";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 
-export const SearchExpForm = ({ handleSubmit, handleReset, isSearching }) => {
+export const SearchExpForm = ({
+  handleSubmit,
+  handleReset,
+  isSearching,
+  layout = "inline",
+  justify = "center",
+  withTitle = true,
+}) => {
   const [form] = Form.useForm();
   const [, forceUpdate] = useState({});
 
@@ -20,10 +27,10 @@ export const SearchExpForm = ({ handleSubmit, handleReset, isSearching }) => {
   };
 
   return (
-    <Row justify="center" gutter={16}>
+    <Row justify={justify} gutter={16}>
       <Col>
         <Form
-          layout="inline"
+          layout={layout}
           onFinish={onFinish}
           form={form}
           initialValues={{
@@ -31,7 +38,7 @@ export const SearchExpForm = ({ handleSubmit, handleReset, isSearching }) => {
           }}
           requiredMark={false}
         >
-          <Form.Item label="Buscar expedientes" colon={false} />
+          {withTitle && <Form.Item label="Buscar expedientes" colon={false} />}
           <Form.Item
             name="year"
             label="Año"

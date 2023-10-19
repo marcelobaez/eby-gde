@@ -68,7 +68,7 @@ export function SearchExpContainer({ data }) {
 
     setIsSearching(false);
 
-    const hasResults = expedientes.length;
+    const hasResults = expedientes.length > 0;
 
     setSearchData(expedientes);
     setShowEmpty(!hasResults);
