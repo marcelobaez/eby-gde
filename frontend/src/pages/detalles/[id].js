@@ -47,8 +47,6 @@ export default function Movimiento() {
     }
   );
 
-  console.log(movsData);
-
   const {
     data: docsData,
     isLoading: isDocsLoading,

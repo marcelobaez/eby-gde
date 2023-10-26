@@ -77,8 +77,7 @@
     },
     "isAdmin": {
       "type": "boolean",
-      "default": false,
-      "private": true
+      "default": false
     },
     "expedientes_relacion": {
       "type": "relation",

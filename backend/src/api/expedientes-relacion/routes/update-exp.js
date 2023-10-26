@@ -3,8 +3,8 @@ module.exports = {
     {
       // Path defined with a URL parameter
       method: "PUT",
-      path: "/expedientes-relaciones/updaterelcustom/:id",
-      handler: "expedientes-relacion.updateCustomRelation",
+      path: "/expedientes-relaciones/updaterel/:id",
+      handler: "expedientes-relacion.updateExpRelation",
       config: {
         policies: ["is-admin"],
       },

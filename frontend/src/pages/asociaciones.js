@@ -14,16 +14,18 @@ import {
   Modal,
   Tag,
   Spin,
+  message,
 } from "antd";
 import {
   DeleteOutlined,
   ExclamationCircleFilled,
   FolderAddOutlined,
   InfoCircleOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
-import { useQueryClient, QueryClientProvider } from "react-query";
+import { useQueryClient, QueryClientProvider, useMutation } from "react-query";
 import { SearchExpForm } from "../components/SearchExpForm";
 import axios from "axios";
 import { useGetArbolExpByGdeId } from "../hooks/useArbolExp";
@@ -31,11 +33,15 @@ import { createTreeNodes, getKeys } from "../utils/index";
 import { ExpRelacionForm } from "../components/ExpRelacionForm";
 import { ModalAssociateExp } from "../components/ModalAssociateExp";
 import { ModalAssociateExistExp } from "../components/ModalAssociateExistExp";
+import { api } from "../lib/axios";
+import { useRouter } from "next/router";
+import daysjs from "dayjs";
 
 const { Paragraph, Text } = Typography;
 const { info, confirm } = Modal;
 
 export default function Documents() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [searchData, setSearchData] = useState([]);
   const [showEmpty, setShowEmpty] = useState(false);
@@ -48,17 +54,54 @@ export default function Documents() {
   const [autoExpandParent, setAutoExpandParent] = useState(true);
 
   // Obtener datos de la relacion
-  const { data, isLoading, isError } = useGetArbolExpByGdeId(selectedExpId, {
+  const { data, isLoading, isSuccess } = useGetArbolExpByGdeId(selectedExpId, {
     enabled: Boolean(selectedExpId),
   });
 
   useEffect(() => {
-    if (data && data.length > 0) {
+    if (data && isSuccess && data.length > 0) {
       const newTreeData = createTreeNodes(data[0], 6);
       setExpandedKeys(getKeys(newTreeData));
       setTreeData(newTreeData);
     }
   }, [data]);
+
+  const removeExpMutation = useMutation(
+    (id) => {
+      return api.put(`/expedientes-relaciones/deleterel/${id}`);
+    },
+    {
+      // Optimistically update the cache value on mutate, but store
+      // the old value and return it so that it's accessible in case of
+      // an error
+      onMutate: async (text) => {
+        await queryClient.cancelQueries(["arbolExp"]);
+
+        const previousValue = queryClient.getQueryData([
+          "arbolExp",
+          selectedNodeData.expId,
+        ]);
+
+        return previousValue;
+      },
+      // On failure, roll back to the previous value
+      onError: (err, variables, previousValue) => {
+        message.error(err.response.data);
+        queryClient.setQueryData(
+          ["arbolExp", selectedNodeData.expId],
+          previousValue
+        );
+      },
+      onSuccess: (data, variables, context) => {
+        message.success("Asociacion eliminada correctamente");
+        // handleReset();
+      },
+      // After success or failure, refetch the todos query
+      onSettled: () => {
+        queryClient.invalidateQueries(["arbolExp"]);
+      },
+    }
+  );
 
   // modal para crear una nueva relacion
   const showDrawerRelate = () => {
@@ -77,13 +120,13 @@ export default function Documents() {
   };
 
   // mostrar modal para asociar hijo a expediente existente
-  const showDrawerRelateChild = () => {
+  const showDrawerRelateChild = (nodeData) => {
     info({
       title: "Buscar expediente a asociar",
       content: (
         <QueryClientProvider client={queryClient}>
           <ModalAssociateExistExp
-            targetExp={selectedNodeData}
+            targetExp={nodeData}
             existingIds={getKeys(treeData)}
           />
         </QueryClientProvider>
@@ -123,14 +166,14 @@ export default function Documents() {
     setSelectedExpId(null);
   };
 
-  const handleDelete = () => {
+  const handleDelete = (id) => {
     confirm({
       title: "Esta seguro que desea eliminar esta relacion?",
       icon: <ExclamationCircleFilled />,
       content:
         "Esta accion no se puede deshacer. Todos los elementos asociados a este expediente seran eliminados.",
       onOk() {
-        console.log("OK");
+        removeExpMutation.mutate(id);
       },
       onCancel() {
         console.log("Cancel");
@@ -175,7 +218,7 @@ export default function Documents() {
                 </Col>
               </Row>
               {isLoading && <Spin size="large" />}
-              {data && !isLoading && data.length > 0 && (
+              {data && isSuccess && Object.keys(treeData).length > 0 && (
                 <>
                   <Tree
                     selectable={false}
@@ -190,11 +233,33 @@ export default function Documents() {
                         <Space>
                           <Space>
                             {nodeData.key === String(selectedExpId) ? (
-                              <Text strong mark>
-                                {nodeData.title}
+                              <Text
+                                style={{ width: 400 }}
+                                ellipsis={{
+                                  tooltip: `${nodeData.title}${
+                                    nodeData.desc ? " - " : ""
+                                  }${nodeData.desc ?? ""}`,
+                                }}
+                                strong
+                                mark
+                              >
+                                {`${nodeData.title}${
+                                  nodeData.desc ? " - " : ""
+                                }${nodeData.desc ?? ""}`}
                               </Text>
                             ) : (
-                              <span>{nodeData.title}</span>
+                              <Text
+                                style={{ width: 400 }}
+                                ellipsis={{
+                                  tooltip: `${nodeData.title}${
+                                    nodeData.desc ? " - " : ""
+                                  }${nodeData.desc ?? ""}`,
+                                }}
+                              >
+                                {`${nodeData.title}${
+                                  nodeData.desc ? " - " : ""
+                                }${nodeData.desc ?? ""}`}
+                              </Text>
                             )}
                             <Tag color="geekblue">{nodeData.tag || "N/D"}</Tag>
                           </Space>
@@ -212,22 +277,41 @@ export default function Documents() {
                             <Button
                               type="text"
                               icon={<FolderAddOutlined />}
+                              disabled={!nodeData.isEditable}
                               onClick={() => {
                                 setNodeData(nodeData);
-                                showDrawerRelateChild();
+                                showDrawerRelateChild(nodeData);
                               }}
                             />
                           </Tooltip>
-                          <Tooltip title="Eliminar de la relacion">
+                          <Tooltip
+                            title={`${
+                              nodeData.isLeaf
+                                ? "Eliminar la relacion"
+                                : "Para eliminar la relacion, primero elimine los hijos"
+                            }`}
+                          >
                             <Button
                               type="text"
-                              icon={<DeleteOutlined twoToneColor="#eb2f96" />}
+                              disabled={nodeData.children}
+                              icon={<DeleteOutlined />}
                               onClick={() => {
                                 setNodeData(nodeData);
-                                handleDelete();
+                                handleDelete(nodeData.expId);
                               }}
                             />
                           </Tooltip>
+                          {nodeData.isExp && (
+                            <Tooltip title={`Navegar a detalles`}>
+                              <Button
+                                type="text"
+                                icon={<LinkOutlined />}
+                                onClick={() =>
+                                  router.push(`/detalles/${nodeData.key}`)
+                                }
+                              />
+                            </Tooltip>
+                          )}
                         </Space>
                       );
                     }}
@@ -260,8 +344,19 @@ export default function Documents() {
             <Space direction="vertical">
               <Text strong>Descripcion</Text>
               <Paragraph>{selectedNodeData.desc}</Paragraph>
+              {selectedNodeData.isExp && (
+                <>
+                  <Text strong>Fecha creación</Text>
+                  <Paragraph>
+                    {daysjs(selectedNodeData.created).format("DD/MM/YYYY")}
+                  </Paragraph>
+                </>
+              )}
               <QueryClientProvider client={queryClient}>
-                <ExpRelacionForm id={selectedNodeData.expId} />
+                <ExpRelacionForm
+                  id={selectedNodeData.expId}
+                  handleSuccess={() => setOpenInfo(false)}
+                />
               </QueryClientProvider>
             </Space>
           </Drawer>
@@ -274,12 +369,27 @@ export default function Documents() {
 export async function getServerSideProps(context) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
+  const { data } = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
+    {
+      headers: {
+        Authorization: `Bearer ${session.jwt}`,
+      },
+    }
+  );
+
   if (!session) {
     return {
       redirect: {
         destination: "/login",
         permanent: false,
       },
+    };
+  }
+
+  if (data && !data.isAdmin) {
+    return {
+      notFound: true,
     };
   }
 

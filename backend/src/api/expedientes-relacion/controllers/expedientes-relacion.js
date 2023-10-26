@@ -9,63 +9,76 @@ const { createCoreController } = require("@strapi/strapi").factories;
 module.exports = createCoreController(
   "api::expedientes-relacion.expedientes-relacion",
   ({ strapi }) => ({
-    // Method 2: Wrapping a core action (leaves core logic in place)
-    // async find(ctx) {
-    //   // Calling the default core action
-    //   const { data, meta } = await super.find(ctx);
+    async createCustomChild(ctx) {
+      let newExp = ctx.request.body.data;
 
-    //   return { data, meta };
-    // },
-    // async find(ctx) {
-    //   const { data, meta } = await super.find(ctx);
-    //   const query = strapi.db.query(
-    //     "api::expedientes-relacion.expedientes-relacion"
-    //   );
-    //   await Promise.all(
-    //     data.map(async (item, index) => {
-    //       const foundItem = await query.findOne({
-    //         where: {
-    //           id: item.id,
-    //         },
-    //         populate: ["createdBy", "updatedBy", "autor", "children", "parent"],
-    //       });
+      // primero crear el hijo
+      const newChild = await strapi.entityService.create(
+        "api::expedientes-relacion.expedientes-relacion",
+        {
+          data: {
+            ...newExp.child,
+            publishedAt: new Date(),
+            autor: ctx.state.user.id,
+          },
+        }
+      );
 
-    //       console.log("foundItem", foundItem);
+      // buscar si existe un expediente hijo con el mismo ID
+      const expPadre = await strapi.entityService.findMany(
+        "api::expedientes-relacion.expedientes-relacion",
+        {
+          filters: {
+            expId: {
+              $eq: newExp.parent.expId,
+            },
+          },
+          limit: 1,
+        }
+      );
 
-    //       // data[index].attributes.autor = {
-    //       //   id: foundItem.autor.id,
-    //       //   email: foundItem.autor.email,
-    //       // };
-    //       if (foundItem.createdBy) {
-    //         data[index].attributes.createdBy = {
-    //           id: foundItem.createdBy.id,
-    //           firstname: foundItem.createdBy.firstname,
-    //           lastname: foundItem.createdBy.lastname,
-    //         };
-    //       }
-    //       if (foundItem.updatedBy) {
-    //         data[index].attributes.updatedBy = {
-    //           id: foundItem.updatedBy.id,
-    //           firstname: foundItem.updatedBy.firstname,
-    //           lastname: foundItem.updatedBy.lastname,
-    //         };
-    //       }
-    //     })
-    //   );
-    //   return { data, meta };
-    // },
-    // Method 2: Wrapping a core action (leaves core logic in place)
-    // async findOne(ctx) {
-    //   const { id } = ctx.params;
-    //   await this.validateQuery(ctx);
-    //   const sanitizedQuery = await this.sanitizeQuery(ctx);
+      if (expPadre.length === 0) {
+        // si no existe un expediente padre, crear el padre y asociar el hijo existente
+        const newParent = await strapi.entityService.create(
+          "api::expedientes-relacion.expedientes-relacion",
+          {
+            data: {
+              ...newExp.parent,
+              publishedAt: new Date(),
+              autor: ctx.state.user.id,
+            },
+          }
+        );
 
-    //   const { data, meta } = await strapi
-    //     .service(uid)
-    //     .findOne(id, sanitizedQuery);
+        const entry = await strapi.entityService.update(
+          "api::expedientes-relacion.expedientes-relacion",
+          newChild.id,
+          {
+            data: {
+              parent: String(newParent.id),
+            },
+          }
+        );
 
-    //   return { data, meta };
-    // },
+        const sanitizedResults = await this.sanitizeOutput(entry, ctx);
+
+        return this.transformResponse(sanitizedResults);
+      } else {
+        const entry = await strapi.entityService.update(
+          "api::expedientes-relacion.expedientes-relacion",
+          newChild.id,
+          {
+            data: {
+              parent: String(expPadre[0].id),
+            },
+          }
+        );
+
+        const sanitizedResults = await this.sanitizeOutput(entry, ctx);
+
+        return this.transformResponse(sanitizedResults);
+      }
+    },
     async create(ctx) {
       let newExp = ctx.request.body.data;
 
@@ -150,7 +163,7 @@ module.exports = createCoreController(
     async updateExpRelation(ctx) {
       const { id } = ctx.request.params;
       const {
-        data: { child },
+        data: { child, existingChild },
       } = ctx.request.body;
 
       // buscar si existe un expediente hijo con el mismo ID
@@ -179,7 +192,7 @@ module.exports = createCoreController(
           "api::expedientes-relacion.expedientes-relacion",
           id,
           {
-            data: { children: [String(newChild.id)] },
+            data: { children: [...existingChild, String(newChild.id)] },
           }
         );
 
@@ -192,16 +205,50 @@ module.exports = createCoreController(
           "api::expedientes-relacion.expedientes-relacion",
           id,
           {
-            data: { children: [String(expHijo[0].id)] },
+            data: { children: [...existingChild, String(expHijo[0].id)] },
           }
         );
 
-        // const sanitizedResults = await this.sanitizeOutput(entry, ctx);
-
-        // return this.transformResponse(sanitizedResults);
-
         return { data, meta };
       }
+    },
+    async updateCustomRelation(ctx) {
+      const { id } = ctx.request.params;
+      const {
+        data: { child, existingChild },
+      } = ctx.request.body;
+
+      const newChild = await strapi.entityService.create(
+        "api::expedientes-relacion.expedientes-relacion",
+        {
+          data: { ...child, publishedAt: new Date() },
+        }
+      );
+
+      const entry = await strapi.entityService.update(
+        "api::expedientes-relacion.expedientes-relacion",
+        id,
+        {
+          data: { children: [...existingChild, String(newChild.id)] },
+        }
+      );
+
+      const sanitizedResults = await this.sanitizeOutput(entry, ctx);
+
+      return this.transformResponse(sanitizedResults);
+    },
+    async deleteExpRelation(ctx) {
+      const { id } = ctx.request.params;
+
+      const { data, meta } = await strapi.entityService.update(
+        "api::expedientes-relacion.expedientes-relacion",
+        id,
+        {
+          data: { parent: [] },
+        }
+      );
+
+      return { data, meta };
     },
   })
 );

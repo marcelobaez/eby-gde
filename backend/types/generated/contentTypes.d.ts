@@ -23,6 +23,7 @@ export interface AdminPermission extends Schema.CollectionType {
       Attribute.SetMinMaxLength<{
         minLength: 1;
       }>;
+    actionParameters: Attribute.JSON & Attribute.DefaultTo<{}>;
     subject: Attribute.String &
       Attribute.SetMinMaxLength<{
         minLength: 1;
@@ -447,8 +448,8 @@ export interface ApiExpedientesRelacionExpedientesRelacion
     draftAndPublish: true;
   };
   attributes: {
-    expId: Attribute.BigInteger & Attribute.Required & Attribute.Unique;
-    expCode: Attribute.String & Attribute.Required & Attribute.Unique;
+    expId: Attribute.BigInteger & Attribute.Unique;
+    expCode: Attribute.String & Attribute.Unique;
     descripcion: Attribute.Text;
     parent: Attribute.Relation<
       'api::expedientes-relacion.expedientes-relacion',
@@ -471,6 +472,9 @@ export interface ApiExpedientesRelacionExpedientesRelacion
       'oneToOne',
       'api::expediente-tipo.expediente-tipo'
     >;
+    isExp: Attribute.Boolean & Attribute.Required;
+    title: Attribute.String;
+    fechaCreacion: Attribute.DateTime;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -844,7 +848,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::lista.lista'
     >;
     name: Attribute.String;
-    isAdmin: Attribute.Boolean & Attribute.Private & Attribute.DefaultTo<false>;
+    isAdmin: Attribute.Boolean & Attribute.DefaultTo<false>;
     expedientes_relacion: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToOne',
@@ -867,7 +871,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
-declare module '@strapi/strapi' {
+declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
       'admin::permission': AdminPermission;

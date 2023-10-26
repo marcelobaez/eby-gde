@@ -144,10 +144,13 @@ export const getArbolExpById = async (id) => {
       },
       populate: [
         "parent",
+        "parent.expediente_tipo",
         "expediente_tipo",
         "children.expediente_tipo",
         "children.children.expediente_tipo",
         "children.children.children",
+        "children.children.children.expediente_tipo",
+        "author",
       ],
     },
     {

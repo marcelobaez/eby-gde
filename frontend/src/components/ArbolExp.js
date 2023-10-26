@@ -1,394 +1,311 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Result,
+  Card,
+  Col,
+  Row,
+  Empty,
+  Typography,
   Space,
   Tree,
-  Typography,
-  Skeleton,
-  Avatar,
-  List,
-  Col,
-  Card,
-  Empty,
-  Button,
-  Modal,
-  message,
-  Popover,
   Tooltip,
+  Button,
+  Drawer,
+  Modal,
+  Tag,
+  Spin,
+  message,
 } from "antd";
-import { useGetArbolExpByGdeId } from "../hooks/useArbolExp";
 import {
-  FolderOutlined,
-  ApartmentOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  InfoCircleOutlined,
+  DeleteOutlined,
+  ExclamationCircleFilled,
   FolderAddOutlined,
+  InfoCircleOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
-import { SearchExpForm } from "./SearchExpForm";
-import axios from "axios";
-import { useQueryClient, useMutation, QueryClientProvider } from "react-query";
+import { useQueryClient, QueryClientProvider, useMutation } from "react-query";
+import { useGetArbolExpByGdeId } from "../hooks/useArbolExp";
+import { createTreeNodes, getKeys } from "../utils/index";
+import { ExpRelacionForm } from "../components/ExpRelacionForm";
+import { ModalAssociateExp } from "../components/ModalAssociateExp";
+import { ModalAssociateExistExp } from "../components/ModalAssociateExistExp";
 import { api } from "../lib/axios";
-import { createTreeNodes, findId } from "../utils";
-import { RelationsModal } from "./RelationsModal";
+import { useRouter } from "next/router";
+import daysjs from "dayjs";
 
 const { Paragraph, Text } = Typography;
-const { info } = Modal;
+const { info, confirm } = Modal;
+const { DirectoryTree } = Tree;
 
-export function ArbolExp({ exp: { id, desc, codigo } }) {
-  // console.log({ id, desc, codigo });
-  const { data, isLoading, isError } = useGetArbolExpByGdeId(id);
+export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const [searchData, setSearchData] = useState([]);
   const [showEmpty, setShowEmpty] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedKeys, setSelectedKeys] = useState([id]);
+  const [openInfo, setOpenInfo] = useState(false);
+  const [selectedNodeData, setNodeData] = useState({});
+  const [expandedKeys, setExpandedKeys] = useState([]);
+  const [autoExpandParent, setAutoExpandParent] = useState(true);
 
-  const onSelect = (selectedKeys, info) => {
-    setSelectedKeys(selectedKeys);
-  };
+  // Obtener datos de la relacion
+  const { data, isLoading, isSuccess } = useGetArbolExpByGdeId(id);
 
-  const updateNotesMutation = useMutation(
-    (body) => {
-      const { id, notas } = body;
-      return api.put(`/expedientes-relaciones/${id}`, {
-        data: { notas },
-      });
-    },
-    {
-      // Optimistically update the cache value on mutate, but store
-      // the old value and return it so that it's accessible in case of
-      // an error
-      onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp", id]);
+  const treeData = data && data.length > 0 ? createTreeNodes(data[0], 6) : [];
 
-        const previousValue = queryClient.getQueryData(["arbolExp", id]);
-
-        return previousValue;
-      },
-      // On failure, roll back to the previous value
-      onError: (err, variables, previousValue) => {
-        message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp", id], previousValue);
-      },
-      // After success or failure, refetch the todos query
-      onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp", id]);
-      },
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setExpandedKeys(getKeys(treeData));
     }
-  );
+  }, [data]);
 
-  const addExpMutation = useMutation(
-    (asFather) => {
-      return api.post("/expedientes-relaciones", {
-        data: asFather
-          ? {
-              parent: {
-                expId: searchData[0].ID,
-                expCode: searchData[0].CODIGO,
-                descripcion: searchData[0].DESCRIPCION.substring(0, 255),
-              },
-              child: {
-                expId: id,
-                expCode: codigo,
-                descripcion: desc,
-              },
-            }
-          : {
-              parent: {
-                expId: id,
-                expCode: codigo,
-                descripcion: desc,
-              },
-              child: {
-                expId: searchData[0].ID,
-                expCode: searchData[0].CODIGO,
-                descripcion: searchData[0].DESCRIPCION.substring(0, 255),
-              },
-            },
-      });
+  const removeExpMutation = useMutation(
+    (id) => {
+      return api.put(`/expedientes-relaciones/deleterel/${id}`);
     },
     {
       // Optimistically update the cache value on mutate, but store
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp", id]);
+        await queryClient.cancelQueries(["arbolExp"]);
 
-        const previousValue = queryClient.getQueryData(["arbolExp", id]);
+        const previousValue = queryClient.getQueryData([
+          "arbolExp",
+          selectedNodeData.expId,
+        ]);
 
         return previousValue;
       },
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp", id], previousValue);
+        queryClient.setQueryData(
+          ["arbolExp", selectedNodeData.expId],
+          previousValue
+        );
       },
       onSuccess: (data, variables, context) => {
-        message.success("Asociacion creada correctamente");
-        handleReset();
+        message.success("Asociacion eliminada correctamente");
+        // handleReset();
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp", id]);
-        Modal.destroyAll();
+        queryClient.invalidateQueries(["arbolExp"]);
+        // Modal.destroyAll();
       },
     }
   );
 
-  const updateExpRelMutation = useMutation(
-    () => {
-      return api.put(
-        `/expedientes-relaciones/updaterel/${findId(selectedKeys[0], data[0])}`,
-        {
-          data: {
-            child: {
-              expId: searchData[0].ID,
-              expCode: searchData[0].CODIGO,
-              descripcion: searchData[0].DESCRIPCION.substring(0, 255),
-            },
-          },
-        }
-      );
-    },
-    {
-      // Optimistically update the cache value on mutate, but store
-      // the old value and return it so that it's accessible in case of
-      // an error
-      onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp", id]);
-
-        const previousValue = queryClient.getQueryData(["arbolExp", id]);
-
-        return previousValue;
-      },
-      // On failure, roll back to the previous value
-      onError: (err, variables, previousValue) => {
-        message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp", id], previousValue);
-      },
-      onSuccess: (data, variables, context) => {
-        message.success("Asociacion creada correctamente");
-        handleReset();
-      },
-      // After success or failure, refetch the todos query
-      onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp", id]);
-        Modal.destroyAll();
-      },
-    }
-  );
-
-  const handleSubmit = async (values) => {
-    const { year, number } = values;
-
-    setIsSearching(true);
-    const { data: expedientes } = await axios.get(
-      `/api/gdeexps/${year}/${number}`
-    );
-
-    queryClient.invalidateQueries("expedientes");
-
-    setIsSearching(false);
-
-    const hasResults = expedientes.length > 0;
-
-    setSearchData(expedientes);
-    setShowEmpty(!hasResults);
-  };
-
-  const handleReset = () => {
-    setSearchData([]);
-    setShowEmpty(false);
-  };
-
-  const handleEditNotes = (id, value) => {
-    updateNotesMutation.mutate({ id, notas: value });
-  };
-
-  const showConfirm = () => {
+  // modal para crear una nueva relacion
+  const showDrawerRelate = () => {
     info({
-      title: "Indique el tipo de asociación que desea realizar",
-      content: (
-        <Space>
-          {data.length === 0 && (
-            <Button
-              icon={<ArrowUpOutlined />}
-              onClick={() => addExpMutation.mutate(true)}
-            >
-              Asociar como Padre
-            </Button>
-          )}
-          <Button
-            icon={<ArrowDownOutlined />}
-            onClick={() => {
-              if (data.length === 0) {
-                addExpMutation.mutate(false);
-              } else {
-                updateExpRelMutation.mutate();
-              }
-            }}
-          >
-            Asociar como Hijo
-          </Button>
-        </Space>
-      ),
-      centered: true,
-      footer: null,
-      closable: true,
-      width: 500,
-    });
-  };
-
-  const showRelations = (id) => {
-    info({
-      title: "Editar las relaciones del expediente",
+      title: "Buscar expediente a asociar",
       content: (
         <QueryClientProvider client={queryClient}>
-          <RelationsModal id={id} />
+          <ModalAssociateExp
+            targetExp={{
+              ID: id,
+              DESCRIPCION: desc,
+              CODIGO: codigo,
+              ESTADO: estado,
+            }}
+          />
         </QueryClientProvider>
       ),
       centered: true,
       footer: null,
       closable: true,
-      width: 500,
-      icon: null,
+      width: 800,
     });
   };
 
-  if (isError)
-    return (
-      <Result
-        status="500"
-        title="500"
-        subTitle="Disculpe, hubo un error al cargar el expediente."
-      />
-    );
+  // mostrar modal para asociar hijo a expediente existente
+  const showDrawerRelateChild = (nodeData) => {
+    info({
+      title: "Buscar expediente a asociar",
+      content: (
+        <QueryClientProvider client={queryClient}>
+          <ModalAssociateExistExp
+            targetExp={nodeData}
+            existingIds={getKeys(treeData)}
+          />
+        </QueryClientProvider>
+      ),
+      centered: true,
+      footer: null,
+      closable: true,
+      width: 800,
+    });
+  };
 
-  if (isLoading) return <Skeleton active />;
+  const handleDelete = (id) => {
+    confirm({
+      title: "Esta seguro que desea eliminar esta relacion?",
+      icon: <ExclamationCircleFilled />,
+      content:
+        "Esta accion no se puede deshacer. Todos los elementos asociados a este expediente seran eliminados.",
+      onOk() {
+        removeExpMutation.mutate(id);
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  };
 
-  // console.log({ data });
+  const onExpand = (expandedKeysValue) => {
+    // if not set autoExpandParent to false, if children expanded, parent can not collapse.
+    // or, you can remove all expanded children keys.
+    setExpandedKeys(expandedKeysValue);
+    setAutoExpandParent(false);
+  };
+  // console.log(data);
 
-  // console.log(data[0]);
-
-  const treeData = data && data.length > 0 ? createTreeNodes(data[0]) : {};
-
-  // console.log({ treeData });
+  // console.log(treeData);
 
   return (
-    <Space direction="vertical" size="middle" style={{ display: "flex" }}>
-      {data.length > 0 ? (
-        <>
-          <Text strong>
-            Esta es la estructura a la que pertenece el expediente:
-          </Text>
-          <Tree
-            showLine
-            showIcon
-            defaultExpandAll
-            selectedKeys={selectedKeys}
-            onSelect={onSelect}
-            treeData={[treeData]}
-            titleRender={(nodeData) => {
-              return (
-                <Space>
-                  <span>{nodeData.title}</span>
-                  <Popover
-                    title="Descripcion"
-                    content={
-                      <Space direction="vertical">
-                        <Paragraph
-                          style={{ width: 300, wordBreak: "break-word" }}
-                        >
-                          {nodeData.desc}
-                        </Paragraph>
-                        <Text strong>Notas</Text>
-                        <Paragraph
-                          editable={{
-                            onChange: (value) =>
-                              handleEditNotes(nodeData.expId, value),
+    <Row gutter={[16, 16]} justify="center">
+      <Col span={24}>
+        <Space size="middle" direction="vertical" style={{ width: "100%" }}>
+          {isLoading && <Spin size="large" />}
+          {data && isSuccess && Object.keys(treeData).length > 0 && (
+            <DirectoryTree
+              selectable={false}
+              showLine
+              showIcon
+              treeData={[treeData]}
+              expandedKeys={expandedKeys}
+              autoExpandParent={autoExpandParent}
+              onExpand={onExpand}
+              titleRender={(nodeData) => {
+                return (
+                  <Space>
+                    <Space>
+                      {nodeData.key === String(id) ? (
+                        <Text
+                          style={{ width: 400 }}
+                          ellipsis={{
+                            tooltip: `${nodeData.title}${
+                              nodeData.desc ? " - " : ""
+                            }${nodeData.desc ?? ""}`,
                           }}
-                          style={{ width: 200, wordBreak: "break-word" }}
+                          strong
+                          mark
                         >
-                          {nodeData.notes}
-                        </Paragraph>
-                      </Space>
-                    }
-                    trigger="click"
-                  >
+                          {`${nodeData.title}${nodeData.desc ? " - " : ""}${
+                            nodeData.desc ?? ""
+                          }`}
+                        </Text>
+                      ) : (
+                        <Text
+                          style={{ width: 400 }}
+                          ellipsis={{
+                            tooltip: `${nodeData.title}${
+                              nodeData.desc ? " - " : ""
+                            }${nodeData.desc ?? ""}`,
+                          }}
+                        >
+                          {`${nodeData.title}${nodeData.desc ? " - " : ""}${
+                            nodeData.desc ?? ""
+                          }`}
+                        </Text>
+                      )}
+                      <Tag color="geekblue">{nodeData.tag || "N/D"}</Tag>
+                    </Space>
                     <Tooltip title="Ver informacion">
-                      <Button type="text" icon={<InfoCircleOutlined />} />
+                      <Button
+                        onClick={() => {
+                          setNodeData(nodeData);
+                          setOpenInfo(true);
+                        }}
+                        type="text"
+                        icon={<InfoCircleOutlined />}
+                      />
                     </Tooltip>
-                  </Popover>
-                  <Tooltip title="Agregar hijo">
-                    <Button
-                      type="text"
-                      icon={<FolderAddOutlined />}
-                      onClick={() => showRelations(nodeData.key)}
-                    />
-                  </Tooltip>
-                  {/* </Popconfirm> */}
-                  {/* <Button
-                  type="link"
-                  icon={<ExportOutlined />}
-                  onClick={() => router.push(`/movimientos/${nodeData.key}`)}
-                /> */}
-                </Space>
-              );
-            }}
-          />
-        </>
-      ) : (
-        <Empty description="No hay asociaciones">
-          <Text strong>
-            Puede utilizar el formulario debajo para buscar un expediente y
-            asociarlo
-          </Text>
-        </Empty>
-      )}
+                    <Tooltip title="Agregar hijo">
+                      <Button
+                        type="text"
+                        icon={<FolderAddOutlined />}
+                        disabled={!nodeData.isEditable}
+                        onClick={() => {
+                          setNodeData(nodeData);
+                          showDrawerRelateChild(nodeData);
+                        }}
+                      />
+                    </Tooltip>
+                    <Tooltip
+                      title={`${
+                        !nodeData.children
+                          ? "Eliminar la relacion"
+                          : "Para eliminar la relacion, primero elimine los hijos"
+                      }`}
+                    >
+                      <Button
+                        type="text"
+                        disabled={nodeData.children}
+                        icon={<DeleteOutlined twoToneColor="#eb2f96" />}
+                        onClick={() => {
+                          setNodeData(nodeData);
+                          handleDelete(nodeData.expId);
+                        }}
+                      />
+                    </Tooltip>
+                    {nodeData.isExp && (
+                      <Tooltip title={`Navegar a detalles`}>
+                        <Button
+                          type="text"
+                          icon={<LinkOutlined />}
+                          onClick={() =>
+                            router.push(`/detalles/${nodeData.key}`)
+                          }
+                        />
+                      </Tooltip>
+                    )}
+                  </Space>
+                );
+              }}
+            />
+          )}
+          {data && data.length === 0 && (
+            <Empty description="No hay asociaciones">
+              <Button type="primary" onClick={() => showDrawerRelate()}>
+                Crear asociacion
+              </Button>
+            </Empty>
+          )}
+          {showEmpty && (
+            <Col span={24}>
+              <Card bordered={false} style={{ width: "100%" }}>
+                <Empty description="No se encontro el expediente solicitado. Verifique los datos ingresados" />
+              </Card>
+            </Col>
+          )}
+        </Space>
 
-      {showEmpty && (
-        <Col span={24}>
-          <Card bordered={false} style={{ width: "100%" }}>
-            <Empty description="No se encontraron resultados. Verifique los valores ingresados" />
-          </Card>
-        </Col>
-      )}
-      <SearchExpForm
-        handleSubmit={handleSubmit}
-        handleReset={handleReset}
-        isSearching={isSearching}
-      />
-      {searchData.length > 0 && (
-        <Col span={24}>
-          <List
-            itemLayout="horizontal"
-            size="large"
-            dataSource={[
-              {
-                code: searchData[0].CODIGO,
-                description: searchData[0].DESCRIPCION,
-              },
-            ]}
-            loading={isSearching}
-            renderItem={(item, index) => (
-              <List.Item
-                actions={[
-                  <Button icon={<ApartmentOutlined />} onClick={showConfirm}>
-                    Asociar
-                  </Button>,
-                ]}
-              >
-                <List.Item.Meta
-                  avatar={<Avatar icon={<FolderOutlined />} />}
-                  title={item.code}
-                  description={item.description}
-                />
-              </List.Item>
+        <Drawer
+          title="Informacion del expediente"
+          placement="right"
+          onClose={() => setOpenInfo(false)}
+          open={openInfo}
+        >
+          <Space direction="vertical">
+            <Text strong>Descripcion</Text>
+            <Paragraph>{selectedNodeData.desc}</Paragraph>
+            {selectedNodeData.isExp && (
+              <>
+                <Text strong>Fecha creación</Text>
+                <Paragraph>
+                  {daysjs(selectedNodeData.created).format("DD/MM/YYYY")}
+                </Paragraph>
+              </>
             )}
-          />
-        </Col>
-      )}
-    </Space>
+            <QueryClientProvider client={queryClient}>
+              <ExpRelacionForm
+                id={selectedNodeData.expId}
+                handleSuccess={() => setOpenInfo(false)}
+              />
+            </QueryClientProvider>
+          </Space>
+        </Drawer>
+      </Col>
+    </Row>
   );
 }

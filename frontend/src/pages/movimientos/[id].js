@@ -23,6 +23,7 @@ import ReactExport from "react-data-export";
 import { FileExcelOutlined } from "@ant-design/icons";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { ArbolExp } from "../../components/ArbolExp";
+import { useHasRelPermission } from "../../hooks/useHasRelPermission";
 
 const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
@@ -33,6 +34,8 @@ const { Text } = Typography;
 export default function Movimiento() {
   const router = useRouter();
   const [expId, setExpId] = useState(router.query.id);
+
+  const hasRelsPermissions = useHasRelPermission();
 
   const [activeKey, setActiveKey] = useState("item-1");
 
@@ -216,6 +219,12 @@ export default function Movimiento() {
     },
   ];
 
+  const extraItem = {
+    "item-1": <MovExport />,
+    "item-2": <DocsExport />,
+    "item-3": null,
+  };
+
   return (
     <MainLayout>
       <Row gutter={[16, 16]} justify="center">
@@ -224,7 +233,7 @@ export default function Movimiento() {
             title={`Expediente: ${data[0].EXPEDIENTE}`}
             bordered={false}
             style={{ width: "100%", minHeight: "300px" }}
-            extra={activeKey === "item-1" ? <MovExport /> : <DocsExport />}
+            extra={extraItem[activeKey]}
           >
             {data.length === 0 && (
               <Alert
@@ -263,19 +272,22 @@ export default function Movimiento() {
                       />
                     ),
                   },
-                  {
-                    key: "item-3",
-                    label: "Jerarquia",
-                    children: (
-                      <ArbolExp
-                        exp={{
-                          id: expId,
-                          desc: data[0].DESCRIPCION,
-                          codigo: data[0].EXPEDIENTE,
-                        }}
-                      />
-                    ),
-                  },
+                  hasRelsPermissions
+                    ? {
+                        key: "item-3",
+                        label: "Jerarquia",
+                        children: (
+                          <ArbolExp
+                            exp={{
+                              id: expId,
+                              desc: data[0].DESCRIPCION,
+                              codigo: data[0].EXPEDIENTE,
+                              estado: data[0].ESTADO,
+                            }}
+                          />
+                        ),
+                      }
+                    : null,
                 ]}
               />
             )}

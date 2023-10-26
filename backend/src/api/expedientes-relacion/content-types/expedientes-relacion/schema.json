@@ -14,12 +14,12 @@
   "attributes": {
     "expId": {
       "type": "biginteger",
-      "required": true,
+      "required": false,
       "unique": true
     },
     "expCode": {
       "type": "string",
-      "required": true,
+      "required": false,
       "unique": true
     },
     "descripcion": {
@@ -50,6 +50,16 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::expediente-tipo.expediente-tipo"
+    },
+    "isExp": {
+      "type": "boolean",
+      "required": true
+    },
+    "title": {
+      "type": "string"
+    },
+    "fechaCreacion": {
+      "type": "datetime"
     }
   }
 }

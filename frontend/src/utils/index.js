@@ -1,6 +1,5 @@
-import { FolderOutlined } from "@ant-design/icons";
+import { FileOutlined, FolderOutlined } from "@ant-design/icons";
 import { parseISO, differenceInDays } from "date-fns";
-import esLocale from "date-fns/locale/es";
 
 export const setStatus = (state) => {
   switch (state) {
@@ -80,9 +79,11 @@ export function createTreeNodes(response, maxDepth = 0, currentDepth = 0) {
     response.attributes.children.data.length > 0;
 
   let formattedResponse = {
-    title: response.attributes.expCode,
-    key: response.attributes.expId,
-    // icon: <FolderOutlined />,
+    title: response.attributes.expCode ?? response.attributes.title,
+    key:
+      response.attributes.expId ??
+      `${response.id} - ${response.attributes.title}`,
+    icon: response.attributes.isExp ? <FolderOutlined /> : <FileOutlined />,
     desc: response.attributes.descripcion,
     notes: response.attributes.notas,
     expId: response.id,
@@ -92,6 +93,8 @@ export function createTreeNodes(response, maxDepth = 0, currentDepth = 0) {
         ? response.attributes.expediente_tipo.data.attributes.nombre
         : "",
     isEditable: currentDepth < maxDepth,
+    isExp: response.attributes.isExp,
+    created: response.attributes.fechaCreacion,
   };
 
   if (hasChildren && currentDepth < maxDepth) {
