@@ -31,7 +31,7 @@ import { Controller, useForm } from "react-hook-form";
 const { TextArea } = Input;
 
 export function ModalAssociateExp({ targetExp }) {
-  console.log({ targetExp });
+  // console.log({ targetExp });
   const queryClient = useQueryClient();
   const [searchData, setSearchData] = useState([]);
   const [isSearching, setIsSearching] = useState(false);

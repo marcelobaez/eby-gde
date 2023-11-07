@@ -1,5 +1,5 @@
 import {
-  ArrowDownOutlined,
+  ApartmentOutlined,
   FolderOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
@@ -12,8 +12,8 @@ import {
   Empty,
   Avatar,
   Space,
-  message,
   Result,
+  message,
   Divider,
   Flex,
   Form,
@@ -30,21 +30,20 @@ import { Controller, useForm } from "react-hook-form";
 
 const { TextArea } = Input;
 
-export function ModalAssociateExistExp({ targetExp, existingIds }) {
+export function ModalAssociateExpAlt({ targetExp, existingIds }) {
   // console.log({ targetExp });
-  // console.log(existingIds);
   const queryClient = useQueryClient();
   const [searchData, setSearchData] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showEmpty, setShowEmpty] = useState(false);
 
+  const inputRef = useRef(null);
+  const [name, setName] = useState("");
+
   const { data: tagsData } = useQuery(
     "tags",
     async () => await api.get("/expedientes-tipos")
   );
-
-  const inputRef = useRef(null);
-  const [name, setName] = useState("");
 
   const handleSearch = async (values) => {
     const { year, number } = values;
@@ -70,19 +69,90 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
   };
 
   const addExpMutation = useMutation(
-    () => {
-      return api.put(`/expedientes-relaciones/updaterel/${targetExp.expId}`, {
+    (asFather) => {
+      return api.post("/expedientes-relaciones", {
+        data: asFather
+          ? {
+              parent: {
+                expId: searchData[0].ID,
+                expCode: searchData[0].CODIGO,
+                descripcion: searchData[0].DESCRIPCION.substring(0, 255),
+                fechaCreacion: searchData[0].FECHA_CREACION,
+                isExp: true,
+              },
+              child: {
+                expId: targetExp.ID,
+                expCode: targetExp.CODIGO,
+                descripcion: targetExp.DESCRIPCION.substring(0, 255),
+                fechaCreacion: targetExp.FECHA_CREACION,
+                isExp: targetExp.IS_EXPEDIENTE,
+              },
+            }
+          : {
+              parent: {
+                expId: targetExp.ID,
+                expCode: targetExp.CODIGO,
+                descripcion: targetExp.DESCRIPCION.substring(0, 255),
+                fechaCreacion: targetExp.FECHA_CREACION,
+                isExp: targetExp.IS_EXPEDIENTE,
+              },
+              child: {
+                expId: searchData[0].ID,
+                expCode: searchData[0].CODIGO,
+                descripcion: searchData[0].DESCRIPCION.substring(0, 255),
+                fechaCreacion: searchData[0].FECHA_CREACION,
+                isExp: true,
+              },
+            },
+      });
+    },
+    {
+      // Optimistically update the cache value on mutate, but store
+      // the old value and return it so that it's accessible in case of
+      // an error
+      onMutate: async (text) => {
+        await queryClient.cancelQueries(["arbolExp", targetExp.ID]);
+
+        const previousValue = queryClient.getQueryData([
+          "arbolExp",
+          targetExp.ID,
+        ]);
+
+        return previousValue;
+      },
+      // On failure, roll back to the previous value
+      onError: (err, variables, previousValue) => {
+        message.error(err.response.data);
+        queryClient.setQueryData(["arbolExp", targetExp.ID], previousValue);
+      },
+      onSuccess: (data, variables, context) => {
+        message.success("Asociacion creada correctamente");
+      },
+      // After success or failure, refetch the todos query
+      onSettled: () => {
+        queryClient.invalidateQueries(["arbolExp", targetExp.ID]);
+        Modal.destroyAll();
+      },
+    }
+  );
+
+  const addCustomExpFatherMutation = useMutation(
+    (body) => {
+      const { title, notas } = body;
+      return api.post(`/expedientes-relaciones`, {
         data: {
-          child: {
-            expId: searchData[0].ID,
-            expCode: searchData[0].CODIGO,
-            descripcion: searchData[0].DESCRIPCION.substring(0, 255),
-            fechaCreacion: searchData[0].FECHA_CREACION,
-            isExp: true,
+          parent: {
+            title,
+            notas,
+            isExp: false,
           },
-          existingChild: targetExp.children
-            ? targetExp.children.map((child) => child.expId)
-            : [],
+          child: {
+            expId: targetExp.ID,
+            expCode: targetExp.CODIGO,
+            descripcion: targetExp.DESCRIPCION.substring(0, 255),
+            fechaCreacion: targetExp.FECHA_CREACION,
+            isExp: targetExp.IS_EXPEDIENTE,
+          },
         },
       });
     },
@@ -91,11 +161,11 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp"]);
+        await queryClient.cancelQueries(["arbolExp", targetExp.ID]);
 
         const previousValue = queryClient.getQueryData([
           "arbolExp",
-          targetExp.key,
+          targetExp.ID,
         ]);
 
         return previousValue;
@@ -103,15 +173,14 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp"], previousValue);
+        queryClient.setQueryData(["arbolExp", targetExp.ID], previousValue);
       },
       onSuccess: (data, variables, context) => {
-        message.success("Asociacion creada correctamente");
-        handleReset();
+        message.success("Relacion actualizada");
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp"]);
+        queryClient.invalidateQueries(["arbolExp", targetExp.ID]);
         Modal.destroyAll();
       },
     }
@@ -119,34 +188,34 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
 
   const addCustomExpChildMutation = useMutation(
     (body) => {
-      const { title, notas, expediente_tipo } = body;
-      return api.put(
-        `/expedientes-relaciones/updaterelcustom/${targetExp.expId}`,
-        {
-          data: {
-            child: {
-              title,
-              notas,
-              expediente_tipo,
-              isExp: false,
-            },
-            existingChild: targetExp.children
-              ? targetExp.children.map((child) => child.expId)
-              : [],
+      const { title, notas } = body;
+      return api.post(`/expedientes-relaciones/createcustom`, {
+        data: {
+          child: {
+            title,
+            notas,
+            isExp: false,
           },
-        }
-      );
+          parent: {
+            expId: targetExp.ID,
+            expCode: targetExp.CODIGO,
+            descripcion: targetExp.DESCRIPCION.substring(0, 255),
+            fechaCreacion: targetExp.FECHA_CREACION,
+            isExp: targetExp.IS_EXPEDIENTE,
+          },
+        },
+      });
     },
     {
       // Optimistically update the cache value on mutate, but store
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp"]);
+        await queryClient.cancelQueries(["arbolExp", targetExp.ID]);
 
         const previousValue = queryClient.getQueryData([
           "arbolExp",
-          targetExp.key,
+          targetExp.ID,
         ]);
 
         return previousValue;
@@ -154,14 +223,14 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp", targetExp.key], previousValue);
+        queryClient.setQueryData(["arbolExp", targetExp.ID], previousValue);
       },
       onSuccess: (data, variables, context) => {
         message.success("Relacion actualizada");
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp"]);
+        queryClient.invalidateQueries(["arbolExp", targetExp.ID]);
         Modal.destroyAll();
       },
     }
@@ -197,21 +266,12 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
   );
 
   const onSubmit = (data) => {
-    addCustomExpChildMutation.mutate(data);
+    if (data.asFather) {
+      addCustomExpFatherMutation.mutate(data);
+    } else {
+      addCustomExpChildMutation.mutate(data);
+    }
   };
-
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      title: "",
-      notas: "",
-      asFather: false,
-      expediente_tipo: null,
-    },
-  });
 
   const onNameChange = (event) => {
     setName(event.target.value);
@@ -224,8 +284,21 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
     }
   };
 
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      title: "",
+      notas: "",
+      asFather: true,
+    },
+  });
+
   return (
     <Space size="middle" direction="vertical" style={{ width: "100%" }}>
+      <Divider plain>Asociar con expediente</Divider>
       <SearchExpForm
         // layout="vertical"
         withTitle={false}
@@ -233,13 +306,6 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
         handleReset={handleReset}
         isSearching={isSearching}
       />
-      {showEmpty && (
-        <Col span={24}>
-          <Card bordered={false} style={{ width: "100%" }}>
-            <Empty description="No se encontro el expediente solicitado. Verifique los datos ingresados" />
-          </Card>
-        </Col>
-      )}
       {searchData.length === 0 && (
         <>
           <Divider plain>Asociar sin expediente</Divider>
@@ -276,7 +342,7 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
                   name="asFather"
                   control={control}
                   render={({ field }) => (
-                    <Radio.Group disabled {...field}>
+                    <Radio.Group {...field}>
                       <Radio value={true}>Padre</Radio>
                       <Radio value={false}>Hijo</Radio>
                     </Radio.Group>
@@ -361,8 +427,14 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
                 <List.Item
                   actions={[
                     <Button
-                      icon={<ArrowDownOutlined />}
-                      onClick={() => addExpMutation.mutate()}
+                      icon={<ApartmentOutlined />}
+                      onClick={() => addExpMutation.mutate(true)}
+                    >
+                      Asociar como Padre
+                    </Button>,
+                    <Button
+                      icon={<ApartmentOutlined />}
+                      onClick={() => addExpMutation.mutate(false)}
                     >
                       Asociar como Hijo
                     </Button>,
@@ -383,9 +455,16 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
         existingIds.includes(String(searchData[0].ID)) && (
           <Result
             status="error"
-            title="No se puede asociar un expediente que ya existe en el arbol"
+            title="No se puede asociar un expediente a si mismo"
           />
         )}
+      {showEmpty && (
+        <Col span={24}>
+          <Card bordered={false} style={{ width: "100%" }}>
+            <Empty description="No se encontro el expediente solicitado. Verifique los datos ingresados" />
+          </Card>
+        </Col>
+      )}
     </Space>
   );
 }

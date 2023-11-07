@@ -106,20 +106,51 @@ export function createTreeNodes(response, maxDepth = 0, currentDepth = 0) {
     });
   }
 
-  if (response.attributes.parent && response.attributes.parent.data) {
-    let parent = createTreeNodes(
-      response.attributes.parent.data,
-      maxDepth,
-      currentDepth - 1
-    );
-    if (!parent.children) {
-      parent.children = [];
+  return formattedResponse;
+}
+
+export function reverseJsonTree(jsonObj, seenExpIds = new Map()) {
+  const reversedJson = { ...jsonObj }; // Create a copy of the original JSON
+  const expId = reversedJson.attributes.expId;
+
+  if (expId) {
+    if (!seenExpIds.has(expId)) {
+      seenExpIds.set(expId, reversedJson);
     }
-    parent.children.push(formattedResponse);
-    return parent;
-  } else {
-    return formattedResponse;
+    const parentData = reversedJson.attributes.parent.data;
+    if (parentData) {
+      if (!parentData.attributes.children)
+        parentData.attributes.children = { data: [] };
+      const existingChild = parentData.attributes.children.data.find(
+        (child) => child.attributes.expId === expId
+      );
+      if (existingChild) {
+        parentData.attributes.children.data[
+          parentData.attributes.children.data.indexOf(existingChild)
+        ] = seenExpIds.get(expId);
+      } else {
+        parentData.attributes.children.data.push(seenExpIds.get(expId));
+      }
+      return reverseJsonTree(parentData, seenExpIds);
+    }
   }
+
+  return reversedJson;
+}
+export function getTreeDepth(treeData) {
+  if (!treeData || !treeData.children) {
+    return 0;
+  }
+
+  let maxDepth = 0;
+  treeData.children.forEach((child) => {
+    const childDepth = getTreeDepth(child);
+    if (childDepth > maxDepth) {
+      maxDepth = childDepth;
+    }
+  });
+
+  return maxDepth + 1;
 }
 
 export function getKeys(obj) {

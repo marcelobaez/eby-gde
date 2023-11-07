@@ -125,6 +125,7 @@ module.exports = createCoreController(
           {
             data: {
               children: [String(newChild.id)],
+              autor: ctx.state.user.id,
             },
           }
         );
@@ -151,6 +152,7 @@ module.exports = createCoreController(
           {
             data: {
               children: [String(expHijo[0].id)],
+              autor: ctx.state.user.id,
             },
           }
         );

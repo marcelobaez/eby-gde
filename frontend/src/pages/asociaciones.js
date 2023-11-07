@@ -29,13 +29,19 @@ import { useQueryClient, QueryClientProvider, useMutation } from "react-query";
 import { SearchExpForm } from "../components/SearchExpForm";
 import axios from "axios";
 import { useGetArbolExpByGdeId } from "../hooks/useArbolExp";
-import { createTreeNodes, getKeys } from "../utils/index";
+import {
+  createTreeNodes,
+  getKeys,
+  reverseJsonTree,
+  getTreeDepth,
+} from "../utils/index";
 import { ExpRelacionForm } from "../components/ExpRelacionForm";
 import { ModalAssociateExp } from "../components/ModalAssociateExp";
 import { ModalAssociateExistExp } from "../components/ModalAssociateExistExp";
 import { api } from "../lib/axios";
 import { useRouter } from "next/router";
 import daysjs from "dayjs";
+import { ModalAssociateExpAlt } from "../components/ModalAssociateExpAlt";
 
 const { Paragraph, Text } = Typography;
 const { info, confirm } = Modal;
@@ -52,6 +58,8 @@ export default function Documents() {
   const [treeData, setTreeData] = useState({});
   const [expandedKeys, setExpandedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [currDepth, setCurrDepth] = useState(0);
+  // console.log("currDepth", currDepth);
 
   // Obtener datos de la relacion
   const { data, isLoading, isSuccess } = useGetArbolExpByGdeId(selectedExpId, {
@@ -59,10 +67,15 @@ export default function Documents() {
   });
 
   useEffect(() => {
-    if (data && isSuccess && data.length > 0) {
-      const newTreeData = createTreeNodes(data[0], 6);
+    if (data && data.length > 0) {
+      const reversedJson = reverseJsonTree(data[0]);
+      const newTreeData = createTreeNodes(reversedJson, 4);
+      setCurrDepth(getTreeDepth(newTreeData));
       setExpandedKeys(getKeys(newTreeData));
       setTreeData(newTreeData);
+    } else {
+      setTreeData({});
+      setExpandedKeys([]);
     }
   }, [data]);
 
@@ -110,6 +123,25 @@ export default function Documents() {
       content: (
         <QueryClientProvider client={queryClient}>
           <ModalAssociateExp targetExp={searchData[0]} />
+        </QueryClientProvider>
+      ),
+      centered: true,
+      footer: null,
+      closable: true,
+      width: 800,
+    });
+  };
+
+  // modal para crear una nueva relacion
+  const showDrawerRelateAlt = (targetExp) => {
+    info({
+      title: "Buscar expediente a asociar",
+      content: (
+        <QueryClientProvider client={queryClient}>
+          <ModalAssociateExpAlt
+            targetExp={targetExp}
+            existingIds={getKeys(treeData)}
+          />
         </QueryClientProvider>
       ),
       centered: true,
@@ -187,6 +219,14 @@ export default function Documents() {
     setExpandedKeys(expandedKeysValue);
     setAutoExpandParent(false);
   };
+
+  const hasNoParentAndChildren =
+    data &&
+    data.length > 0 &&
+    data[0].attributes.children.data.length === 0 &&
+    data[0].attributes.parent.data === null;
+
+  // console.log(hasNoParentAndChildren);
   // console.log(data);
 
   // console.log(treeData);
@@ -218,113 +258,140 @@ export default function Documents() {
                 </Col>
               </Row>
               {isLoading && <Spin size="large" />}
-              {data && isSuccess && Object.keys(treeData).length > 0 && (
-                <>
-                  <Tree
-                    selectable={false}
-                    showLine
-                    showIcon
-                    treeData={[treeData]}
-                    expandedKeys={expandedKeys}
-                    autoExpandParent={autoExpandParent}
-                    onExpand={onExpand}
-                    titleRender={(nodeData) => {
-                      return (
-                        <Space>
+              {data &&
+                isSuccess &&
+                Object.keys(treeData).length > 0 &&
+                !hasNoParentAndChildren && (
+                  <>
+                    <Tree
+                      selectable={false}
+                      showLine
+                      showIcon
+                      treeData={[treeData]}
+                      expandedKeys={expandedKeys}
+                      autoExpandParent={autoExpandParent}
+                      onExpand={onExpand}
+                      titleRender={(nodeData) => {
+                        return (
                           <Space>
-                            {nodeData.key === String(selectedExpId) ? (
-                              <Text
-                                style={{ width: 400 }}
-                                ellipsis={{
-                                  tooltip: `${nodeData.title}${
+                            <Space>
+                              {nodeData.key === String(selectedExpId) ? (
+                                <Text
+                                  style={{ width: 400 }}
+                                  ellipsis={{
+                                    tooltip: `${nodeData.title}${
+                                      nodeData.desc ? " - " : ""
+                                    }${nodeData.desc ?? ""}`,
+                                  }}
+                                  strong
+                                  mark
+                                >
+                                  {`${nodeData.title}${
                                     nodeData.desc ? " - " : ""
-                                  }${nodeData.desc ?? ""}`,
-                                }}
-                                strong
-                                mark
-                              >
-                                {`${nodeData.title}${
-                                  nodeData.desc ? " - " : ""
-                                }${nodeData.desc ?? ""}`}
-                              </Text>
-                            ) : (
-                              <Text
-                                style={{ width: 400 }}
-                                ellipsis={{
-                                  tooltip: `${nodeData.title}${
+                                  }${nodeData.desc ?? ""}`}
+                                </Text>
+                              ) : (
+                                <Text
+                                  style={{ width: 400 }}
+                                  ellipsis={{
+                                    tooltip: `${nodeData.title}${
+                                      nodeData.desc ? " - " : ""
+                                    }${nodeData.desc ?? ""}`,
+                                  }}
+                                >
+                                  {`${nodeData.title}${
                                     nodeData.desc ? " - " : ""
-                                  }${nodeData.desc ?? ""}`,
-                                }}
-                              >
-                                {`${nodeData.title}${
-                                  nodeData.desc ? " - " : ""
-                                }${nodeData.desc ?? ""}`}
-                              </Text>
-                            )}
-                            <Tag color="geekblue">{nodeData.tag || "N/D"}</Tag>
-                          </Space>
-                          <Tooltip title="Ver informacion">
-                            <Button
-                              onClick={() => {
-                                setNodeData(nodeData);
-                                setOpenInfo(true);
-                              }}
-                              type="text"
-                              icon={<InfoCircleOutlined />}
-                            />
-                          </Tooltip>
-                          <Tooltip title="Agregar hijo">
-                            <Button
-                              type="text"
-                              icon={<FolderAddOutlined />}
-                              disabled={!nodeData.isEditable}
-                              onClick={() => {
-                                setNodeData(nodeData);
-                                showDrawerRelateChild(nodeData);
-                              }}
-                            />
-                          </Tooltip>
-                          <Tooltip
-                            title={`${
-                              nodeData.isLeaf
-                                ? "Eliminar la relacion"
-                                : "Para eliminar la relacion, primero elimine los hijos"
-                            }`}
-                          >
-                            <Button
-                              type="text"
-                              disabled={nodeData.children}
-                              icon={<DeleteOutlined />}
-                              onClick={() => {
-                                setNodeData(nodeData);
-                                handleDelete(nodeData.expId);
-                              }}
-                            />
-                          </Tooltip>
-                          {nodeData.isExp && (
-                            <Tooltip title={`Navegar a detalles`}>
+                                  }${nodeData.desc ?? ""}`}
+                                </Text>
+                              )}
+                              <Tag color="geekblue">
+                                {nodeData.tag || "N/D"}
+                              </Tag>
+                            </Space>
+                            <Tooltip title="Ver informacion">
                               <Button
+                                onClick={() => {
+                                  setNodeData(nodeData);
+                                  setOpenInfo(true);
+                                }}
                                 type="text"
-                                icon={<LinkOutlined />}
-                                onClick={() =>
-                                  router.push(`/detalles/${nodeData.key}`)
-                                }
+                                icon={<InfoCircleOutlined />}
                               />
                             </Tooltip>
-                          )}
-                        </Space>
-                      );
-                    }}
-                  />
-                </>
-              )}
-              {data && data.length === 0 && (
-                <Empty description="No hay asociaciones">
-                  <Button type="primary" onClick={() => showDrawerRelate()}>
-                    Crear asociacion
-                  </Button>
-                </Empty>
-              )}
+                            {nodeData.isExp && (
+                              <Tooltip
+                                title={`${
+                                  nodeData.isEditable
+                                    ? "Agregar hijo"
+                                    : "Limite de profundidad alcanzado"
+                                }`}
+                              >
+                                <Button
+                                  type="text"
+                                  disabled={!nodeData.isEditable}
+                                  icon={<FolderAddOutlined />}
+                                  onClick={() => {
+                                    setNodeData(nodeData);
+                                    if (
+                                      nodeData.key === treeData.key &&
+                                      currDepth < 3
+                                    ) {
+                                      showDrawerRelateAlt({
+                                        ID: nodeData.key,
+                                        CODIGO: nodeData.title,
+                                        DESCRIPCION: nodeData.desc,
+                                        IS_EXPEDIENTE: nodeData.isExp,
+                                      });
+                                    } else {
+                                      showDrawerRelateChild(nodeData);
+                                    }
+                                  }}
+                                />
+                              </Tooltip>
+                            )}
+                            <Tooltip
+                              title={`${
+                                nodeData.isLeaf
+                                  ? "Eliminar la relacion"
+                                  : "Para eliminar la relacion, primero elimine los hijos"
+                              }`}
+                            >
+                              <Button
+                                type="text"
+                                disabled={nodeData.children}
+                                icon={<DeleteOutlined />}
+                                onClick={() => {
+                                  setNodeData(nodeData);
+                                  handleDelete(nodeData.expId);
+                                }}
+                              />
+                            </Tooltip>
+                            {nodeData.isExp && (
+                              <Tooltip title={`Navegar a detalles`}>
+                                <Button
+                                  type="text"
+                                  icon={<LinkOutlined />}
+                                  onClick={() =>
+                                    router.push(`/detalles/${nodeData.key}`)
+                                  }
+                                />
+                              </Tooltip>
+                            )}
+                          </Space>
+                        );
+                      }}
+                    />
+                  </>
+                )}
+              {data &&
+                (data.length === 0 || hasNoParentAndChildren) &&
+                !showEmpty && (
+                  <Empty description="No hay asociaciones">
+                    <Button type="primary" onClick={() => showDrawerRelate()}>
+                      Crear asociacion
+                    </Button>
+                  </Empty>
+                )}
               {showEmpty && (
                 <Col span={24}>
                   <Card bordered={false} style={{ width: "100%" }}>
