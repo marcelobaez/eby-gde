@@ -341,6 +341,7 @@ export default function Documents() {
                                         CODIGO: nodeData.title,
                                         DESCRIPCION: nodeData.desc,
                                         IS_EXPEDIENTE: nodeData.isExp,
+                                        children: nodeData.children,
                                       });
                                     } else {
                                       showDrawerRelateChild(nodeData);

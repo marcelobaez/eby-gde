@@ -32,6 +32,7 @@ const { TextArea } = Input;
 
 export function ModalAssociateExpAlt({ targetExp, existingIds }) {
   // console.log({ targetExp });
+  // console.log({ targetExp });
   const queryClient = useQueryClient();
   const [searchData, setSearchData] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -68,42 +69,21 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
     setShowEmpty(false);
   };
 
-  const addExpMutation = useMutation(
-    (asFather) => {
-      return api.post("/expedientes-relaciones", {
-        data: asFather
-          ? {
-              parent: {
-                expId: searchData[0].ID,
-                expCode: searchData[0].CODIGO,
-                descripcion: searchData[0].DESCRIPCION.substring(0, 255),
-                fechaCreacion: searchData[0].FECHA_CREACION,
-                isExp: true,
-              },
-              child: {
-                expId: targetExp.ID,
-                expCode: targetExp.CODIGO,
-                descripcion: targetExp.DESCRIPCION.substring(0, 255),
-                fechaCreacion: targetExp.FECHA_CREACION,
-                isExp: targetExp.IS_EXPEDIENTE,
-              },
-            }
-          : {
-              parent: {
-                expId: targetExp.ID,
-                expCode: targetExp.CODIGO,
-                descripcion: targetExp.DESCRIPCION.substring(0, 255),
-                fechaCreacion: targetExp.FECHA_CREACION,
-                isExp: targetExp.IS_EXPEDIENTE,
-              },
-              child: {
-                expId: searchData[0].ID,
-                expCode: searchData[0].CODIGO,
-                descripcion: searchData[0].DESCRIPCION.substring(0, 255),
-                fechaCreacion: searchData[0].FECHA_CREACION,
-                isExp: true,
-              },
-            },
+  const addExpMutationCustom = useMutation(
+    () => {
+      return api.put(`/expedientes-relaciones/updaterel/${targetExp.expId}`, {
+        data: {
+          child: {
+            expId: searchData[0].ID,
+            expCode: searchData[0].CODIGO,
+            descripcion: searchData[0].DESCRIPCION.substring(0, 255),
+            fechaCreacion: searchData[0].FECHA_CREACION,
+            isExp: true,
+          },
+          existingChild: targetExp.children
+            ? targetExp.children.map((child) => child.expId)
+            : [],
+        },
       });
     },
     {
@@ -111,7 +91,7 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp", targetExp.ID]);
+        await queryClient.cancelQueries(["arbolExp"]);
 
         const previousValue = queryClient.getQueryData([
           "arbolExp",
@@ -123,14 +103,66 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp", targetExp.ID], previousValue);
+        queryClient.setQueryData(["arbolExp"], previousValue);
+      },
+      onSuccess: (data, variables, context) => {
+        message.success("Asociacion creada correctamente");
+        handleReset();
+      },
+      // After success or failure, refetch the todos query
+      onSettled: () => {
+        queryClient.invalidateQueries(["arbolExp"]);
+        Modal.destroyAll();
+      },
+    }
+  );
+
+  const addExpMutation = useMutation(
+    () => {
+      return api.post("/expedientes-relaciones", {
+        data: {
+          parent: {
+            expId: searchData[0].ID,
+            expCode: searchData[0].CODIGO,
+            descripcion: searchData[0].DESCRIPCION.substring(0, 255),
+            fechaCreacion: searchData[0].FECHA_CREACION,
+            isExp: true,
+          },
+          child: {
+            expId: targetExp.ID,
+            expCode: targetExp.CODIGO,
+            descripcion: targetExp.DESCRIPCION.substring(0, 255),
+            fechaCreacion: targetExp.FECHA_CREACION,
+            isExp: targetExp.IS_EXPEDIENTE,
+          },
+        },
+      });
+    },
+    {
+      // Optimistically update the cache value on mutate, but store
+      // the old value and return it so that it's accessible in case of
+      // an error
+      onMutate: async (text) => {
+        await queryClient.cancelQueries(["arbolExp"]);
+
+        const previousValue = queryClient.getQueryData([
+          "arbolExp",
+          targetExp.ID,
+        ]);
+
+        return previousValue;
+      },
+      // On failure, roll back to the previous value
+      onError: (err, variables, previousValue) => {
+        message.error(err.response.data);
+        queryClient.setQueryData(["arbolExp"], previousValue);
       },
       onSuccess: (data, variables, context) => {
         message.success("Asociacion creada correctamente");
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp", targetExp.ID]);
+        queryClient.invalidateQueries(["arbolExp"]);
         Modal.destroyAll();
       },
     }
@@ -161,7 +193,7 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp", targetExp.ID]);
+        await queryClient.cancelQueries(["arbolExp"]);
 
         const previousValue = queryClient.getQueryData([
           "arbolExp",
@@ -173,14 +205,14 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp", targetExp.ID], previousValue);
+        queryClient.setQueryData(["arbolExp"], previousValue);
       },
       onSuccess: (data, variables, context) => {
         message.success("Relacion actualizada");
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp", targetExp.ID]);
+        queryClient.invalidateQueries(["arbolExp"]);
         Modal.destroyAll();
       },
     }
@@ -211,7 +243,7 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
       // the old value and return it so that it's accessible in case of
       // an error
       onMutate: async (text) => {
-        await queryClient.cancelQueries(["arbolExp", targetExp.ID]);
+        await queryClient.cancelQueries(["arbolExp"]);
 
         const previousValue = queryClient.getQueryData([
           "arbolExp",
@@ -223,14 +255,14 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
       // On failure, roll back to the previous value
       onError: (err, variables, previousValue) => {
         message.error(err.response.data);
-        queryClient.setQueryData(["arbolExp", targetExp.ID], previousValue);
+        queryClient.setQueryData(["arbolExp"], previousValue);
       },
       onSuccess: (data, variables, context) => {
         message.success("Relacion actualizada");
       },
       // After success or failure, refetch the todos query
       onSettled: () => {
-        queryClient.invalidateQueries(["arbolExp", targetExp.ID]);
+        queryClient.invalidateQueries(["arbolExp"]);
         Modal.destroyAll();
       },
     }
@@ -428,13 +460,13 @@ export function ModalAssociateExpAlt({ targetExp, existingIds }) {
                   actions={[
                     <Button
                       icon={<ApartmentOutlined />}
-                      onClick={() => addExpMutation.mutate(true)}
+                      onClick={() => addExpMutation.mutate()}
                     >
                       Asociar como Padre
                     </Button>,
                     <Button
                       icon={<ApartmentOutlined />}
-                      onClick={() => addExpMutation.mutate(false)}
+                      onClick={() => addExpMutationCustom.mutate()}
                     >
                       Asociar como Hijo
                     </Button>,

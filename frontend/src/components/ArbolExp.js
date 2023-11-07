@@ -282,6 +282,7 @@ export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
                                   CODIGO: nodeData.title,
                                   DESCRIPCION: nodeData.desc,
                                   IS_EXPEDIENTE: nodeData.isExp,
+                                  children: nodeData.children,
                                 });
                               } else {
                                 showDrawerRelateChild(nodeData);
