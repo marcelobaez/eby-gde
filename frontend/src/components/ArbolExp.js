@@ -17,6 +17,7 @@ import {
 } from "antd";
 import {
   DeleteOutlined,
+  DownOutlined,
   ExclamationCircleFilled,
   FolderAddOutlined,
   InfoCircleOutlined,
@@ -137,6 +138,7 @@ export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
           <ModalAssociateExpAlt
             targetExp={targetExp}
             existingIds={getKeys(treeData)}
+            onlyChild={currDepth === 4}
           />
         </QueryClientProvider>
       ),
@@ -212,6 +214,7 @@ export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
                 showIcon
                 treeData={[treeData]}
                 expandedKeys={expandedKeys}
+                switcherIcon={<DownOutlined />}
                 autoExpandParent={autoExpandParent}
                 onExpand={onExpand}
                 titleRender={(nodeData) => {
@@ -273,12 +276,10 @@ export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
                             disabled={!nodeData.isEditable}
                             onClick={() => {
                               setNodeData(nodeData);
-                              if (
-                                nodeData.key === treeData.key &&
-                                currDepth < 3
-                              ) {
+                              if (nodeData.key === treeData.key) {
                                 showDrawerRelateAlt({
-                                  ID: nodeData.key,
+                                  ID: nodeData.expId,
+                                  EXP_ID: nodeData.key,
                                   CODIGO: nodeData.title,
                                   DESCRIPCION: nodeData.desc,
                                   IS_EXPEDIENTE: nodeData.isExp,
@@ -345,8 +346,9 @@ export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
           placement="right"
           onClose={() => setOpenInfo(false)}
           open={openInfo}
+          width={430}
         >
-          <Space direction="vertical">
+          <Space direction="vertical" style={{ width: "100%" }}>
             <Text strong>Descripcion</Text>
             <Paragraph>{selectedNodeData.desc}</Paragraph>
             {selectedNodeData.isExp && (

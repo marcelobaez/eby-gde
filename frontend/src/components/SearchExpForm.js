@@ -9,6 +9,7 @@ export const SearchExpForm = ({
   layout = "inline",
   justify = "center",
   withTitle = true,
+  initialValues,
 }) => {
   const [form] = Form.useForm();
   const [, forceUpdate] = useState({});
@@ -34,7 +35,8 @@ export const SearchExpForm = ({
           onFinish={onFinish}
           form={form}
           initialValues={{
-            year: new Date().getFullYear(),
+            year: initialValues?.year || new Date().getFullYear(),
+            number: initialValues?.number || null,
           }}
           requiredMark={false}
         >

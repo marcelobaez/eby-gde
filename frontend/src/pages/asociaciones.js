@@ -15,11 +15,15 @@ import {
   Tag,
   Spin,
   message,
+  List,
+  Avatar,
 } from "antd";
 import {
   DeleteOutlined,
+  DownOutlined,
   ExclamationCircleFilled,
   FolderAddOutlined,
+  FolderOutlined,
   InfoCircleOutlined,
   LinkOutlined,
 } from "@ant-design/icons";
@@ -59,12 +63,23 @@ export default function Documents() {
   const [expandedKeys, setExpandedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [currDepth, setCurrDepth] = useState(0);
-  // console.log("currDepth", currDepth);
+
+  let year = parseInt(router.query.year);
+  let number = parseInt(router.query.number);
+
+  // Ensure year is not less than 2019
+  year = year >= 2019 ? year : 2019;
 
   // Obtener datos de la relacion
   const { data, isLoading, isSuccess } = useGetArbolExpByGdeId(selectedExpId, {
     enabled: Boolean(selectedExpId),
   });
+
+  useEffect(() => {
+    if (year && number) {
+      handleSubmitMain({ year, number });
+    }
+  }, [year, number]);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -141,6 +156,7 @@ export default function Documents() {
           <ModalAssociateExpAlt
             targetExp={targetExp}
             existingIds={getKeys(treeData)}
+            onlyChild={currDepth === 4}
           />
         </QueryClientProvider>
       ),
@@ -188,6 +204,11 @@ export default function Documents() {
     setSearchData(expedientes);
     if (hasResults) {
       setSelectedExpId(expedientes[0].ID);
+      // Update the URL with the query parameters
+      router.push({
+        pathname: "/asociaciones",
+        query: { year: values.year, number: values.number },
+      });
     }
     setShowEmpty(!hasResults);
   };
@@ -226,11 +247,6 @@ export default function Documents() {
     data[0].attributes.children.data.length === 0 &&
     data[0].attributes.parent.data === null;
 
-  // console.log(hasNoParentAndChildren);
-  // console.log(data);
-
-  // console.log(treeData);
-
   return (
     <MainLayout>
       <Row gutter={[16, 16]} justify="center">
@@ -253,6 +269,7 @@ export default function Documents() {
                       handleSubmit={handleSubmitMain}
                       handleReset={handleReset}
                       isSearching={isSearching}
+                      initialValues={{ year, number }}
                     />
                   </Card>
                 </Col>
@@ -261,6 +278,7 @@ export default function Documents() {
               {data &&
                 isSuccess &&
                 Object.keys(treeData).length > 0 &&
+                !showEmpty &&
                 !hasNoParentAndChildren && (
                   <>
                     <Tree
@@ -270,6 +288,7 @@ export default function Documents() {
                       treeData={[treeData]}
                       expandedKeys={expandedKeys}
                       autoExpandParent={autoExpandParent}
+                      switcherIcon={<DownOutlined />}
                       onExpand={onExpand}
                       titleRender={(nodeData) => {
                         return (
@@ -332,12 +351,10 @@ export default function Documents() {
                                   icon={<FolderAddOutlined />}
                                   onClick={() => {
                                     setNodeData(nodeData);
-                                    if (
-                                      nodeData.key === treeData.key &&
-                                      currDepth < 3
-                                    ) {
+                                    if (nodeData.key === treeData.key) {
                                       showDrawerRelateAlt({
-                                        ID: nodeData.key,
+                                        ID: nodeData.expId,
+                                        EXP_ID: nodeData.key,
                                         CODIGO: nodeData.title,
                                         DESCRIPCION: nodeData.desc,
                                         IS_EXPEDIENTE: nodeData.isExp,
@@ -387,11 +404,30 @@ export default function Documents() {
               {data &&
                 (data.length === 0 || hasNoParentAndChildren) &&
                 !showEmpty && (
-                  <Empty description="No hay asociaciones">
-                    <Button type="primary" onClick={() => showDrawerRelate()}>
-                      Crear asociacion
-                    </Button>
-                  </Empty>
+                  <Row justify="center" gutter={16}>
+                    <Col span={24}>
+                      <Space
+                        direction="vertical"
+                        align="center"
+                        style={{ width: "100%" }}
+                      >
+                        <Space>
+                          <Text strong>{searchData[0].CODIGO}</Text>
+                          <div style={{ width: 600 }}>
+                            <Text ellipsis>{searchData[0].DESCRIPCION}</Text>
+                          </div>
+                        </Space>
+                        <Empty description="No hay asociaciones">
+                          <Button
+                            type="primary"
+                            onClick={() => showDrawerRelate()}
+                          >
+                            Crear asociacion
+                          </Button>
+                        </Empty>
+                      </Space>
+                    </Col>
+                  </Row>
                 )}
               {showEmpty && (
                 <Col span={24}>
@@ -408,8 +444,9 @@ export default function Documents() {
             placement="right"
             onClose={() => setOpenInfo(false)}
             open={openInfo}
+            width={430}
           >
-            <Space direction="vertical">
+            <Space direction="vertical" style={{ width: "100%" }}>
               <Text strong>Descripcion</Text>
               <Paragraph>{selectedNodeData.desc}</Paragraph>
               {selectedNodeData.isExp && (

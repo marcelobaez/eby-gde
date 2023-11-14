@@ -140,7 +140,11 @@ export function ExpRelacionForm({ id, handleSuccess }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {data && !data.attributes.isExp && (
-        <Form.Item label="Titulo">
+        <Form.Item
+          label="Titulo"
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
+        >
           <Controller
             name="title"
             control={control}
@@ -153,7 +157,11 @@ export function ExpRelacionForm({ id, handleSuccess }) {
           />
         </Form.Item>
       )}
-      <Form.Item label="Notas">
+      <Form.Item
+        label="Notas"
+        labelCol={{ span: 24 }}
+        wrapperCol={{ span: 24 }}
+      >
         <Controller
           name="notas"
           control={control}
@@ -168,7 +176,11 @@ export function ExpRelacionForm({ id, handleSuccess }) {
           )}
         />
       </Form.Item>
-      <Form.Item label="Categoria">
+      <Form.Item
+        label="Categoria"
+        labelCol={{ span: 24 }}
+        wrapperCol={{ span: 24 }}
+      >
         <Controller
           name="expediente_tipo"
           control={control}

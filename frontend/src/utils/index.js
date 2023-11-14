@@ -1,4 +1,9 @@
-import { FileOutlined, FolderOutlined } from "@ant-design/icons";
+import {
+  FileOutlined,
+  FileTwoTone,
+  FolderOutlined,
+  FolderTwoTone,
+} from "@ant-design/icons";
 import { parseISO, differenceInDays } from "date-fns";
 
 export const setStatus = (state) => {
@@ -83,7 +88,11 @@ export function createTreeNodes(response, maxDepth = 0, currentDepth = 0) {
     key:
       response.attributes.expId ??
       `${response.id} - ${response.attributes.title}`,
-    icon: response.attributes.isExp ? <FolderOutlined /> : <FileOutlined />,
+    icon: response.attributes.isExp ? (
+      <FolderTwoTone twoToneColor="#f59e0b" />
+    ) : (
+      <FileTwoTone />
+    ),
     desc: response.attributes.descripcion,
     notes: response.attributes.notas,
     expId: response.id,
@@ -117,7 +126,7 @@ export function reverseJsonTree(jsonObj, seenExpIds = new Map()) {
     if (!seenExpIds.has(expId)) {
       seenExpIds.set(expId, reversedJson);
     }
-    const parentData = reversedJson.attributes.parent.data;
+    const parentData = reversedJson.attributes.parent?.data || null;
     if (parentData) {
       if (!parentData.attributes.children)
         parentData.attributes.children = { data: [] };

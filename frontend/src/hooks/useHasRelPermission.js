@@ -5,10 +5,16 @@ import { api } from "../lib/axios";
 export function useHasRelPermission() {
   const { data: session, status } = useSession();
   const loading = status === "loading";
-  const { data, isLoading, error } = useQuery("userData", async () => {
-    const { data } = await api.get("/users/me");
-    return data;
-  });
+  const { data, isLoading, error } = useQuery(
+    "userData",
+    async () => {
+      const { data } = await api.get("/users/me");
+      return data;
+    },
+    {
+      enabled: !!session,
+    }
+  );
 
   if (!loading && !isLoading && !error) {
     if (session && data && data.isAdmin) {
