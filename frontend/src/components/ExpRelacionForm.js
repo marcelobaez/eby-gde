@@ -22,11 +22,13 @@ export function ExpRelacionForm({ id, handleSuccess }) {
   // Obtener las etiquetas de la base de datos
   const { data: tagsData } = useQuery(
     "tags",
-    async () => await api.get("/expedientes-tipos")
+    async () =>
+      await api.get(
+        "/expedientes-tipos?pagination[pageSize]=1000&sort=nombre:asc"
+      )
   );
   const inputRef = useRef(null);
   const [name, setName] = useState("");
-  // console.log(tagsData);
 
   // Obtener los datos de la relación
   const { data, isLoading, isError } = useGetExpRelationById(id);

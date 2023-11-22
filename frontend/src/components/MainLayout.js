@@ -7,6 +7,7 @@ import {
   EyeOutlined,
   SearchOutlined,
   ApartmentOutlined,
+  SettingFilled,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -58,7 +59,7 @@ export function MainLayout({ children, title = "This is the default title" }) {
         </div>
         <Menu
           theme="dark"
-          defaultOpenKeys={["sub1"]}
+          defaultOpenKeys={["sub1", "asociaciones"]}
           mode="inline"
           selectedKeys={selectedItem}
           items={[
@@ -84,6 +85,13 @@ export function MainLayout({ children, title = "This is the default title" }) {
                       key: "asociaciones",
                       label: <Link href="/asociaciones">Jerarquias</Link>,
                       icon: <ApartmentOutlined />,
+                      children: [
+                        {
+                          key: "categorias",
+                          label: <Link href="/categorias">Categorias</Link>,
+                          icon: <SettingFilled />,
+                        },
+                      ],
                     }
                   : null,
               ],

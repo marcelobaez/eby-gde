@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     const { year: anio, number: numero } = req.query;
 
-    const sql = `SELECT id, descripcion, tipo_documento || anio || numero || codigo_reparticion_actuacion || '-MENT' as codigo, estado, fecha_creacion
+    const sql = `SELECT id, descripcion, tipo_documento || '-' || anio || '-' || numero || '--' || codigo_reparticion_actuacion || '-MENT' as codigo, estado, fecha_creacion
     FROM EE_GED.EE_EXPEDIENTE_ELECTRONICO
     WHERE ANIO = :anio
     AND NUMERO = :numero`;

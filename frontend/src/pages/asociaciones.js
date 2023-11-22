@@ -63,12 +63,10 @@ export default function Documents() {
   const [expandedKeys, setExpandedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [currDepth, setCurrDepth] = useState(0);
-
-  let year = parseInt(router.query.year);
-  let number = parseInt(router.query.number);
-
-  // Ensure year is not less than 2019
-  year = year >= 2019 ? year : 2019;
+  const [searchParams, setSearchParams] = useState({
+    year: router.query.year || new Date().getFullYear(),
+    number: router.query.number,
+  });
 
   // Obtener datos de la relacion
   const { data, isLoading, isSuccess } = useGetArbolExpByGdeId(selectedExpId, {
@@ -76,10 +74,13 @@ export default function Documents() {
   });
 
   useEffect(() => {
-    if (year && number) {
+    if (router.query.year && router.query.number) {
+      const year = parseInt(router.query.year);
+      const number = parseInt(router.query.number);
+      setSearchParams({ year, number });
       handleSubmitMain({ year, number });
     }
-  }, [year, number]);
+  }, [router.query.year, router.query.number]);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -134,7 +135,7 @@ export default function Documents() {
   // modal para crear una nueva relacion
   const showDrawerRelate = () => {
     info({
-      title: "Buscar expediente a asociar",
+      title: "Crear asociacion",
       content: (
         <QueryClientProvider client={queryClient}>
           <ModalAssociateExp targetExp={searchData[0]} />
@@ -217,6 +218,15 @@ export default function Documents() {
     setSearchData([]);
     setShowEmpty(false);
     setSelectedExpId(null);
+
+    setSearchParams({
+      year: new Date().getFullYear(),
+      number: null,
+    });
+    // Update the URL with the query parameters
+    router.push({
+      pathname: "/asociaciones",
+    });
   };
 
   const handleDelete = (id) => {
@@ -269,7 +279,10 @@ export default function Documents() {
                       handleSubmit={handleSubmitMain}
                       handleReset={handleReset}
                       isSearching={isSearching}
-                      initialValues={{ year, number }}
+                      initialValues={{
+                        year: searchParams.year,
+                        number: searchParams.number,
+                      }}
                     />
                   </Card>
                 </Col>
