@@ -1,5 +1,4 @@
 import { MainLayout } from "../components/MainLayout";
-import { SearchExpContainer } from "../components/SearchExpContainer";
 import { Alert, Skeleton } from "antd";
 
 export default function Index() {
@@ -24,11 +23,7 @@ export default function Index() {
     );
   }
 
-  return (
-    <MainLayout>
-      <SearchExpContainer data={data} />
-    </MainLayout>
-  );
+  return <MainLayout>{/* <SearchExpContainer data={data} /> */}</MainLayout>;
 }
 
 export async function getServerSideProps(context) {
