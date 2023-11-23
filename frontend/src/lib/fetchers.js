@@ -44,6 +44,10 @@ export const getListInfoByID = async (id) => {
           parseISO(exp.FECHA_CREACION),
           { locale: esLocale }
         ),
+        lifetimeDays: differenceInDays(
+          parseISO(exp.FECHA_OPERACION),
+          parseISO(exp.FECHA_CREACION)
+        ),
         stateColor: setStatus(exp.ESTADO),
         lifetimeColor: matchingEl.attributes.duracion_esperada
           ? getStatusByGivenDates(
