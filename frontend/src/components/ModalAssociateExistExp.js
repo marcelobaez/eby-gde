@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { api } from "../lib/axios";
 import { NonExpAssociateForm } from "./NonExpAssociateForm";
-import { SearchAssociateExpForm } from "./SearchAssociateexpForm";
+import { SearchAssociateExpForm } from "./SearchAssociateExpForm";
 
 export function ModalAssociateExistExp({ targetExp, existingIds }) {
   const queryClient = useQueryClient();

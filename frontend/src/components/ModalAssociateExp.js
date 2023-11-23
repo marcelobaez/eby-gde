@@ -3,7 +3,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { api } from "../lib/axios";
-import { SearchAssociateExpForm } from "./SearchAssociateexpForm";
+import { SearchAssociateExpForm } from "./SearchAssociateExpForm";
 import { NonExpAssociateForm } from "./NonExpAssociateForm";
 
 export function ModalAssociateExp({ targetExp }) {
