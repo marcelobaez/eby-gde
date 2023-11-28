@@ -50,9 +50,6 @@ export function ModalAssociateExpAlt({
             fechaCreacion: searchData[0].FECHA_CREACION,
             isExp: true,
           },
-          existingChild: targetExp.children
-            ? targetExp.children.map((child) => child.expId)
-            : [],
         },
       });
     },

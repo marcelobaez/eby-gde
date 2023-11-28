@@ -7,22 +7,13 @@ import {
   Typography,
   Space,
   Tree,
-  Tooltip,
   Button,
   Drawer,
   Modal,
-  Tag,
   Spin,
   message,
 } from "antd";
-import {
-  DeleteOutlined,
-  DownOutlined,
-  ExclamationCircleFilled,
-  FolderAddOutlined,
-  InfoCircleOutlined,
-  LinkOutlined,
-} from "@ant-design/icons";
+import { DownOutlined, ExclamationCircleFilled } from "@ant-design/icons";
 import { useQueryClient, QueryClientProvider, useMutation } from "react-query";
 import { useGetArbolExpByGdeId } from "../hooks/useArbolExp";
 import {
@@ -37,6 +28,7 @@ import { ModalAssociateExistExp } from "../components/ModalAssociateExistExp";
 import { api } from "../lib/axios";
 import { useRouter } from "next/router";
 import daysjs from "dayjs";
+import { TreeTitleRenderer } from "./TreeTitleRenderer";
 
 const { Paragraph, Text } = Typography;
 const { info, confirm } = Modal;
@@ -195,9 +187,6 @@ export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
     data.length > 0 &&
     data[0].attributes.children.data.length === 0 &&
     data[0].attributes.parent.data === null;
-  // console.log(data);
-
-  // console.log(treeData);
 
   return (
     <Row gutter={[16, 16]} justify="center">
@@ -219,108 +208,16 @@ export function ArbolExp({ exp: { id, desc, codigo, estado } }) {
                 onExpand={onExpand}
                 titleRender={(nodeData) => {
                   return (
-                    <Space>
-                      <Space>
-                        {nodeData.key === String(id) ? (
-                          <Text
-                            style={{ width: 400 }}
-                            ellipsis={{
-                              tooltip: `${nodeData.title}${
-                                nodeData.desc ? " - " : ""
-                              }${nodeData.desc ?? ""}`,
-                            }}
-                            strong
-                            mark
-                          >
-                            {`${nodeData.title}${nodeData.desc ? " - " : ""}${
-                              nodeData.desc ?? ""
-                            }`}
-                          </Text>
-                        ) : (
-                          <Text
-                            style={{ width: 400 }}
-                            ellipsis={{
-                              tooltip: `${nodeData.title}${
-                                nodeData.desc ? " - " : ""
-                              }${nodeData.desc ?? ""}`,
-                            }}
-                          >
-                            {`${nodeData.title}${nodeData.desc ? " - " : ""}${
-                              nodeData.desc ?? ""
-                            }`}
-                          </Text>
-                        )}
-                        <Tag color="geekblue">{nodeData.tag || "N/D"}</Tag>
-                      </Space>
-                      <Tooltip title="Ver informacion">
-                        <Button
-                          onClick={() => {
-                            setNodeData(nodeData);
-                            setOpenInfo(true);
-                          }}
-                          type="text"
-                          icon={<InfoCircleOutlined />}
-                        />
-                      </Tooltip>
-                      {nodeData.isExp && (
-                        <Tooltip
-                          title={`${
-                            nodeData.isEditable
-                              ? "Agregar hijo"
-                              : "Limite de profundidad alcanzado"
-                          }`}
-                        >
-                          <Button
-                            type="text"
-                            icon={<FolderAddOutlined />}
-                            disabled={!nodeData.isEditable}
-                            onClick={() => {
-                              setNodeData(nodeData);
-                              if (nodeData.key === treeData.key) {
-                                showDrawerRelateAlt({
-                                  ID: nodeData.expId,
-                                  EXP_ID: nodeData.key,
-                                  CODIGO: nodeData.title,
-                                  DESCRIPCION: nodeData.desc,
-                                  IS_EXPEDIENTE: nodeData.isExp,
-                                  children: nodeData.children,
-                                });
-                              } else {
-                                showDrawerRelateChild(nodeData);
-                              }
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                      <Tooltip
-                        title={`${
-                          !nodeData.children
-                            ? "Eliminar la relacion"
-                            : "Para eliminar la relacion, primero elimine los hijos"
-                        }`}
-                      >
-                        <Button
-                          type="text"
-                          disabled={nodeData.children}
-                          icon={<DeleteOutlined />}
-                          onClick={() => {
-                            setNodeData(nodeData);
-                            handleDelete(nodeData.expId);
-                          }}
-                        />
-                      </Tooltip>
-                      {nodeData.isExp && (
-                        <Tooltip title={`Navegar a detalles`}>
-                          <Button
-                            type="text"
-                            icon={<LinkOutlined />}
-                            onClick={() =>
-                              router.push(`/detalles/${nodeData.key}`)
-                            }
-                          />
-                        </Tooltip>
-                      )}
-                    </Space>
+                    <TreeTitleRenderer
+                      nodeData={nodeData}
+                      setNodeData={setNodeData}
+                      setOpenInfo={setOpenInfo}
+                      showDrawerRelateAlt={showDrawerRelateAlt}
+                      showDrawerRelateChild={showDrawerRelateChild}
+                      handleDelete={handleDelete}
+                      selectedExpId={id}
+                      treeData={treeData}
+                    />
                   );
                 }}
               />

@@ -390,7 +390,7 @@ module.exports = createCoreController(
     async updateExpRelation(ctx) {
       const { id } = ctx.request.params;
       const {
-        data: { child, existingChild },
+        data: { child },
       } = ctx.request.body;
 
       // buscar si existe un expediente hijo con el mismo ID
@@ -407,7 +407,7 @@ module.exports = createCoreController(
       );
 
       if (expHijo.length === 0) {
-        // si no existe un expediente hijo, crear el hijo y el padre y asociarlos
+        // si no existe un expediente hijo, crear el hijo y asociar al padre
         const newChild = await strapi.entityService.create(
           "api::expedientes-relacion.expedientes-relacion",
           {
@@ -419,7 +419,11 @@ module.exports = createCoreController(
           "api::expedientes-relacion.expedientes-relacion",
           id,
           {
-            data: { children: [...existingChild, String(newChild.id)] },
+            data: {
+              children: {
+                connect: [{ id: newChild.id }],
+              },
+            },
           }
         );
 
@@ -427,12 +431,16 @@ module.exports = createCoreController(
 
         return this.transformResponse(sanitizedResults);
       } else {
-        // si existe un expediente hijo, crear el padre y asociar el hijo
+        // si existe un expediente hijo, asociarlo al padre
         const { data, meta } = await strapi.entityService.update(
           "api::expedientes-relacion.expedientes-relacion",
           id,
           {
-            data: { children: [...existingChild, String(expHijo[0].id)] },
+            data: {
+              children: {
+                connect: [{ id: expHijo[0].id }],
+              },
+            },
           }
         );
 
@@ -442,7 +450,7 @@ module.exports = createCoreController(
     async updateCustomRelation(ctx) {
       const { id } = ctx.request.params;
       const {
-        data: { child, existingChild },
+        data: { child },
       } = ctx.request.body;
 
       const newChild = await strapi.entityService.create(
@@ -456,7 +464,11 @@ module.exports = createCoreController(
         "api::expedientes-relacion.expedientes-relacion",
         id,
         {
-          data: { children: [...existingChild, String(newChild.id)] },
+          data: {
+            children: {
+              connect: [{ id: newChild.id }],
+            },
+          },
         }
       );
 

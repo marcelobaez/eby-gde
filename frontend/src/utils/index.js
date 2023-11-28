@@ -106,12 +106,23 @@ export function createTreeNodes(response, maxDepth = 0, currentDepth = 0) {
     created: response.attributes.fechaCreacion,
   };
 
+  // if (hasChildren && currentDepth < maxDepth) {
+  //   formattedResponse.children = [];
+  //   response.attributes.children.data.forEach((child) => {
+  //     formattedResponse.children.push(
+  //       createTreeNodes(child, maxDepth, currentDepth + 1)
+  //     );
+  //   });
+  // }
+
   if (hasChildren && currentDepth < maxDepth) {
     formattedResponse.children = [];
-    response.attributes.children.data.forEach((child) => {
-      formattedResponse.children.push(
-        createTreeNodes(child, maxDepth, currentDepth + 1)
-      );
+    const totalChildren = response.attributes.children.data.length;
+    response.attributes.children.data.forEach((child, index) => {
+      const childNode = createTreeNodes(child, maxDepth, currentDepth + 1);
+      childNode.isFirst = index === 0;
+      childNode.isLast = index === totalChildren - 1;
+      formattedResponse.children.push(childNode);
     });
   }
 
@@ -193,6 +204,46 @@ export function findId(key, obj) {
     let result = findId(key, obj.attributes.parent.data);
     if (result) {
       return result;
+    }
+  }
+
+  return null;
+}
+export function findAdjacentExpId(tree, expId, direction) {
+  for (let i = 0; i < tree.length; i++) {
+    if (tree[i].expId === expId) {
+      if (direction === "before" && i > 0) {
+        return tree[i - 1].expId;
+      } else if (direction === "after" && i < tree.length - 1) {
+        return tree[i + 1].expId;
+      }
+      return null;
+    }
+
+    if (tree[i].children) {
+      const result = findAdjacentExpId(tree[i].children, expId, direction);
+      if (result) {
+        return result;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function findParentExpId(tree, expId) {
+  for (let i = 0; i < tree.length; i++) {
+    if (tree[i].children) {
+      for (let j = 0; j < tree[i].children.length; j++) {
+        if (tree[i].children[j].expId === expId) {
+          return tree[i].expId;
+        }
+      }
+
+      const result = findParentExpId(tree[i].children, expId);
+      if (result) {
+        return result;
+      }
     }
   }
 

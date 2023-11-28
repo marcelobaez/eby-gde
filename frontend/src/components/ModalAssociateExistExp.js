@@ -46,9 +46,6 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
             fechaCreacion: searchData[0].FECHA_CREACION,
             isExp: true,
           },
-          existingChild: targetExp.children
-            ? targetExp.children.map((child) => child.expId)
-            : [],
         },
       });
     },
@@ -96,9 +93,6 @@ export function ModalAssociateExistExp({ targetExp, existingIds }) {
               expediente_tipo,
               isExp: false,
             },
-            existingChild: targetExp.children
-              ? targetExp.children.map((child) => child.expId)
-              : [],
           },
         }
       );
