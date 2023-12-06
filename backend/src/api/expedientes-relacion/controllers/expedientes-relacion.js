@@ -370,10 +370,7 @@ module.exports = createCoreController(
             newParent.id,
             {
               data: {
-                children: [
-                  ...expHijo[0].children.map((child) => child.id),
-                  String(newParent.id),
-                ],
+                children: [String(expHijo[0].id)],
                 autor: ctx.state.user.id,
               },
             }

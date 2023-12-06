@@ -270,7 +270,9 @@ export function ModalAssociateExpAlt({
     {
       key: "2",
       label: "Sin expediente",
-      children: <NonExpAssociateForm onSubmit={onSubmit} />,
+      children: (
+        <NonExpAssociateForm onSubmit={onSubmit} allowFather={!onlyChild} />
+      ),
     },
   ];
 
