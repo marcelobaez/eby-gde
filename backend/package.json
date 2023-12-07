@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "@strapi/plugin-i18n": "^4.14.5",
-    "@strapi/plugin-users-permissions": "^4.14.5",
-    "@strapi/strapi": "^4.14.5",
+    "@strapi/plugin-users-permissions": "^4.15.5",
+    "@strapi/strapi": "^4.15.5",
     "better-sqlite3": "^7.6.2",
     "pg": "^8.6.0",
-    "strapi-plugin-import-export-entries": "^1.22.1"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^5.3.4",
+    "strapi-plugin-import-export-entries": "^1.22.1",
+    "styled-components": "^5.3.11"
   },
   "author": {
     "name": "A Strapi developer"
