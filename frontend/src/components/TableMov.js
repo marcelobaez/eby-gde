@@ -9,6 +9,7 @@ import {
   Space,
   Popconfirm,
   message,
+  ConfigProvider,
 } from "antd";
 import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
@@ -25,6 +26,15 @@ export function TableMov({ data }) {
   const queryClient = useQueryClient();
   const [selectedID, setSelectedID] = useState(null);
   const [value, setValue] = useState(0);
+
+  const [tableParams, setTableParams] = useState({
+    pagination: {
+      current: 1,
+      pageSize: 10,
+    },
+    order: "ascend",
+    field: ["attributes", "nombre"],
+  });
 
   const onCreate = (values) => {
     updateExpMutation.mutate({
@@ -229,14 +239,27 @@ export function TableMov({ data }) {
     },
   ];
 
+  const handleTableChange = (pagination, filters, sorter) => {
+    setTableParams({
+      pagination,
+      ...sorter,
+    });
+  };
+
   return (
-    <>
+    <ConfigProvider
+      renderEmpty={() => (
+        <Empty description={<span>No hay expedientes en su lista</span>} />
+      )}
+    >
       <Table
         columns={columns}
         rowKey="ID"
         dataSource={data}
         size="small"
         scroll={{ x: 1300 }}
+        pagination={tableParams.pagination}
+        onChange={handleTableChange}
       />
       <ModalSetDate
         visible={visible}
@@ -244,6 +267,6 @@ export function TableMov({ data }) {
         onCreate={onCreate}
         value={value}
       />
-    </>
+    </ConfigProvider>
   );
 }
