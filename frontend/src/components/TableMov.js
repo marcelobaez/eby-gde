@@ -10,6 +10,7 @@ import {
   Popconfirm,
   message,
   ConfigProvider,
+  Empty,
 } from "antd";
 import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";

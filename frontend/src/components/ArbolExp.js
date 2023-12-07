@@ -25,6 +25,7 @@ import {
 import { ExpRelacionForm } from "../components/ExpRelacionForm";
 import { ModalAssociateExp } from "../components/ModalAssociateExp";
 import { ModalAssociateExistExp } from "../components/ModalAssociateExistExp";
+import { ModalAssociateExpAlt } from "../components/ModalAssociateExpAlt";
 import { api } from "../lib/axios";
 import { useRouter } from "next/router";
 import daysjs from "dayjs";

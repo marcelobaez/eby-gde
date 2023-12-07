@@ -50,6 +50,7 @@ export function SearchAssociateExpForm({
                 <List.Item
                   actions={[
                     <Button
+                      key="asoc-father-btn"
                       disabled={!allowFather}
                       icon={<ApartmentOutlined />}
                       onClick={() => handleAssociate(true)}
@@ -57,6 +58,7 @@ export function SearchAssociateExpForm({
                       Asociar como Padre
                     </Button>,
                     <Button
+                      key="asoc-child-btn"
                       icon={<ApartmentOutlined />}
                       onClick={() => handleAssociate(false)}
                     >
