@@ -1,10 +1,10 @@
-import type { Schema, Attribute } from "@strapi/strapi";
+import type { Schema, Attribute } from '@strapi/strapi';
 
 export interface RelationsExpRel extends Schema.Component {
-  collectionName: "components_relations_exp_rels";
+  collectionName: 'components_relations_exp_rels';
   info: {
-    displayName: "ExpRel";
-    icon: "archive";
+    displayName: 'ExpRel';
+    icon: 'archive';
   };
   attributes: {
     expId: Attribute.BigInteger & Attribute.Required & Attribute.Unique;
@@ -13,10 +13,10 @@ export interface RelationsExpRel extends Schema.Component {
   };
 }
 
-declare module "@strapi/types" {
+declare module '@strapi/types' {
   export module Shared {
     export interface Components {
-      "relations.exp-rel": RelationsExpRel;
+      'relations.exp-rel': RelationsExpRel;
     }
   }
 }
