@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { getServerSession } from "next-auth/next";
 import { useQuery } from "react-query";
-import { getMovsById, getDocsById } from "../../lib/fetchers";
+import { getDocsById } from "../../lib/fetchers";
 import { MainLayout } from "../../components/MainLayout";
 import {
   Row,
@@ -22,8 +22,7 @@ import { useState } from "react";
 import ReactExport from "react-data-export";
 import { FileExcelOutlined } from "@ant-design/icons";
 import { authOptions } from "../api/auth/[...nextauth]";
-import { ArbolExp } from "../../components/ArbolExp";
-import { useHasRelPermission } from "../../hooks/useHasRelPermission";
+import axios from "axios";
 
 const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
@@ -33,18 +32,30 @@ const { Text } = Typography;
 
 export default function Movimiento() {
   const router = useRouter();
-  const [expId, setExpId] = useState(router.query.id);
-
-  const hasRelsPermissions = useHasRelPermission();
 
   const [activeKey, setActiveKey] = useState("item-1");
 
-  const { data, status } = useQuery(["movs", expId], () => getMovsById(expId));
-  const { data: docsData } = useQuery(["docs", expId], () =>
-    getDocsById(expId)
+  const {
+    data: movsData,
+    isLoading: isMovLoading,
+    isError: isMovError,
+  } = useQuery(
+    ["movsByID", router.query.id],
+    async () => await axios.get(`/api/gdemovs/${router.query.id}`),
+    {
+      enabled: !!router.query.id,
+    }
   );
 
-  if (status === "loading") {
+  const {
+    data: docsData,
+    isLoading: isDocsLoading,
+    isError: isDocsError,
+  } = useQuery(["docs", router.query.id], () => getDocsById(router.query.id), {
+    enabled: !!router.query.id,
+  });
+
+  if (isMovLoading || isDocsLoading) {
     return (
       <MainLayout>
         <Skeleton active />
@@ -52,7 +63,7 @@ export default function Movimiento() {
     );
   }
 
-  if (status === "error") {
+  if (isMovError || isDocsError) {
     return (
       <MainLayout>
         <Alert
@@ -67,14 +78,17 @@ export default function Movimiento() {
 
   const MovExport = () => (
     <ExcelFile
-      filename={`Movimientos Expediente: ${data[0].EXPEDIENTE}`}
+      filename={`Movimientos Expediente: ${movsData.data[0].EXPEDIENTE}`}
       element={
-        <Button disabled={data.length === 0} icon={<FileExcelOutlined />}>
+        <Button
+          disabled={movsData.data.length === 0}
+          icon={<FileExcelOutlined />}
+        >
           Exportar
         </Button>
       }
     >
-      <ExcelSheet data={data} name="Movimientos">
+      <ExcelSheet data={movsData.data} name="Movimientos">
         <ExcelColumn label="Orden" value="ORD_HIST" />
         <ExcelColumn
           label="Fecha"
@@ -94,7 +108,7 @@ export default function Movimiento() {
 
   const DocsExport = () => (
     <ExcelFile
-      filename={`Documentos Expediente: ${data[0].EXPEDIENTE}`}
+      filename={`Documentos Expediente: ${movsData.data[0].EXPEDIENTE}`}
       element={
         <Button disabled={docsData.length === 0} icon={<FileExcelOutlined />}>
           Exportar
@@ -219,31 +233,17 @@ export default function Movimiento() {
     },
   ];
 
-  const extraItem = {
-    "item-1": <MovExport />,
-    "item-2": <DocsExport />,
-    "item-3": null,
-  };
-
   return (
     <MainLayout>
       <Row gutter={[16, 16]} justify="center">
         <Col span={24}>
           <Card
-            title={`Expediente: ${data[0].EXPEDIENTE}`}
+            title={`Expediente: ${movsData.data[0].EXPEDIENTE}`}
             bordered={false}
             style={{ width: "100%", minHeight: "300px" }}
-            extra={extraItem[activeKey]}
+            extra={activeKey === "item-1" ? <MovExport /> : <DocsExport />}
           >
-            {data.length === 0 && (
-              <Alert
-                message="Aun no agregó expedientes"
-                description="Diríjase a la pestaña Seguimiento y agregue uno para seguirlo"
-                type="info"
-                showIcon
-              />
-            )}
-            {data.length > 0 && (
+            {movsData.data.length > 0 && (
               <Tabs
                 activeKey={activeKey}
                 onChange={setActiveKey}
@@ -254,7 +254,7 @@ export default function Movimiento() {
                     children: (
                       <Table
                         columns={columns}
-                        dataSource={data}
+                        dataSource={movsData.data}
                         size="middle"
                         rowKey="ID_MOV"
                       />
@@ -272,22 +272,19 @@ export default function Movimiento() {
                       />
                     ),
                   },
-                  hasRelsPermissions
-                    ? {
-                        key: "item-3",
-                        label: "Jerarquia",
-                        children: (
-                          <ArbolExp
-                            exp={{
-                              id: expId,
-                              desc: data[0].DESCRIPCION,
-                              codigo: data[0].EXPEDIENTE,
-                              estado: data[0].ESTADO,
-                            }}
-                          />
-                        ),
-                      }
-                    : null,
+                  // {
+                  //   key: "item-3",
+                  //   label: "Jerarquia",
+                  //   children: (
+                  //     <ArbolExp
+                  //       exp={{
+                  //         id: expId,
+                  //         desc: data[0].DESCRIPCION,
+                  //         codigo: data[0].EXPEDIENTE,
+                  //       }}
+                  //     />
+                  //   ),
+                  // },
                 ]}
               />
             )}

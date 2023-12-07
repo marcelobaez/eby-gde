@@ -1,0 +1,65 @@
+{
+  "kind": "collectionType",
+  "collectionName": "expedientes_relaciones",
+  "info": {
+    "singularName": "expedientes-relacion",
+    "pluralName": "expedientes-relaciones",
+    "displayName": "ExpedientesRelacion",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "expId": {
+      "type": "biginteger",
+      "required": false,
+      "unique": true
+    },
+    "expCode": {
+      "type": "string",
+      "required": false,
+      "unique": true
+    },
+    "descripcion": {
+      "type": "text"
+    },
+    "parent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::expedientes-relacion.expedientes-relacion",
+      "inversedBy": "children"
+    },
+    "children": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::expedientes-relacion.expedientes-relacion",
+      "mappedBy": "parent"
+    },
+    "notas": {
+      "type": "string"
+    },
+    "autor": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "expedientes_relacion"
+    },
+    "expediente_tipo": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::expediente-tipo.expediente-tipo"
+    },
+    "isExp": {
+      "type": "boolean",
+      "required": true
+    },
+    "title": {
+      "type": "string"
+    },
+    "fechaCreacion": {
+      "type": "datetime"
+    }
+  }
+}

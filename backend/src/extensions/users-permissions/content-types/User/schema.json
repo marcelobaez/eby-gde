@@ -5,11 +5,11 @@
     "singularName": "user",
     "pluralName": "users",
     "displayName": "User",
-    "name": "User"
+    "name": "User",
+    "description": ""
   },
   "options": {
-    "draftAndPublish": false,
-    "timestamps": true
+    "draftAndPublish": false
   },
   "attributes": {
     "username": {
@@ -74,6 +74,16 @@
     },
     "name": {
       "type": "string"
+    },
+    "isAdmin": {
+      "type": "boolean",
+      "default": false
+    },
+    "expedientes_relacion": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::expedientes-relacion.expedientes-relacion",
+      "mappedBy": "autor"
     }
   }
 }

@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "expedientes_tipos",
+  "info": {
+    "singularName": "expediente-tipo",
+    "pluralName": "expedientes-tipos",
+    "displayName": "ExpedientesTipos"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}

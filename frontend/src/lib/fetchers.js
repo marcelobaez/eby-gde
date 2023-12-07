@@ -1,9 +1,9 @@
 import axios from "axios";
-import qs from "qs";
 import { parseISO, differenceInDays, formatDistance } from "date-fns";
 import { setStatus, getStatusByGivenDates } from "../utils/index";
 import esLocale from "date-fns/locale/es";
 import { api } from "./axios";
+import qs from "qs";
 
 export const getListas = async () => {
   const { data } = await api.get("/listas");
@@ -136,4 +136,79 @@ export const getDocsById = async (id) => {
   const { data: gdedocs } = await axios.get(`/api/gdedocs/${id}`);
 
   return gdedocs;
+};
+
+export const getArbolExpById = async (id) => {
+  const query = qs.stringify(
+    {
+      filters: {
+        expId: {
+          $eq: id,
+        },
+      },
+      populate: [
+        //root
+        "parent",
+        "children",
+        "expediente_tipo",
+        "parent.children",
+        "parent.expediente_tipo",
+        "parent.children.expediente_tipo",
+        "parent.children.children",
+        "parent.children.children.expediente_tipo",
+        "parent.children.children.children",
+        "parent.children.children.children.expediente_tipo",
+        "parent.children.children.children.children",
+        "parent.children.children.children.children.expediente_tipo",
+        //level 1
+        "parent.parent",
+        "parent.parent.expediente_tipo",
+        "parent.parent.children",
+        "parent.parent.children.expediente_tipo",
+        "parent.parent.children.children",
+        "parent.parent.children.children.expediente_tipo",
+        "parent.parent.children.children.children",
+        "parent.parent.children.children.children.expediente_tipo",
+        //level 2
+        "parent.parent.parent",
+        "parent.parent.parent.expediente_tipo",
+        "parent.parent.parent.children",
+        "parent.parent.parent.children.expediente_tipo",
+        "parent.parent.parent.children.children",
+        "parent.parent.parent.children.children.expediente_tipo",
+        "parent.parent.parent.children.children.children",
+        "parent.parent.parent.children.children.children.expediente_tipo",
+        //level 3
+        "parent.parent.parent.parent",
+        "parent.parent.parent.parent.expediente_tipo",
+        "parent.parent.parent.parent.children",
+        "parent.parent.parent.parent.children.expediente_tipo",
+        "parent.parent.parent.parent.children.children",
+        "parent.parent.parent.parent.children.children.expediente_tipo",
+        "parent.parent.parent.parent.children.children.children",
+        "parent.parent.parent.parent.children.children.children.expediente_tipo",
+        //all children
+        "children.expediente_tipo",
+        "children.children",
+        "children.children.expediente_tipo",
+        "children.children.children",
+        "children.children.children.expediente_tipo",
+        "children.children.children.children",
+        "children.children.children.children.expediente_tipo",
+      ],
+    },
+    {
+      encodeValuesOnly: true, // prettify URL
+    }
+  );
+
+  const { data } = await api.get(`/expedientes-relaciones?${query}`);
+
+  return data.data;
+};
+
+export const getExpRelationById = async (id) => {
+  const { data } = await api.get(`/expedientes-relaciones/${id}?populate=*`);
+
+  return data.data;
 };

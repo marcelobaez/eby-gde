@@ -6,19 +6,24 @@ import {
   LogoutOutlined,
   EyeOutlined,
   SearchOutlined,
+  ApartmentOutlined,
+  SettingFilled,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useHasDocsPermissions } from "../hooks/useDocPermission";
+import { useHasRelPermission } from "../hooks/useHasRelPermission";
 
 const { Header, Content, Footer, Sider } = Layout;
 
 export function MainLayout({ children, title = "This is the default title" }) {
   const router = useRouter();
   const { data: session } = useSession();
+  // console.log(userData);
   const hasDocPermissions = useHasDocsPermissions();
+  const hasRelsPermissions = useHasRelPermission();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelected] = useState(["home"]);
 
@@ -54,7 +59,7 @@ export function MainLayout({ children, title = "This is the default title" }) {
         </div>
         <Menu
           theme="dark"
-          defaultOpenKeys={["sub1"]}
+          defaultOpenKeys={["sub1", "asociaciones"]}
           mode="inline"
           selectedKeys={selectedItem}
           items={[
@@ -65,16 +70,28 @@ export function MainLayout({ children, title = "This is the default title" }) {
               children: [
                 {
                   key: "seguimiento",
-                  label: "Seguimiento",
                   icon: <EyeOutlined />,
                   label: <Link href="/seguimiento">Seguimiento</Link>,
                 },
                 hasDocPermissions
                   ? {
                       key: "documentos",
-                      label: "Documentos",
                       icon: <SearchOutlined />,
                       label: <Link href="/documentos">Docs historicos</Link>,
+                    }
+                  : null,
+                hasRelsPermissions
+                  ? {
+                      key: "asociaciones",
+                      label: <Link href="/asociaciones">Jerarquias</Link>,
+                      icon: <ApartmentOutlined />,
+                      children: [
+                        {
+                          key: "categorias",
+                          label: <Link href="/categorias">Categorias</Link>,
+                          icon: <SettingFilled />,
+                        },
+                      ],
                     }
                   : null,
               ],

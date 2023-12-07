@@ -1,5 +1,10 @@
+import {
+  FileOutlined,
+  FileTwoTone,
+  FolderOutlined,
+  FolderTwoTone,
+} from "@ant-design/icons";
 import { parseISO, differenceInDays } from "date-fns";
-import esLocale from "date-fns/locale/es";
 
 export const setStatus = (state) => {
   switch (state) {
@@ -71,3 +76,176 @@ export const getStatusByGivenDates = (initial, last, expected) => {
     return "red";
   }
 };
+
+export function createTreeNodes(response, maxDepth = 0, currentDepth = 0) {
+  let hasChildren =
+    response.attributes.children &&
+    Array.isArray(response.attributes.children.data) &&
+    response.attributes.children.data.length > 0;
+
+  let formattedResponse = {
+    title: response.attributes.expCode ?? response.attributes.title,
+    key:
+      response.attributes.expId ??
+      `${response.id} - ${response.attributes.title}`,
+    icon: response.attributes.isExp ? (
+      <FolderTwoTone twoToneColor="#f59e0b" />
+    ) : (
+      <FileTwoTone />
+    ),
+    desc: response.attributes.descripcion,
+    notes: response.attributes.notas,
+    expId: response.id,
+    tag:
+      response.attributes.expediente_tipo &&
+      response.attributes.expediente_tipo.data
+        ? response.attributes.expediente_tipo.data.attributes.nombre
+        : "",
+    isEditable: currentDepth < maxDepth,
+    isExp: response.attributes.isExp,
+    created: response.attributes.fechaCreacion,
+  };
+
+  // if (hasChildren && currentDepth < maxDepth) {
+  //   formattedResponse.children = [];
+  //   response.attributes.children.data.forEach((child) => {
+  //     formattedResponse.children.push(
+  //       createTreeNodes(child, maxDepth, currentDepth + 1)
+  //     );
+  //   });
+  // }
+
+  if (hasChildren && currentDepth < maxDepth) {
+    formattedResponse.children = [];
+    const totalChildren = response.attributes.children.data.length;
+    response.attributes.children.data.forEach((child, index) => {
+      const childNode = createTreeNodes(child, maxDepth, currentDepth + 1);
+      childNode.isFirst = index === 0;
+      childNode.isLast = index === totalChildren - 1;
+      formattedResponse.children.push(childNode);
+    });
+  }
+
+  return formattedResponse;
+}
+
+export function reverseJsonTree(jsonObj, seenExpIds = new Map()) {
+  const reversedJson = { ...jsonObj }; // Create a copy of the original JSON
+  const expId = reversedJson.attributes.expId;
+
+  if (expId) {
+    if (!seenExpIds.has(expId)) {
+      seenExpIds.set(expId, reversedJson);
+    }
+    const parentData = reversedJson.attributes.parent?.data || null;
+    if (parentData) {
+      if (!parentData.attributes.children)
+        parentData.attributes.children = { data: [] };
+      const existingChild = parentData.attributes.children.data.find(
+        (child) => child.attributes.expId === expId
+      );
+      if (existingChild) {
+        parentData.attributes.children.data[
+          parentData.attributes.children.data.indexOf(existingChild)
+        ] = seenExpIds.get(expId);
+      } else {
+        parentData.attributes.children.data.push(seenExpIds.get(expId));
+      }
+      return reverseJsonTree(parentData, seenExpIds);
+    }
+  }
+
+  return reversedJson;
+}
+export function getTreeDepth(treeData) {
+  if (!treeData || !treeData.children) {
+    return 0;
+  }
+
+  let maxDepth = 0;
+  treeData.children.forEach((child) => {
+    const childDepth = getTreeDepth(child);
+    if (childDepth > maxDepth) {
+      maxDepth = childDepth;
+    }
+  });
+
+  return maxDepth + 1;
+}
+
+export function getKeys(obj) {
+  let keys = [];
+  if (obj.hasOwnProperty("key")) {
+    keys.push(obj.key);
+  }
+  if (Array.isArray(obj.children)) {
+    for (let child of obj.children) {
+      keys = keys.concat(getKeys(child));
+    }
+  }
+  return keys;
+}
+
+export function findId(key, obj) {
+  if (key === obj.attributes.expId) {
+    return obj.id;
+  }
+
+  if (obj.attributes.children && obj.attributes.children.data) {
+    for (let i = 0; i < obj.attributes.children.data.length; i++) {
+      let result = findId(key, obj.attributes.children.data[i]);
+      if (result) {
+        return result;
+      }
+    }
+  }
+
+  if (obj.attributes.parent && obj.attributes.parent.data) {
+    let result = findId(key, obj.attributes.parent.data);
+    if (result) {
+      return result;
+    }
+  }
+
+  return null;
+}
+export function findAdjacentExpId(tree, expId, direction) {
+  for (let i = 0; i < tree.length; i++) {
+    if (tree[i].expId === expId) {
+      if (direction === "before" && i > 0) {
+        return tree[i - 1].expId;
+      } else if (direction === "after" && i < tree.length - 1) {
+        return tree[i + 1].expId;
+      }
+      return null;
+    }
+
+    if (tree[i].children) {
+      const result = findAdjacentExpId(tree[i].children, expId, direction);
+      if (result) {
+        return result;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function findParentExpId(tree, expId) {
+  for (let i = 0; i < tree.length; i++) {
+    if (tree[i].children) {
+      for (let j = 0; j < tree[i].children.length; j++) {
+        if (tree[i].children[j].expId === expId) {
+          return tree[i].expId;
+        }
+      }
+
+      const result = findParentExpId(tree[i].children, expId);
+      if (result) {
+        return result;
+      }
+    }
+  }
+
+  return null;
+}

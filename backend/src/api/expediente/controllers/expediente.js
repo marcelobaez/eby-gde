@@ -12,8 +12,6 @@ module.exports = createCoreController(
     async create(ctx) {
       let newExp = ctx.request.body.data;
 
-      console.log("newExp", newExp);
-
       const expedientes = await strapi.entityService.findMany(
         "api::expediente.expediente",
         {
@@ -34,8 +32,6 @@ module.exports = createCoreController(
         }
       );
 
-      console.log("expedientes", expedientes);
-
       if (expedientes.length > 0) {
         return ctx.send(
           {
@@ -47,7 +43,6 @@ module.exports = createCoreController(
 
       newExp.usuario = ctx.state.user.id;
       newExp.publishedAt = new Date();
-      console.log(newExp);
       const entry = await strapi.entityService.create(
         "api::expediente.expediente",
         { data: newExp }
