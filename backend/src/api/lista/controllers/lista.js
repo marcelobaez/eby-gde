@@ -42,32 +42,32 @@ module.exports = createCoreController("api::lista.lista", ({ strapi }) => ({
     return this.transformResponse(sanitizedResults);
   },
 
-  async findOne(ctx) {
-    const { id } = ctx.request.params;
+  // async findOne(ctx) {
+  //   const { id } = ctx.request.params;
 
-    const lists = await strapi.entityService.findMany("api::lista.lista", {
-      filters: {
-        id: {
-          $eq: id,
-        },
-        usuario: {
-          id: {
-            $eq: ctx.state.user.id,
-          },
-        },
-      },
-      limit: 1,
-      populate: "*",
-    });
+  //   const lists = await strapi.entityService.findMany("api::lista.lista", {
+  //     filters: {
+  //       id: {
+  //         $eq: id,
+  //       },
+  //       usuario: {
+  //         id: {
+  //           $eq: ctx.state.user.id,
+  //         },
+  //       },
+  //     },
+  //     limit: 1,
+  //     populate: "*",
+  //   });
 
-    if (lists.length === 0) {
-      return ctx.unauthorized(`No puedes ver listas que no creaste`);
-    }
+  //   if (lists.length === 0) {
+  //     return ctx.unauthorized(`No puedes ver listas que no creaste`);
+  //   }
 
-    const sanitizedResults = await this.sanitizeOutput(lists, ctx);
+  //   const sanitizedResults = await this.sanitizeOutput(lists, ctx);
 
-    return this.transformResponse(sanitizedResults);
-  },
+  //   return this.transformResponse(sanitizedResults);
+  // },
 
   async update(ctx) {
     const { id } = ctx.request.params;

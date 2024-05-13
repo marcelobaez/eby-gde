@@ -1,4 +1,4 @@
-FROM marcelobaez/oracle8-ic-node16
+FROM marcelobaez/oracle8-ic-node20
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN \
 COPY src ./src
 COPY public ./public
 COPY next.config.js .
-# COPY tsconfig.json .
+COPY tsconfig.json .
 
 # Environment variables must be present at build time
 # https://github.com/vercel/next.js/discussions/14030
