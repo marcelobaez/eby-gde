@@ -64,7 +64,7 @@ export function ListsContainer() {
 
   const listId = (router.query.id as string) || "";
 
-  const { data, isLoading, isFetching } = useListInfoByID(listId);
+  const { data, isLoading, fetchStatus, status } = useListInfoByID(listId);
 
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
@@ -360,7 +360,7 @@ export function ListsContainer() {
                 <Table
                   columns={columns}
                   rowKey="ID"
-                  loading={isLoading || isFetching}
+                  loading={isLoading}
                   dataSource={movsData}
                   size="small"
                   scroll={{ x: 1300 }}
@@ -381,7 +381,7 @@ export function ListsContainer() {
           />
         </Card>
       </Col>
-      {searchData.length > 0 && data && (
+      {searchData.length > 0 && (
         <Col span={24}>
           <Card bordered={false} style={{ width: "100%" }}>
             <TableResults

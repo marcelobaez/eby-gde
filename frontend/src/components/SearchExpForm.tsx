@@ -1,7 +1,9 @@
 import React from "react";
-import { Form, InputNumber, Button, Row, Col, Flex } from "antd";
+import { InputNumber, Button, Flex, Typography, Tooltip } from "antd";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { useForm, Controller } from "react-hook-form";
+
+const { Text } = Typography;
 
 type SearchExpFormProps = {
   handleSubmit: (values: any) => void;
@@ -50,51 +52,54 @@ export const SearchExpForm = ({
 
   return (
     <form onSubmit={handleRHFSubmit(onFinish)}>
-      <Flex gap="middle" justify={justify}>
-        {withTitle && <Form.Item label="Buscar expedientes" colon={false} />}
-        <Form.Item
+      <Flex gap="middle" justify={justify} align="center">
+        {withTitle && <Text>Buscar expedientes</Text>}
+        <label htmlFor="year">
+          <span style={{ color: "red" }}>{`* `}</span>Año:
+        </label>
+        <Controller
           name="year"
-          label="Año"
-          rules={[{ required: true, message: "El año es obligatorio!" }]}
-        >
-          <Controller
-            name="year"
-            control={control}
-            render={({ field }) => (
-              <InputNumber {...field} min={2018} max={2051} />
-            )}
-          />
-        </Form.Item>
-        <Form.Item
-          tooltip={{
-            title: "No hacen falta los ceros delante",
-            icon: <InfoCircleOutlined />,
-          }}
+          control={control}
+          rules={{ required: "El año es obligatorio!" }}
+          render={({ field }) => (
+            <InputNumber
+              {...field}
+              status={errors.year ? "error" : ""}
+              min={2018}
+              max={2051}
+            />
+          )}
+        />
+        <label htmlFor="number">
+          <span style={{ color: "red" }}>{`* `}</span>Número:
+          {` `}
+          <Tooltip title="No hacen falta los ceros delante">
+            <InfoCircleOutlined style={{ color: "rgb(0,0,0,0.45)" }} />
+          </Tooltip>
+        </label>
+        <Controller
           name="number"
-          label="Número"
-          rules={[{ required: true, message: "El número es obligatorio!" }]}
+          control={control}
+          rules={{ required: "El número es obligatorio!" }}
+          render={({ field }) => (
+            <InputNumber
+              status={errors.number ? "error" : ""}
+              {...field}
+              min={0}
+            />
+          )}
+        />
+        <Button htmlType="button" onClick={onReset}>
+          Limpiar
+        </Button>
+        <Button
+          type="primary"
+          loading={isSearching}
+          htmlType="submit"
+          icon={<SearchOutlined />}
         >
-          <Controller
-            name="number"
-            control={control}
-            render={({ field }) => <InputNumber {...field} min={0} />}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button htmlType="button" onClick={onReset}>
-            Limpiar
-          </Button>
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            loading={isSearching}
-            htmlType="submit"
-            icon={<SearchOutlined />}
-          >
-            Buscar
-          </Button>
-        </Form.Item>
+          Buscar
+        </Button>
       </Flex>
     </form>
   );

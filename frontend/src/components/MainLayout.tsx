@@ -10,7 +10,7 @@ import {
   SettingFilled,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { Image } from "antd";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useHasDocsPermissions } from "../hooks/useDocPermission";
@@ -59,6 +59,7 @@ export function MainLayout({
               width="100"
               height="50"
               style={{ maxWidth: "100%", height: "auto" }}
+              preview={false}
             />
           </Link>
         </div>

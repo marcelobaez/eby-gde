@@ -61,7 +61,6 @@ export function useAddExpMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["listas"] });
-      queryClient.invalidateQueries({ queryKey: ["expedientes"] });
       message.success("Agregado a la lista");
     },
   });

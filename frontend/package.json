@@ -1,5 +1,5 @@
 {
-  "name": "with-ant-design",
+  "name": "eby-gde-seg",
   "version": "1.0.0",
   "scripts": {
     "dev": "next",
@@ -14,7 +14,7 @@
     "@ant-design/pro-layout": "^7.19.0",
     "@tanstack/react-query": "^5.13.4",
     "@tanstack/react-query-devtools": "^5.13.5",
-    "antd": "^5.17.0",
+    "antd": "^5.17.3",
     "axios": "^1.6.2",
     "date-fns": "^2.29.3",
     "dayjs": "1.8.28",

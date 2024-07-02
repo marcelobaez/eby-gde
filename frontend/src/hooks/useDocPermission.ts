@@ -7,8 +7,12 @@ export function useHasDocsPermissions() {
   const loading = status === "loading";
   const { data, isLoading, error } = useQuery({
     queryKey: ["docPermissions"],
-    queryFn: async () => await axios.get("/api/checkGroup"),
+    queryFn: async () =>
+      await axios.get("/api/checkGroup", {
+        signal: new AbortController().signal,
+      }),
     enabled: !!session,
+    staleTime: Infinity,
   });
 
   if (!loading && !isLoading && !error) {

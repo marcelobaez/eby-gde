@@ -42,7 +42,7 @@ export const useListInfoByID = (id: string) => {
       );
       return data;
     },
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 
   const expIds = listData
@@ -65,7 +65,7 @@ export const useListInfoByID = (id: string) => {
       return data;
     },
     select: (data) => {
-      if (!listData) return [];
+      if (!listData || expIds.length === 0) return;
       const extendedExps: ExtendedLista[] = data
         .map((exp) => {
           const matchingEl = listData.data.attributes.expedientes.data.find(
@@ -110,7 +110,7 @@ export const useListInfoByID = (id: string) => {
 
       return extendedExps;
     },
-    enabled: Boolean(expIds.length),
+    enabled: Boolean(expIds.length > 0),
   });
 };
 

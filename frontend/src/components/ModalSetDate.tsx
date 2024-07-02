@@ -1,5 +1,10 @@
-import React, { useEffect } from "react";
-import { Modal, Form, InputNumber } from "antd";
+import React from "react";
+import { Modal, InputNumber, Flex } from "antd";
+import { Controller, useForm } from "react-hook-form";
+
+type FormValues = {
+  days: number | null;
+};
 
 export function ModalSetDate({
   visible,
@@ -12,11 +17,19 @@ export function ModalSetDate({
   onCancel: () => void;
   value: number | null;
 }) {
-  const [form] = Form.useForm();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<FormValues>({
+    values: {
+      days: value ?? null,
+    },
+  });
 
-  useEffect(() => {
-    form.setFieldsValue({ days: value });
-  }, [value]);
+  const onFormSubmit = async (values: FormValues) => {
+    if (values.days !== null) onCreate({ days: values.days });
+  };
 
   return (
     <Modal
@@ -25,32 +38,28 @@ export function ModalSetDate({
       okText="Establecer"
       cancelText="Cancelar"
       onCancel={onCancel}
-      onOk={() => {
-        form
-          .validateFields()
-          .then((values) => {
-            form.resetFields();
-            onCreate(values);
-          })
-          .catch((info) => {
-            console.log("Validate Failed:", info);
-          });
-      }}
+      onOk={handleSubmit(onFormSubmit)}
     >
-      <Form form={form} layout="inline" name="form_in_modal">
-        <Form.Item
-          name="days"
-          label="Dias"
-          rules={[
-            {
-              required: true,
-              message: "Debe ingresar un valor",
-            },
-          ]}
-        >
-          <InputNumber min={0} max={365} />
-        </Form.Item>
-      </Form>
+      <form name="form_in_modal">
+        <Flex gap="middle">
+          <label htmlFor="days">
+            <span style={{ color: "red" }}>{`* `}</span>Dias:
+          </label>
+          <Controller
+            name="days"
+            control={control}
+            rules={{ required: "Debe ingresar un valor" }}
+            render={({ field }) => (
+              <InputNumber
+                {...field}
+                status={errors.days ? "error" : ""}
+                min={0}
+                max={365}
+              />
+            )}
+          />
+        </Flex>
+      </form>
     </Modal>
   );
 }

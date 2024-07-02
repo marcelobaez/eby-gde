@@ -8,10 +8,13 @@ export function useHasRelPermission() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["userData"],
     queryFn: async () => {
-      const { data } = await api.get("/users/me");
+      const { data } = await api.get("/users/me", {
+        signal: new AbortController().signal,
+      });
       return data;
     },
     enabled: !!session,
+    staleTime: Infinity,
   });
 
   if (!loading && !isLoading && !error) {
