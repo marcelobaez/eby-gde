@@ -1,4 +1,4 @@
-import { ExtendedLista } from "@/lib/fetchers";
+import { ExtendedExp } from "@/lib/fetchers";
 import { ExpRelacion } from "@/types/expRelacion";
 import { FileTwoTone, FolderTwoTone } from "@ant-design/icons";
 import { BasicDataNode, DataNode } from "antd/es/tree";
@@ -37,7 +37,7 @@ export const setStatus = (state: string) => {
 //   return data.reduce((a: number, v) => (v.ESTADO === state ? a + 1 : a), 0);
 // };
 
-export const getCountDelayed = (data: ExtendedLista[]) => {
+export const getCountDelayed = (data: ExtendedExp[]) => {
   const filtered = data.filter((item) => item.duracion_esperada !== null);
   return filtered.reduce(
     (a, v) =>
@@ -67,7 +67,7 @@ export const getCountDelayed = (data: ExtendedLista[]) => {
 //   );
 // };
 
-export const getCountOnTime = (data: ExtendedLista[]) => {
+export const getCountOnTime = (data: ExtendedExp[]) => {
   const filtered = data.filter((item) => item.duracion_esperada !== null);
   return filtered.reduce(
     (a, v) =>

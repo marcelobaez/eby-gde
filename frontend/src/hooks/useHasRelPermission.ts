@@ -8,7 +8,7 @@ export function useHasRelPermission() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["userData"],
     queryFn: async () => {
-      const { data } = await api.get("/users/me", {
+      const { data } = await api.get("/users/me?populate=role", {
         signal: new AbortController().signal,
       });
       return data;
@@ -18,7 +18,7 @@ export function useHasRelPermission() {
   });
 
   if (!loading && !isLoading && !error) {
-    if (session && data && data.isAdmin) {
+    if (session && data && data.role.type === "exprelaciones") {
       return true;
     } else return false;
   } else {

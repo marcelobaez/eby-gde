@@ -1,5 +1,5 @@
 {
-  "name": "eby-gde-seg",
+  "name": "eby-gde-frontend",
   "version": "1.0.0",
   "scripts": {
     "dev": "next",
@@ -27,7 +27,8 @@
     "react-data-export": "^0.6.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.47.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zustand": "^4.5.4"
   },
   "license": "MIT",
   "devDependencies": {

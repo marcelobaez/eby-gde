@@ -32,7 +32,6 @@ export const authOptions: NextAuthOptions = {
       session.id = token.id;
       session.azureId = token.azureId;
       session.refreshToken = token.refreshToken;
-      session.azureToken = token.azureToken;
       session.azureTokenExpires = token.azureTokenExpires;
 
       return session;
@@ -43,12 +42,10 @@ export const authOptions: NextAuthOptions = {
           const { data } = await axios.get(
             `${process.env.NEXTAUTH_URL_INTERNAL}/api/auth/microsoft/callback?access_token=${account.access_token}`
           );
-
           token.jwt = data.jwt;
           token.id = data.user.id;
           token.azureId = profile.oid;
           token.refreshToken = account.refresh_token;
-          token.azureToken = account.access_token;
           token.azureTokenExpires = account.expires_at * 1000;
         } catch (error) {
           console.log("error res:", error);
@@ -75,7 +72,6 @@ export const authOptions: NextAuthOptions = {
 
           return {
             ...token,
-            azureToken: refreshedTokens.access_token,
             azureTokenExpires: Math.floor(
               Date.now() / 1000 + refreshedTokens.expires_in
             ),

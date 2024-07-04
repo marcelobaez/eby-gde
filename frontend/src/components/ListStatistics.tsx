@@ -1,8 +1,8 @@
 import { Col, Statistic } from "antd";
 import { getCountDelayed, getCountOnTime } from "../utils";
-import { ExtendedLista } from "@/lib/fetchers";
+import { ExtendedExp } from "@/lib/fetchers";
 
-export function ListStatistics({ movs }: { movs: ExtendedLista[] }) {
+export function ListStatistics({ movs }: { movs: ExtendedExp[] }) {
   return (
     <>
       <Col span={6}>

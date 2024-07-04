@@ -32,8 +32,6 @@ module.exports = createCoreController("api::lista.lista", ({ strapi }) => ({
           },
         },
       },
-      start: 0,
-      limit: 100,
       populate: "*",
     });
 
@@ -42,51 +40,13 @@ module.exports = createCoreController("api::lista.lista", ({ strapi }) => ({
     return this.transformResponse(sanitizedResults);
   },
 
-  // async findOne(ctx) {
-  //   const { id } = ctx.request.params;
-
-  //   const lists = await strapi.entityService.findMany("api::lista.lista", {
-  //     filters: {
-  //       id: {
-  //         $eq: id,
-  //       },
-  //       usuario: {
-  //         id: {
-  //           $eq: ctx.state.user.id,
-  //         },
-  //       },
-  //     },
-  //     limit: 1,
-  //     populate: "*",
-  //   });
-
-  //   if (lists.length === 0) {
-  //     return ctx.unauthorized(`No puedes ver listas que no creaste`);
-  //   }
-
-  //   const sanitizedResults = await this.sanitizeOutput(lists, ctx);
-
-  //   return this.transformResponse(sanitizedResults);
-  // },
-
   async update(ctx) {
     const { id } = ctx.request.params;
 
-    const lists = await strapi.entityService.findMany("api::lista.lista", {
-      filters: {
-        id: {
-          $eq: id,
-        },
-        usuario: {
-          id: {
-            $eq: ctx.state.user.id,
-          },
-        },
-      },
-    });
+    const list = await strapi.entityService.findOne("api::lista.lista", id);
 
-    if (lists.length === 0) {
-      return ctx.unauthorized(`No puedes ver listas que no creaste`);
+    if (!list) {
+      return ctx.notFound("Recurso no encontrado");
     }
 
     const entry = await strapi.entityService.update("api::lista.lista", id, {
@@ -100,40 +60,16 @@ module.exports = createCoreController("api::lista.lista", ({ strapi }) => ({
   async delete(ctx) {
     const { id } = ctx.params;
 
-    const lists = await strapi.entityService.findMany("api::lista.lista", {
-      filters: {
-        id: {
-          $eq: id,
-        },
-        usuario: {
-          id: {
-            $eq: ctx.state.user.id,
-          },
-        },
-      },
-      limit: 1,
+    const list = await strapi.entityService.findOne("api::lista.lista", id, {
       populate: "*",
     });
 
-    // No permitir la eliminacion de todas las listas (debe quedar al menos una)
-    if (lists.length === 0) {
-      return ctx.unauthorized(`No puedes ver listas que no creaste`);
+    if (!list) {
+      return ctx.notFound("Recurso no encontrado");
     }
 
-    const [entries, count] = await strapi.db
-      .query("api::lista.lista")
-      .findWithCount({
-        where: {
-          usuario: {
-            id: ctx.state.user.id,
-          },
-        },
-      });
-
-    if (count === 1) return ctx.unauthorized("Debe quedar al menos una lista");
-
     // Eliminar los expedientes asociados a la lista
-    const expIds = lists[0].expedientes.map((exp) => exp.id);
+    const expIds = list.expedientes.map((exp) => exp.id);
 
     if (expIds.length > 0) {
       await strapi.db.query("api::expediente.expediente").deleteMany({

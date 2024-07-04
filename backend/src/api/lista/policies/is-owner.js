@@ -9,14 +9,14 @@ module.exports = async (policyCtx, config, { strapi }) => {
 
   strapi.log.info("In is-owner policy.");
 
-  const [event] = await strapi.entityService.findMany("api::lista.lista", {
+  const [list] = await strapi.entityService.findMany("api::lista.lista", {
     filters: {
       id: listId,
       usuario: userId,
     },
   });
   // existe una lista asociada al usuario
-  if (event) {
+  if (list) {
     return true;
   }
 

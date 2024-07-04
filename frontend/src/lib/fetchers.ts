@@ -14,7 +14,7 @@ import {
 import { ListaDetailResponse, ListasResponse } from "@/types/lista";
 import { useQuery } from "@tanstack/react-query";
 
-export type ExtendedLista = GDEExpResponse & {
+export type ExtendedExp = GDEExpResponse & {
   list_name: string;
   id_exp_list: number;
   duracion_esperada: number | null;
@@ -23,6 +23,11 @@ export type ExtendedLista = GDEExpResponse & {
   stateColor: string;
   lifetimeColor: string;
   daysOverdue: number | null;
+};
+
+export type ExtendedListResponse = {
+  listName: string;
+  expedientes: ExtendedExp[];
 };
 
 export const getListas = async () => {
@@ -34,41 +39,42 @@ export const getListas = async () => {
 };
 
 export const useListInfoByID = (id: string) => {
-  const { data: listData } = useQuery({
+  return useQuery({
     queryKey: ["listas", id],
     queryFn: async () => {
       const { data } = await api.get<ListaDetailResponse>(
         `/listas/${id}?populate=*`
       );
-      return data;
-    },
-    enabled: Boolean(id),
-  });
 
-  const expIds = listData
-    ? listData.data.attributes.expedientes.data.map(
-        (exp) => exp.attributes.id_expediente
-      )
-    : [];
+      const expIds = data
+        ? data.data.attributes.expedientes.data.map(
+            (exp) => exp.attributes.id_expediente
+          )
+        : [];
 
-  return useQuery({
-    queryKey: ["expedientes", id],
-    queryFn: async () => {
-      const { data } = await axios.get<GDEExpResponse[]>("/api/gdeexps", {
-        params: {
-          expIds,
-        },
-        paramsSerializer: function (params) {
-          return qs.stringify(params, { arrayFormat: "brackets" });
-        },
-      });
-      return data;
-    },
-    select: (data) => {
-      if (!listData || expIds.length === 0) return;
-      const extendedExps: ExtendedLista[] = data
+      // Si la lista no tiene expedientes, devolver al menos el nombre
+      if (expIds.length === 0)
+        return {
+          listName: data.data.attributes.titulo,
+          expedientes: [],
+        };
+
+      // Si la lista tiene expedientes asociados, buscarlos en GDE
+      const { data: gdeData } = await axios.get<GDEExpResponse[]>(
+        "/api/gdeexps",
+        {
+          params: {
+            expIds,
+          },
+          paramsSerializer: function (params) {
+            return qs.stringify(params, { arrayFormat: "brackets" });
+          },
+        }
+      );
+
+      const extendedExps: ExtendedExp[] = gdeData
         .map((exp) => {
-          const matchingEl = listData.data.attributes.expedientes.data.find(
+          const matchingEl = data.data.attributes.expedientes.data.find(
             (el) => parseInt(el.attributes.id_expediente) === exp.ID
           );
 
@@ -77,7 +83,7 @@ export const useListInfoByID = (id: string) => {
           return {
             ...exp,
             id_exp_list: matchingEl.id,
-            list_name: listData.data.attributes.titulo,
+            list_name: data.data.attributes.titulo,
             duracion_esperada: matchingEl.attributes.duracion_esperada,
             lifetime: formatDistance(
               parseISO(exp.FECHA_OPERACION),
@@ -106,11 +112,14 @@ export const useListInfoByID = (id: string) => {
                 : null,
           };
         })
-        .filter((exp) => exp) as ExtendedLista[];
+        .filter((exp) => exp) as ExtendedExp[];
 
-      return extendedExps;
+      return {
+        listName: data.data.attributes.titulo,
+        expedientes: extendedExps,
+      };
     },
-    enabled: Boolean(expIds.length > 0),
+    enabled: Boolean(id),
   });
 };
 

@@ -5,7 +5,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { api } from "../lib/axios";
 
-const CollectionCreateForm = ({
+const ListCreateForm = ({
   visible,
   onCreate,
   onCancel,
@@ -18,7 +18,7 @@ const CollectionCreateForm = ({
   return (
     <Modal
       open={visible}
-      title="Crear nueva lista"
+      title="Nueva lista"
       okText="Crear"
       cancelText="Cancelar"
       onCancel={onCancel}
@@ -78,14 +78,13 @@ export const ModalCreateButton = () => {
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        size="large"
         onClick={() => {
           setVisible(true);
         }}
       >
         Crear lista
       </Button>
-      <CollectionCreateForm
+      <ListCreateForm
         visible={visible}
         onCreate={onCreate}
         onCancel={() => {

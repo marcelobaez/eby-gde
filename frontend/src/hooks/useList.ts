@@ -9,9 +9,9 @@ export function useRemoveExpMutation() {
     onError: () => {
       message.error("Error al eliminar el expediente");
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["listas"] });
-      queryClient.invalidateQueries({ queryKey: ["expedientes"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["listas"] });
+      await queryClient.invalidateQueries({ queryKey: ["expedientes"] });
       message.success("Quitado de la lista");
     },
   });
@@ -59,8 +59,8 @@ export function useAddExpMutation() {
     onError: () => {
       message.error("Error al agregar a la lista");
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["listas"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["listas"] });
       message.success("Agregado a la lista");
     },
   });

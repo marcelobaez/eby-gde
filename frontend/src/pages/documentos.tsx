@@ -10,6 +10,8 @@ import {
   List,
   Typography,
   Flex,
+  Card,
+  Space,
 } from "antd";
 import { docTypes, repTypes } from "../utils/constants";
 import { FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
@@ -18,6 +20,7 @@ import { useState } from "react";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import { User } from "@/types/user";
 
 type DocumentFormValues = {
   type: string;
@@ -65,119 +68,128 @@ export default function Documents() {
 
   return (
     <MainLayout>
-      <Row style={{ backgroundColor: "white" }}>
+      <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Flex gap="middle" style={{ padding: "0.375rem 0 0.375rem 1rem" }}>
+          <Space direction="vertical">
             <Title level={4} style={{ marginBottom: 0 }}>
               Consulta de documentos en histórico
             </Title>
-          </Flex>
+            <Typography.Text type="secondary">
+              Aqui puede buscar documentos GDE y descargarlos
+            </Typography.Text>
+          </Space>
         </Col>
-        <Col span={8} offset={8}>
-          <Form
-            name="basic"
-            labelCol={{
-              span: 8,
-            }}
-            wrapperCol={{
-              span: 16,
-            }}
-            initialValues={{
-              type: "IF",
-              year: new Date().getFullYear(),
-              system: "GDEEBY",
-            }}
-            onFinish={onFinish}
-            autoComplete="off"
-          >
-            <Form.Item
-              label="Tipo de documento"
-              name="type"
-              rules={[
-                {
-                  required: true,
-                  message: "Debe elegir un tipo de documento",
-                },
-              ]}
-            >
-              <Select
-                placeholder="Elija el tipo de documento"
-                allowClear
-                options={docTypes}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Año"
-              name="year"
-              rules={[
-                {
-                  required: true,
-                  message: "El año es requerido",
-                },
-              ]}
-            >
-              <InputNumber min={2000} max={2050} />
-            </Form.Item>
-
-            <Form.Item
-              label="Numero"
-              name="number"
-              rules={[
-                {
-                  required: true,
-                  message: "El numero es requerido",
-                },
-              ]}
-            >
-              <InputNumber min={0} />
-            </Form.Item>
-
-            <Form.Item
-              label="Reparticion"
-              name="location"
-              rules={[
-                {
-                  required: true,
-                  message: "La reparticion es requerida",
-                },
-              ]}
-            >
-              <Select
-                showSearch
-                allowClear
-                options={repTypes}
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  (option?.value ?? "")
-                    .toLocaleLowerCase()
-                    .includes(input.toLocaleLowerCase())
-                }
-                filterSort={(optionA, optionB) =>
-                  optionA.value
-                    .toLowerCase()
-                    .localeCompare(optionB.value.toLowerCase())
-                }
-                placeholder="Escriba el nombre de la reparticion"
-              />
-            </Form.Item>
-
-            <Form.Item
-              wrapperCol={{
-                offset: 8,
-                span: 16,
-              }}
-            >
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={isSearching}
-                icon={<SearchOutlined />}
+        <Col span={24}>
+          <Card bordered={false}>
+            <Flex justify="center">
+              <Form
+                name="basic"
+                // labelCol={{
+                //   span: 8,
+                // }}
+                // wrapperCol={{
+                //   span: 16,
+                // }}
+                style={{ width: 450 }}
+                layout="vertical"
+                initialValues={{
+                  type: "IF",
+                  year: new Date().getFullYear(),
+                  system: "GDEEBY",
+                }}
+                onFinish={onFinish}
+                autoComplete="off"
               >
-                Buscar
-              </Button>
-            </Form.Item>
-          </Form>
+                <Form.Item
+                  label="Tipo de documento"
+                  name="type"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Debe elegir un tipo de documento",
+                    },
+                  ]}
+                >
+                  <Select
+                    placeholder="Elija el tipo de documento"
+                    allowClear
+                    options={docTypes}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Año"
+                  name="year"
+                  rules={[
+                    {
+                      required: true,
+                      message: "El año es requerido",
+                    },
+                  ]}
+                >
+                  <InputNumber min={2000} max={2050} />
+                </Form.Item>
+
+                <Form.Item
+                  label="Numero"
+                  name="number"
+                  rules={[
+                    {
+                      required: true,
+                      message: "El numero es requerido",
+                    },
+                  ]}
+                >
+                  <InputNumber min={0} />
+                </Form.Item>
+
+                <Form.Item
+                  label="Reparticion"
+                  name="location"
+                  rules={[
+                    {
+                      required: true,
+                      message: "La reparticion es requerida",
+                    },
+                  ]}
+                >
+                  <Select
+                    showSearch
+                    allowClear
+                    options={repTypes}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.value ?? "")
+                        .toLocaleLowerCase()
+                        .includes(input.toLocaleLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.value
+                        .toLowerCase()
+                        .localeCompare(optionB.value.toLowerCase())
+                    }
+                    placeholder="Escriba el nombre de la reparticion"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  wrapperCol={{
+                    offset: 8,
+                    span: 16,
+                  }}
+                >
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={isSearching}
+                    icon={<SearchOutlined />}
+                  >
+                    Buscar
+                  </Button>
+                </Form.Item>
+              </Form>
+            </Flex>
+          </Card>
         </Col>
         <Col span={8} offset={8}>
           {noResults && <Empty description="No se encontraron resultados" />}
@@ -225,36 +237,21 @@ export async function getServerSideProps(
         permanent: false,
       },
     };
-  } else {
-    try {
-      const { data: groupData } = await axios.get<{
-        value: Record<string, unknown>[];
-      }>(
-        `https://graph.microsoft.com/v1.0/users/${session.azureId}/transitiveMemberOf`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.azureToken}`,
-          },
-        }
-      );
+  }
 
-      const hasDocsPermissions = groupData.value.some(
-        (item) =>
-          item["@odata.type"] === "#microsoft.graph.group" &&
-          item.id === process.env.NEXT_PUBLIC_GROUP_ID
-      );
-
-      if (!hasDocsPermissions) {
-        return {
-          redirect: {
-            destination: "/seguimiento",
-            permanent: false,
-          },
-        };
-      }
-    } catch (error) {
-      console.log("error checking group", error);
+  const { data } = await axios.get<User>(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
+    {
+      headers: {
+        Authorization: `Bearer ${session.jwt}`,
+      },
     }
+  );
+
+  if (data && data.role.name.toLowerCase() === "authenticated") {
+    return {
+      notFound: true,
+    };
   }
 
   return {

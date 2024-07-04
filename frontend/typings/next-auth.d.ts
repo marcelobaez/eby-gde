@@ -10,7 +10,6 @@ declare module "next-auth" {
     id: string;
     azureId: string;
     refreshToken: string;
-    azureToken: string;
     azureTokenExpires: number;
   }
 
@@ -31,13 +30,6 @@ declare module "next-auth/jwt" {
     id: string;
     azureId: string;
     refreshToken: string;
-    azureToken: string;
     azureTokenExpires: number;
   }
 }
-
-// declare module "next-auth/providers" {
-//   interface Profile extends DefaultProfile {
-//     oid: string;
-//   }
-// }

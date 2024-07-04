@@ -13,6 +13,7 @@ import {
   Modal,
   Spin,
   message,
+  ConfigProvider,
 } from "antd";
 import { DownOutlined, ExclamationCircleFilled } from "@ant-design/icons";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -46,8 +47,9 @@ import {
   TargetExpProps,
   TreeTitleRenderer,
 } from "../components/TreeTitleRenderer";
-import { GDEExpResponse, ExpSearchResponse } from "@/types/apiGde";
+import { ExpSearchResponse } from "@/types/apiGde";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import { User } from "@/types/user";
 
 const { Paragraph, Text } = Typography;
 const { info, confirm } = Modal;
@@ -127,9 +129,17 @@ export default function Documents() {
     info({
       title: "Crear asociacion",
       content: (
-        <QueryClientProvider client={queryClient}>
-          <ModalAssociateExp targetExp={searchData[0]} />
-        </QueryClientProvider>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#006C42",
+            },
+          }}
+        >
+          <QueryClientProvider client={queryClient}>
+            <ModalAssociateExp targetExp={searchData[0]} />
+          </QueryClientProvider>
+        </ConfigProvider>
       ),
       centered: true,
       footer: null,
@@ -143,13 +153,21 @@ export default function Documents() {
     info({
       title: "Buscar expediente a asociar",
       content: (
-        <QueryClientProvider client={queryClient}>
-          <ModalAssociateExpAlt
-            targetExp={targetExp}
-            existingIds={getKeys(treeData!)}
-            onlyChild={currDepth === 4}
-          />
-        </QueryClientProvider>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#006C42",
+            },
+          }}
+        >
+          <QueryClientProvider client={queryClient}>
+            <ModalAssociateExpAlt
+              targetExp={targetExp}
+              existingIds={getKeys(treeData!)}
+              onlyChild={currDepth === 4}
+            />
+          </QueryClientProvider>
+        </ConfigProvider>
       ),
       centered: true,
       footer: null,
@@ -249,30 +267,34 @@ export default function Documents() {
     <MainLayout>
       <Row gutter={[16, 16]} justify="center">
         <Col span={24}>
+          <Space direction="vertical">
+            <Typography.Title level={4} style={{ marginBottom: 0 }}>
+              Jerarquia de expedientes
+            </Typography.Title>
+            <Typography.Text type="secondary">
+              Consulte las asociaciones de un expediente en el sistema GDE
+              utilizando el formulario al pie
+            </Typography.Text>
+          </Space>
+        </Col>
+        <Col span={24}>
           <Card
-            title={`Jerarquia de expedientes`}
+            // title={`Jerarquia de expedientes`}
             bordered={false}
-            style={{ width: "100%", minHeight: "calc(100vh - 180px)" }}
+            style={{ width: "100%", minHeight: "calc(100vh - 250px)" }}
           >
             <Space size="middle" direction="vertical" style={{ width: "100%" }}>
-              <Paragraph>
-                Utilice esta pagina para consultar las asociaciones de un
-                expediente en el sistema GDEEBY. Si desea buscar otra
-                asociacion, utilice el formulario debajo
-              </Paragraph>
               <Row justify="center" gutter={16}>
                 <Col span={24}>
-                  <Card>
-                    <SearchExpForm
-                      handleSubmit={handleSubmitMain}
-                      handleReset={handleReset}
-                      isSearching={isSearching}
-                      initialValues={{
-                        year: searchParams.year,
-                        number: searchParams.number,
-                      }}
-                    />
-                  </Card>
+                  <SearchExpForm
+                    handleSubmit={handleSubmitMain}
+                    handleReset={handleReset}
+                    isSearching={isSearching}
+                    initialValues={{
+                      year: searchParams.year,
+                      number: searchParams.number,
+                    }}
+                  />
                 </Col>
               </Row>
               {(isLoading || isFetching) && <Spin size="large" />}
@@ -396,8 +418,8 @@ export async function getServerSideProps(
     };
   }
 
-  const { data } = await axios.get(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
+  const { data } = await axios.get<User>(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
     {
       headers: {
         Authorization: `Bearer ${session.jwt}`,
@@ -405,7 +427,11 @@ export async function getServerSideProps(
     }
   );
 
-  if (data && !data.isAdmin) {
+  const canAccess =
+    data.role.name.toLowerCase() === "administrator" ||
+    data.role.name.toLowerCase() === "expobras";
+
+  if (data && !canAccess) {
     return {
       notFound: true,
     };

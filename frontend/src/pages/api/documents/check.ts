@@ -2,6 +2,7 @@ import axios from "axios";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 import { NextApiRequest, NextApiResponse } from "next";
+import { User } from "@/types/user";
 
 const url = "http://192.168.161.50:4000/document/check";
 
@@ -21,22 +22,16 @@ const handler = async (
 
   if (session) {
     try {
-      const { data: groupData } = await axios.get(
-        `https://graph.microsoft.com/v1.0/users/${session.azureId}/transitiveMemberOf`,
+      const { data } = await axios.get<User>(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
         {
           headers: {
-            Authorization: `Bearer ${session.azureToken}`,
+            Authorization: `Bearer ${session.jwt}`,
           },
         }
       );
 
-      const hasDocsPermissions = groupData.value.some(
-        (item: any) =>
-          item["@odata.type"] === "#microsoft.graph.group" &&
-          item.id === process.env.NEXT_PUBLIC_GROUP_ID
-      );
-
-      if (!hasDocsPermissions) {
+      if (data && data.role.name.toLowerCase() === "authenticated") {
         res.status(401);
         res.end();
       }

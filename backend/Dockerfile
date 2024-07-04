@@ -1,23 +1,3 @@
-# FROM strapi/base
-
-# WORKDIR /backend
-
-# COPY ./package.json ./
-# COPY ./package-lock.json ./
-
-# RUN npm install --production
-
-# COPY . .
-
-# ENV NODE_ENV production
-
-# RUN npm run build
-
-# EXPOSE 1337
-
-# CMD ["npm", "run", "start"]
-
-
 FROM node:18-alpine as build
 # Installing libvips-dev for sharp Compatability
 RUN apk update && apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev vips-dev > /dev/null 2>&1

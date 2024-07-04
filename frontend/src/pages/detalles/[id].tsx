@@ -13,6 +13,8 @@ import {
   Table,
   Button,
   Tabs,
+  Flex,
+  Space,
 } from "antd";
 import { setStatus } from "../../utils/index";
 import { parseISO, format } from "date-fns";
@@ -239,12 +241,21 @@ export default function Movimiento() {
     <MainLayout>
       <Row gutter={[16, 16]} justify="center">
         <Col span={24}>
-          <Card
-            title={`Expediente: ${movsData[0].EXPEDIENTE}`}
-            bordered={false}
-            style={{ width: "100%", minHeight: "300px" }}
-            extra={activeKey === "item-1" ? <MovExport /> : <DocsExport />}
-          >
+          <Flex justify="space-between">
+            <Space direction="vertical">
+              <Typography.Title level={4} style={{ marginBottom: 0 }}>
+                {`Expediente: ${movsData[0].EXPEDIENTE}`}
+              </Typography.Title>
+              <Typography.Text type="secondary">
+                Aqui vera los detalles del expediente elegido, tales como sus
+                movimientos, documentos asociados y jerarquias establecidas
+              </Typography.Text>
+            </Space>
+            {activeKey === "item-1" ? <MovExport /> : <DocsExport />}
+          </Flex>
+        </Col>
+        <Col span={24}>
+          <Card bordered={false} style={{ minHeight: "300px" }}>
             {movsData.length > 0 && (
               <Tabs
                 activeKey={activeKey}

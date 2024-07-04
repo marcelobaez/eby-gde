@@ -1,8 +1,7 @@
-import { Layout, Button, Row, Col, Typography, Space, Card } from "antd";
+import { Layout, Button, Row, Col, Typography, Space, Card, Image } from "antd";
 import { WindowsOutlined } from "@ant-design/icons";
 import { signIn } from "next-auth/react";
 import { getServerSession } from "next-auth/next";
-import Image from "next/image";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { GetServerSideProps } from "next";
 

@@ -11,13 +11,18 @@ import {
   Popconfirm,
   Tooltip,
   Flex,
+  Empty,
 } from "antd";
 import { MainLayout } from "../../components/MainLayout";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getListas } from "../../lib/fetchers";
 import { getServerSession } from "next-auth/next";
 import Link from "next/link";
-import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { api } from "../../lib/axios";
 import {
@@ -27,19 +32,22 @@ import {
 } from "next";
 import { Session } from "next-auth";
 import { ModalCreateButton } from "@/components/ModalCreateButton";
-const { Paragraph, Title, Text } = Typography;
+import { useRouter } from "next/router";
+const { Title } = Typography;
+const { Meta } = Card;
 
 export default function Seguimiento({
   session,
 }: {
   session: Session;
 }): InferGetServerSidePropsType<typeof getServerSideProps> {
-  const { data, isLoading, isError } = useQuery({
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { data, status } = useQuery({
     queryKey: ["listas"],
     queryFn: getListas,
     enabled: !!session,
   });
-  const queryClient = useQueryClient();
 
   const updateListMutation = useMutation({
     mutationFn: async (body: { id: number; titulo: string }) => {
@@ -67,15 +75,23 @@ export default function Seguimiento({
     },
   });
 
-  if (isLoading) {
+  if (status === "pending") {
     return (
       <MainLayout>
-        <Skeleton active />
+        <Flex gap="middle">
+          {[0, 1, 2].map((item, idx) => (
+            <Card
+              style={{ width: 300 }}
+              key={idx + "card-loading"}
+              loading={true}
+            />
+          ))}
+        </Flex>
       </MainLayout>
     );
   }
 
-  if (isError) {
+  if (status === "error") {
     return (
       <MainLayout>
         <Alert
@@ -100,76 +116,71 @@ export default function Seguimiento({
     <MainLayout>
       <Row gutter={[16, 16]}>
         <Col key="list-header" span={24}>
-          <Flex
-            justify="space-between"
-            gap="small"
-            style={{ padding: "0.5rem 0" }}
-          >
-            <Space align="center">
-              <Button
-                icon={<ArrowLeftOutlined />}
-                type="text"
-                onClick={() => window.history.back()}
-              />
+          <Flex justify="space-between" gap="small">
+            <Space direction="vertical">
               <Title level={4} style={{ marginBottom: 0 }}>
                 Listas de seguimiento
               </Title>
+              <Typography.Text type="secondary">
+                Cree y administre sus listas de seguimiento de expedientes
+              </Typography.Text>
             </Space>
             <ModalCreateButton />
           </Flex>
         </Col>
-        {data &&
+        {data.length === 0 && (
+          <Flex justify="center" style={{ width: "100%" }}>
+            <Empty description="No hay listas">
+              Cree una utilizando el boton <b>Crear lista</b>
+            </Empty>
+          </Flex>
+        )}
+        {data.length > 0 &&
           data.map((list) => (
             <Col key={list.id} span={8}>
               <Card
-                title={
-                  <Paragraph
-                    editable={{
-                      onChange: (value) => handleEdit(list.id, value),
-                    }}
+                actions={[
+                  <Popconfirm
+                    key="delete"
+                    okType="danger"
+                    onConfirm={() => handleDelete(list.id)}
+                    title="Está seguro？Esta acción no es reversible"
+                    okText="Eliminar"
+                    cancelText="No"
                   >
-                    {list.attributes.titulo}
-                  </Paragraph>
-                }
+                    <Button
+                      type="link"
+                      danger
+                      icon={<DeleteOutlined />}
+                    ></Button>
+                  </Popconfirm>,
+                  <Button
+                    key="view"
+                    type="link"
+                    icon={<EyeOutlined />}
+                    onClick={() => router.push(`/seguimiento/${list.id}`)}
+                  ></Button>,
+                ]}
                 bordered={false}
-                hoverable
-                extra={
-                  <Space>
-                    {data.length === 1 ? (
-                      <Tooltip title="No puede eliminar la unica lista">
-                        <Button
-                          disabled
-                          type="link"
-                          danger
-                          icon={<DeleteOutlined />}
-                        />
-                      </Tooltip>
-                    ) : (
-                      <Popconfirm
-                        okType="danger"
-                        onConfirm={() => handleDelete(list.id)}
-                        title="Está seguro？Esta acción no es reversible"
-                        okText="Eliminar"
-                        cancelText="No"
-                      >
-                        <Button
-                          type="link"
-                          danger
-                          icon={<DeleteOutlined />}
-                        ></Button>
-                      </Popconfirm>
-                    )}
-                    <Link legacyBehavior href={`/seguimiento/${list.id}`}>
-                      <a>Ver</a>
-                    </Link>
-                  </Space>
-                }
               >
-                {`${
-                  list.attributes.expedientes.data.length > 0
-                    ? `Siguiendo ${list.attributes.expedientes.data.length} expediente(s)`
-                    : "Sin expedientes"
-                }`}
+                <Meta
+                  title={
+                    <Typography.Title
+                      level={5}
+                      style={{ margin: 0 }}
+                      editable={{
+                        onChange: (value) => handleEdit(list.id, value),
+                      }}
+                    >
+                      {list.attributes.titulo}
+                    </Typography.Title>
+                  }
+                  description={`${
+                    list.attributes.expedientes.data.length > 0
+                      ? `Siguiendo ${list.attributes.expedientes.data.length} expediente(s)`
+                      : "Sin expedientes"
+                  }`}
+                />
               </Card>
             </Col>
           ))}

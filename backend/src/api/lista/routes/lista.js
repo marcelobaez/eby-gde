@@ -8,12 +8,12 @@ const { createCoreRouter } = require("@strapi/strapi").factories;
 
 module.exports = createCoreRouter("api::lista.lista", {
   findOne: {
-    policies: ["is-owner"],
+    middlewares: ["api::lista.lista.is-owner"],
   },
   update: {
-    policies: ["is-owner"],
+    middlewares: ["api::lista.lista.is-owner"],
   },
   delete: {
-    policies: ["is-owner"],
+    middlewares: ["api::lista.lista.is-owner"],
   },
 });

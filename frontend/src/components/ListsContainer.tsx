@@ -14,13 +14,14 @@ import {
   Popconfirm,
   TableProps,
   GetProp,
+  Flex,
 } from "antd";
 import { SearchExpForm } from "./SearchExpForm";
 import { TableResults } from "./TableResults";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { ExtendedLista, useListInfoByID } from "../lib/fetchers";
+import { ExtendedExp, useListInfoByID } from "../lib/fetchers";
 import { ListStatistics } from "./ListStatistics";
 import {
   useAddExpMutation,
@@ -85,7 +86,7 @@ export function ListsContainer() {
         ...prev,
         pagination: {
           ...prev.pagination,
-          total: data.length,
+          total: data.expedientes.length,
         },
       }));
     }
@@ -103,7 +104,7 @@ export function ListsContainer() {
   const [selectedID, setSelectedID] = useState<number>();
   const [value, setValue] = useState<number | null>(0);
 
-  const movsData = data ?? [];
+  const movsData = data?.expedientes ?? [];
 
   const handleSubmit = async (values: { year: number; number: number }) => {
     const { year, number } = values;
@@ -145,7 +146,7 @@ export function ListsContainer() {
     setVisible(false);
   };
 
-  const columns: ColumnsType<ExtendedLista> = [
+  const columns: ColumnsType<ExtendedExp> = [
     {
       title: "Expediente",
       dataIndex: "EXPEDIENTE",
@@ -279,7 +280,7 @@ export function ListsContainer() {
           </Tooltip>
           <Popconfirm
             title="Desea quitar el elemento?"
-            onConfirm={() => removeExpMutation.mutate(record.id_exp_list)}
+            onConfirm={() => removeExpMutation.mutateAsync(record.id_exp_list)}
             okText="Quitar"
             okType="danger"
           >
@@ -297,7 +298,7 @@ export function ListsContainer() {
 
   const ExpsExport = () => (
     <ExcelFile
-      filename={`Expedientes Lista ${data ? data[0].list_name : ""}`}
+      filename={`Expedientes Lista ${data ? data.listName : ""}`}
       element={
         <Button disabled={!data} icon={<FileExcelOutlined />}>
           Exportar
@@ -311,7 +312,7 @@ export function ListsContainer() {
         <ExcelColumn label="Estado" value="ESTADO" />
         <ExcelColumn
           label="Creado"
-          value={(col: ExtendedLista) =>
+          value={(col: ExtendedExp) =>
             format(parseISO(col.FECHA_CREACION), "P", {
               locale: esLocale,
             })
@@ -319,7 +320,7 @@ export function ListsContainer() {
         />
         <ExcelColumn
           label="Ultimo pase"
-          value={(col: ExtendedLista) =>
+          value={(col: ExtendedExp) =>
             format(parseISO(col.FECHA_OPERACION), "P", {
               locale: esLocale,
             })
@@ -333,20 +334,21 @@ export function ListsContainer() {
   return (
     <Row gutter={[16, 16]} justify="center">
       <Col key="list-header" span={24}>
-        <Space align="center">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            type="text"
-            onClick={() => window.history.back()}
-          />
-          <Title level={4} style={{ marginBottom: 0 }}>
-            Listas de seguimiento
-          </Title>
-          <Text>{data ? data[0].list_name : ""}</Text>
-        </Space>
+        <Flex justify="space-between">
+          <Space direction="vertical">
+            <Title level={4} style={{ marginBottom: 0 }}>
+              {`Detalles: ${data ? data.listName : ""}`}
+            </Title>
+            <Typography.Text type="secondary">
+              Aqui vera los expedientes asociados a su lista. Puede agregar
+              nuevos expedientes utilizando el formulario al pie
+            </Typography.Text>
+          </Space>
+          <ExpsExport />
+        </Flex>
       </Col>
       <Col span={24}>
-        <Card bordered={false} extra={<ExpsExport />}>
+        <Card bordered={false}>
           <Row gutter={[16, 16]}>
             {movsData.length > 0 && <ListStatistics movs={movsData} />}
             <Col span={24}>
@@ -360,7 +362,7 @@ export function ListsContainer() {
                 <Table
                   columns={columns}
                   rowKey="ID"
-                  loading={isLoading}
+                  loading={status === "pending"}
                   dataSource={movsData}
                   size="small"
                   scroll={{ x: 1300 }}
@@ -387,7 +389,7 @@ export function ListsContainer() {
             <TableResults
               data={searchData}
               handleAdd={(id: number) =>
-                addExpMutation.mutate({ expId: id, listId })
+                addExpMutation.mutateAsync({ expId: id, listId })
               }
               isAdding={addExpMutation.isPending}
             />
