@@ -1,32 +1,33 @@
-import { Tabs } from "antd";
+import { Descriptions, Space, Tabs, Typography } from "antd";
 import axios from "axios";
 import { useState } from "react";
 import { SearchAssociateExpForm } from "./SearchAssociateExpForm";
 import { NonExpAssociateForm } from "./NonExpAssociateForm";
-import { TargetExpProps } from "./TreeTitleRenderer";
 import { ExpSearchResponse } from "@/types/apiGde";
+import { ExpDocDetailResponse } from "@/types/expDoc";
+import { useCreateExpMutation } from "./ModalAssociateExp.utils";
 import { SearchDocExpForm } from "./SearchDocExpForm";
 import { sedesCodes } from "@/utils";
-import { useCreateExpMutation } from "./ModalAssociateExp.utils";
 
-export function ModalAssociateExpAlt({
-  targetExp,
-  existingIds,
-  onlyChild = false,
-  isRoot,
+const { Text } = Typography;
+
+export function ModalAssociateExpDoc({
+  targetExpDoc,
   onSuccess,
 }: {
-  targetExp: TargetExpProps;
-  existingIds: string[];
-  onlyChild?: boolean;
-  isRoot: boolean;
+  targetExpDoc: ExpDocDetailResponse["data"];
   onSuccess?: () => void;
 }) {
-  console.log({ isRoot, onlyChild });
+  const createExpRelMutation = useCreateExpMutation();
   const [searchData, setSearchData] = useState<ExpSearchResponse>();
   const [isSearching, setIsSearching] = useState(false);
   const [showEmpty, setShowEmpty] = useState(false);
-  const createExpRelMutation = useCreateExpMutation();
+
+  const targetExpCode = `${
+    sedesCodes[targetExpDoc.attributes.SEDE as keyof typeof sedesCodes]
+  }-${targetExpDoc.attributes.NRO_ORDEN}-${targetExpDoc.attributes.NRO_EXPE}-${
+    targetExpDoc.attributes.SEDE
+  }`;
 
   const handleSearch = async (values: { year: number; number: number }) => {
     const { year, number } = values;
@@ -56,7 +57,7 @@ export function ModalAssociateExpAlt({
     expediente_tipo: number | null;
   }) => {
     if (data.asFather) {
-      createExpRelMutation.mutateAsync({
+      await createExpRelMutation.mutateAsync({
         parent: {
           notas: data.notas,
           title: data.title,
@@ -65,22 +66,22 @@ export function ModalAssociateExpAlt({
           isExpDoc: false,
         },
         child: {
-          expId: targetExp.ID,
-          expCode: targetExp.CODIGO,
-          descripcion: targetExp.DESCRIPCION.substring(0, 255),
-          isExp: true,
-          isExpDoc: false,
+          expCode: targetExpCode,
+          descripcion: targetExpDoc.attributes.ASUNTO.substring(0, 255),
+          fechaCreacion: new Date().toISOString(),
+          isExp: false,
+          isExpDoc: true,
         },
       });
       onSuccess && onSuccess();
     } else {
-      createExpRelMutation.mutateAsync({
+      await createExpRelMutation.mutateAsync({
         parent: {
-          expId: targetExp.ID,
-          expCode: targetExp.CODIGO,
-          descripcion: targetExp.DESCRIPCION.substring(0, 255),
-          isExp: true,
-          isExpDoc: false,
+          expCode: targetExpCode,
+          descripcion: targetExpDoc.attributes.ASUNTO.substring(0, 255),
+          fechaCreacion: new Date().toISOString(),
+          isExp: false,
+          isExpDoc: true,
         },
         child: {
           notas: data.notas,
@@ -103,11 +104,11 @@ export function ModalAssociateExpAlt({
           handleSearch={handleSearch}
           handleReset={handleReset}
           isSearching={isSearching}
-          existingIds={existingIds}
+          existingIds={[""]}
           showEmpty={showEmpty}
           searchData={searchData}
           handleAssociate={async (asFather) => {
-            if (searchData) {
+            if (targetExpDoc && searchData) {
               if (asFather) {
                 await createExpRelMutation.mutateAsync({
                   parent: {
@@ -119,22 +120,28 @@ export function ModalAssociateExpAlt({
                     isExpDoc: false,
                   },
                   child: {
-                    expId: targetExp.ID,
-                    expCode: targetExp.CODIGO,
-                    descripcion: targetExp.DESCRIPCION.substring(0, 255),
-                    isExp: targetExp.IS_EXPEDIENTE,
-                    isExpDoc: targetExp.IS_EXPEDIENTEDOC,
+                    expCode: targetExpCode,
+                    descripcion: targetExpDoc.attributes.ASUNTO.substring(
+                      0,
+                      255
+                    ),
+                    fechaCreacion: new Date().toISOString(),
+                    isExp: false,
+                    isExpDoc: true,
                   },
                 });
                 onSuccess && onSuccess();
               } else {
                 await createExpRelMutation.mutateAsync({
                   parent: {
-                    expId: targetExp.ID,
-                    expCode: targetExp.CODIGO,
-                    descripcion: targetExp.DESCRIPCION.substring(0, 255),
-                    isExp: targetExp.IS_EXPEDIENTE,
-                    isExpDoc: targetExp.IS_EXPEDIENTEDOC,
+                    expCode: targetExpCode,
+                    descripcion: targetExpDoc.attributes.ASUNTO.substring(
+                      0,
+                      255
+                    ),
+                    fechaCreacion: new Date().toISOString(),
+                    isExp: false,
+                    isExpDoc: true,
                   },
                   child: {
                     expId: searchData.ID,
@@ -149,7 +156,7 @@ export function ModalAssociateExpAlt({
               }
             }
           }}
-          allowFather={!onlyChild && isRoot}
+          allowFather={true}
         />
       ),
     },
@@ -160,9 +167,7 @@ export function ModalAssociateExpAlt({
         <SearchDocExpForm
           handleSubmit={(values) => {}}
           mode="associate"
-          targetExpCode={targetExp.CODIGO}
-          existingIds={existingIds}
-          allowFather={!onlyChild && isRoot}
+          targetExpCode={targetExpCode}
           onAssociate={async (asFather, selectedExp) => {
             const selectedCode = `${
               sedesCodes[selectedExp.attributes.SEDE as keyof typeof sedesCodes]
@@ -179,22 +184,22 @@ export function ModalAssociateExpAlt({
                   isExpDoc: true,
                 },
                 child: {
-                  expId: targetExp.ID,
-                  expCode: targetExp.CODIGO,
-                  descripcion: targetExp.DESCRIPCION.substring(0, 255),
-                  isExp: targetExp.IS_EXPEDIENTE,
-                  isExpDoc: targetExp.IS_EXPEDIENTEDOC,
+                  expCode: targetExpCode,
+                  descripcion: targetExpDoc.attributes.ASUNTO.substring(0, 255),
+                  fechaCreacion: new Date().toISOString(),
+                  isExp: false,
+                  isExpDoc: true,
                 },
               });
               onSuccess && onSuccess();
             } else {
               await createExpRelMutation.mutateAsync({
                 parent: {
-                  expId: targetExp.ID,
-                  expCode: targetExp.CODIGO,
-                  descripcion: targetExp.DESCRIPCION.substring(0, 255),
-                  isExp: targetExp.IS_EXPEDIENTE,
-                  isExpDoc: targetExp.IS_EXPEDIENTEDOC,
+                  expCode: targetExpCode,
+                  descripcion: targetExpDoc.attributes.ASUNTO.substring(0, 255),
+                  fechaCreacion: new Date().toISOString(),
+                  isExp: false,
+                  isExpDoc: true,
                 },
                 child: {
                   expCode: selectedCode,
@@ -213,14 +218,28 @@ export function ModalAssociateExpAlt({
     {
       key: "3",
       label: "Sin expediente",
-      children: (
-        <NonExpAssociateForm
-          onSubmit={onSubmit}
-          allowFather={!onlyChild && !isRoot}
-        />
-      ),
+      children: <NonExpAssociateForm onSubmit={onSubmit} />,
     },
   ];
 
-  return <Tabs defaultActiveKey="1" items={tabs} style={{ minHeight: 450 }} />;
+  return (
+    <Space direction="vertical" size="small">
+      <Descriptions
+        bordered
+        title="Expediente Fisico base:"
+        items={[
+          {
+            label: "Codigo",
+            children: `${targetExpDoc.attributes.NRO_ORDEN}-${targetExpDoc.attributes.NRO_EXPE}-${targetExpDoc.attributes.SEDE}`,
+          },
+          {
+            label: "Descripcion",
+            children: targetExpDoc.attributes.ASUNTO,
+          },
+        ]}
+      />
+      <Text strong>Seleccione la opcion de asociacion</Text>
+      <Tabs defaultActiveKey="1" items={tabs} />
+    </Space>
+  );
 }

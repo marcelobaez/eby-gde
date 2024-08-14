@@ -1,4 +1,3 @@
-import { Categoria } from "./categoria";
 import { MetaData } from "./common";
 import { Expediente } from "./expediente";
 

@@ -3,7 +3,10 @@ const { PolicyError } = errors;
 
 module.exports = async (policyContext, config, { strapi }) => {
   // check if user is admin
-  if (policyContext.state.user.role.type === "exprelaciones") {
+  if (
+    policyContext.state.user.role.type === "administrator" ||
+    policyContext.state.user.role.type === "exprelaciones"
+  ) {
     // Go to controller's action.
     return true;
   }

@@ -19,13 +19,10 @@ module.exports = createCoreRouter(
       delete: {
         policies: ["is-admin"],
       },
-      updateExpRelation: {
-        policies: ["is-admin"],
-      },
       deleteExpRelation: {
         policies: ["is-admin"],
       },
-      createCustom: {
+      createNew: {
         policies: ["is-admin"],
       },
     },

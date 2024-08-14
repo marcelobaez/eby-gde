@@ -16,9 +16,22 @@ export type ExpRelacion = {
       data: Categoria;
     };
     isExp: boolean;
+    isExpDoc: boolean | null;
     title: string;
     fechaCreacion: string;
   };
+};
+
+export type ExpRelacionCreateRequest = {
+  expId?: number;
+  expCode?: string;
+  descripcion?: string;
+  notas?: string;
+  expediente_tipo?: number;
+  isExp: boolean;
+  isExpDoc: boolean | null;
+  title?: string;
+  fechaCreacion?: string;
 };
 
 export type ExpRelacionResponse = {

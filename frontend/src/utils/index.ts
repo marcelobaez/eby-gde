@@ -3,6 +3,7 @@ import { ExpRelacion } from "@/types/expRelacion";
 import { FileTwoTone, FolderTwoTone } from "@ant-design/icons";
 import { BasicDataNode, DataNode } from "antd/es/tree";
 import { parseISO, differenceInDays } from "date-fns";
+import React from "react";
 
 export type TreeNode = (BasicDataNode | DataNode) & {
   title: string;
@@ -14,6 +15,7 @@ export type TreeNode = (BasicDataNode | DataNode) & {
   tag: string;
   isEditable: boolean;
   isExp: boolean;
+  isExpDoc: boolean;
   isFirst?: boolean;
   isLast?: boolean;
   created: string;
@@ -99,6 +101,17 @@ export const getStatusByGivenDates = (
   }
 };
 
+export const sedesCodes = {
+  1: "BUE",
+  2: "ASU",
+  3: "ITU",
+  4: "AYO",
+  5: "POS",
+  6: "ENC",
+  9: "TODO",
+  10: "PTY",
+};
+
 export function createTreeNodes(
   response: ExpRelacion,
   maxDepth = 0,
@@ -109,16 +122,24 @@ export function createTreeNodes(
     Array.isArray(response.attributes.children.data) &&
     response.attributes.children.data.length > 0;
 
+  const isExp = response.attributes.isExp;
+  const isExpDoc = response.attributes.isExpDoc;
+
   let formattedResponse: TreeNode = {
-    title: response.attributes.expCode ?? response.attributes.title,
-    key:
-      String(response.attributes.expId) ??
-      `${response.id} - ${response.attributes.title}`,
-    icon: response.attributes.isExp ? (
-      <FolderTwoTone twoToneColor="#f59e0b" />
-    ) : (
-      <FileTwoTone />
-    ),
+    title:
+      isExp || isExpDoc
+        ? response.attributes.expCode
+        : response.attributes.title,
+    key: isExp
+      ? String(response.attributes.expId)
+      : isExpDoc
+      ? response.attributes.expCode
+      : `${response.id} - ${response.attributes.title}`,
+    icon: isExp
+      ? React.createElement(FolderTwoTone, { twoToneColor: "#f59e0b" })
+      : isExpDoc
+      ? React.createElement(FolderTwoTone)
+      : React.createElement(FileTwoTone),
     desc: response.attributes.descripcion,
     notes: response.attributes.notas,
     expId: response.id,
@@ -129,6 +150,10 @@ export function createTreeNodes(
         : "",
     isEditable: currentDepth < maxDepth,
     isExp: response.attributes.isExp,
+    isExpDoc:
+      response.attributes.isExpDoc === null
+        ? false
+        : response.attributes.isExpDoc,
     created: response.attributes.fechaCreacion,
     children: [],
   };
@@ -147,25 +172,62 @@ export function createTreeNodes(
   return formattedResponse;
 }
 
+// export function reverseJsonTree(jsonObj: ExpRelacion, seenExpIds = new Map()) {
+//   const reversedJson = { ...jsonObj }; // Create a copy of the original JSON
+//   const expId = reversedJson.attributes.expId;
+
+//   if (expId) {
+//     if (!seenExpIds.has(expId)) {
+//       seenExpIds.set(expId, reversedJson);
+//     }
+//     const parentData = reversedJson.attributes.parent?.data || null;
+//     if (parentData) {
+//       if (!parentData.attributes.children)
+//         parentData.attributes.children = { data: [] };
+//       const existingChild = parentData.attributes.children.data.find(
+//         (child) => child.attributes.expId === expId
+//       );
+//       if (existingChild) {
+//         parentData.attributes.children.data[
+//           parentData.attributes.children.data.indexOf(existingChild)
+//         ] = seenExpIds.get(expId);
+//       } else {
+//         parentData.attributes.children.data.push(seenExpIds.get(expId));
+//       }
+//       return reverseJsonTree(parentData, seenExpIds);
+//     }
+//   }
+
+//   return reversedJson;
+// }
+
 export function reverseJsonTree(jsonObj: ExpRelacion, seenExpIds = new Map()) {
   const reversedJson = { ...jsonObj }; // Create a copy of the original JSON
   const expId = reversedJson.attributes.expId;
+  const expCode = reversedJson.attributes.expCode;
 
-  if (expId) {
-    if (!seenExpIds.has(expId)) {
-      seenExpIds.set(expId, reversedJson);
+  if (expId || expCode) {
+    if (!seenExpIds.has(expId) || !seenExpIds.has(expCode)) {
+      if (expId) {
+        seenExpIds.set(expId, reversedJson);
+      }
+      if (expCode) {
+        seenExpIds.set(expCode, reversedJson);
+      }
     }
     const parentData = reversedJson.attributes.parent?.data || null;
     if (parentData) {
       if (!parentData.attributes.children)
         parentData.attributes.children = { data: [] };
       const existingChild = parentData.attributes.children.data.find(
-        (child) => child.attributes.expId === expId
+        (child) =>
+          child.attributes.expId === expId ||
+          child.attributes.expCode === expCode
       );
       if (existingChild) {
         parentData.attributes.children.data[
           parentData.attributes.children.data.indexOf(existingChild)
-        ] = seenExpIds.get(expId);
+        ] = seenExpIds.get(expId) || seenExpIds.get(expCode);
       } else {
         parentData.attributes.children.data.push(seenExpIds.get(expId));
       }
@@ -175,6 +237,7 @@ export function reverseJsonTree(jsonObj: ExpRelacion, seenExpIds = new Map()) {
 
   return reversedJson;
 }
+
 export function getTreeDepth(treeData: TreeNode) {
   if (!treeData || !treeData.children) {
     return 0;

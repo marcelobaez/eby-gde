@@ -22,6 +22,7 @@ export type TargetExpProps = {
   CODIGO: string;
   DESCRIPCION: string;
   IS_EXPEDIENTE: boolean;
+  IS_EXPEDIENTEDOC: boolean;
   children: TreeNode["children"];
 };
 
@@ -29,9 +30,8 @@ type TreeTitleRendererProps = {
   nodeData: TreeNode;
   setNodeData: (value: TreeNode) => void;
   setOpenInfo: (value: boolean) => void;
-  showDrawerRelateAlt: (value: TargetExpProps) => void;
-  showDrawerRelateChild: (TreeNode: any) => void;
   handleDelete: (id: number) => void;
+  onAssociate: () => void;
   treeData: TreeNode;
   selectedExpId: string;
 };
@@ -40,8 +40,7 @@ export function TreeTitleRenderer({
   nodeData,
   setNodeData,
   setOpenInfo,
-  showDrawerRelateAlt,
-  showDrawerRelateChild,
+  onAssociate,
   handleDelete,
   treeData,
   selectedExpId,
@@ -77,18 +76,17 @@ export function TreeTitleRenderer({
         }
       ),
     // On failure, roll back to the previous value
-    onError: (err, variables, previousValue) => {
+    onError: () => {
       message.error("Error al actualizar la posicion");
-      queryClient.setQueryData(["arbolExp"], previousValue);
     },
-    onSuccess: (data, variables, context) => {
-      message.success("Posicion actualizada");
-    },
-    // After success or failure, refetch the todos query
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["arbolExp"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["arbolExpcode"],
+      });
+      message.success("Posicion actualizada");
     },
   });
 
@@ -100,10 +98,12 @@ export function TreeTitleRenderer({
     });
   };
 
+  const isExp = Boolean(nodeData.isExpDoc || nodeData.isExp);
+
   return (
     <Space>
       <Space>
-        {nodeData.key === String(selectedExpId) ? (
+        {nodeData.key === selectedExpId ? (
           <Text
             style={{ width: 400 }}
             ellipsis={{
@@ -144,7 +144,7 @@ export function TreeTitleRenderer({
           icon={<InfoCircleOutlined />}
         />
       </Tooltip>
-      {nodeData.isExp && (
+      {isExp && (
         <Tooltip
           title={`${
             nodeData.isEditable
@@ -158,25 +158,14 @@ export function TreeTitleRenderer({
             icon={<FolderAddOutlined />}
             onClick={() => {
               setNodeData(nodeData);
-              if (nodeData.key === treeData.key) {
-                showDrawerRelateAlt({
-                  ID: nodeData.expId,
-                  EXP_ID: nodeData.key,
-                  CODIGO: nodeData.title,
-                  DESCRIPCION: nodeData.desc,
-                  IS_EXPEDIENTE: nodeData.isExp,
-                  children: nodeData.children,
-                });
-              } else {
-                showDrawerRelateChild(nodeData);
-              }
+              onAssociate();
             }}
           />
         </Tooltip>
       )}
       <Tooltip
         title={`${
-          nodeData.isLeaf
+          nodeData.children.length === 0
             ? "Eliminar la relacion"
             : "Para eliminar la relacion, primero elimine los hijos"
         }`}

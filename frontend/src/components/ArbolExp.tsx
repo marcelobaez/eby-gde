@@ -118,43 +118,43 @@ export function ArbolExp({
   };
 
   // modal para crear una nueva relacion
-  const showDrawerRelateAlt = (targetExp: TargetExpProps) => {
-    info({
-      title: "Buscar expediente a asociar",
-      content: (
-        <QueryClientProvider client={queryClient}>
-          <ModalAssociateExpAlt
-            targetExp={targetExp}
-            existingIds={getKeys(treeData!)}
-            onlyChild={currDepth === 4}
-          />
-        </QueryClientProvider>
-      ),
-      centered: true,
-      footer: null,
-      closable: true,
-      width: 800,
-    });
-  };
+  // const showDrawerRelateAlt = (targetExp: TargetExpProps) => {
+  //   info({
+  //     title: "Buscar expediente a asociar",
+  //     content: (
+  //       <QueryClientProvider client={queryClient}>
+  //         <ModalAssociateExpAlt
+  //           targetExp={targetExp}
+  //           existingIds={getKeys(treeData!)}
+  //           onlyChild={currDepth === 4}
+  //         />
+  //       </QueryClientProvider>
+  //     ),
+  //     centered: true,
+  //     footer: null,
+  //     closable: true,
+  //     width: 800,
+  //   });
+  // };
 
-  // mostrar modal para asociar hijo a expediente existente
-  const showDrawerRelateChild = (nodeData: TreeNode) => {
-    info({
-      title: "Buscar expediente a asociar",
-      content: (
-        <QueryClientProvider client={queryClient}>
-          <ModalAssociateExistExp
-            targetExp={nodeData}
-            existingIds={getKeys(treeData!)}
-          />
-        </QueryClientProvider>
-      ),
-      centered: true,
-      footer: null,
-      closable: true,
-      width: 800,
-    });
-  };
+  // // mostrar modal para asociar hijo a expediente existente
+  // const showDrawerRelateChild = (nodeData: TreeNode) => {
+  //   info({
+  //     title: "Buscar expediente a asociar",
+  //     content: (
+  //       <QueryClientProvider client={queryClient}>
+  //         <ModalAssociateExistExp
+  //           targetExp={nodeData}
+  //           existingIds={getKeys(treeData!)}
+  //         />
+  //       </QueryClientProvider>
+  //     ),
+  //     centered: true,
+  //     footer: null,
+  //     closable: true,
+  //     width: 800,
+  //   });
+  // };
 
   const handleDelete = (id: number) => {
     confirm({
@@ -204,20 +204,20 @@ export function ArbolExp({
                 switcherIcon={<DownOutlined />}
                 autoExpandParent={autoExpandParent}
                 onExpand={onExpand}
-                titleRender={(nodeData) => {
-                  return (
-                    <TreeTitleRenderer
-                      nodeData={nodeData}
-                      setNodeData={setNodeData}
-                      setOpenInfo={setOpenInfo}
-                      showDrawerRelateAlt={showDrawerRelateAlt}
-                      showDrawerRelateChild={showDrawerRelateChild}
-                      handleDelete={handleDelete}
-                      selectedExpId={id}
-                      treeData={treeData}
-                    />
-                  );
-                }}
+                // titleRender={(nodeData) => {
+                //   return (
+                //     <TreeTitleRenderer
+                //       nodeData={nodeData}
+                //       setNodeData={setNodeData}
+                //       setOpenInfo={setOpenInfo}
+                //       // showDrawerRelateAlt={showDrawerRelateAlt}
+                //       // showDrawerRelateChild={showDrawerRelateChild}
+                //       handleDelete={handleDelete}
+                //       selectedExpId={id}
+                //       treeData={treeData}
+                //     />
+                //   );
+                // }}
               />
             )}
           {data && (data.length === 0 || hasNoParentAndChildren) && (

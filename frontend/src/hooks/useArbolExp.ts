@@ -1,10 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { getArbolExpById, getExpRelationById } from "../lib/fetchers";
+import {
+  getArbolExpByExpCode,
+  getArbolExpById,
+  getExpRelationById,
+} from "../lib/fetchers";
 
 export function useGetArbolExpByGdeId(id: string, options = {}) {
   return useQuery({
     queryKey: ["arbolExp", id],
     queryFn: async () => getArbolExpById(id),
+    ...options,
+  });
+}
+
+export function useGetArbolExpByExpCode(code: string, options = {}) {
+  return useQuery({
+    queryKey: ["arbolExpcode", code],
+    queryFn: async () => getArbolExpByExpCode(code),
     ...options,
   });
 }

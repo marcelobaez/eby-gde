@@ -30,7 +30,6 @@ import {
 } from "../hooks/useList";
 import { ModalSetDate } from "./ModalSetDate";
 import {
-  ArrowLeftOutlined,
   CalendarOutlined,
   DeleteOutlined,
   FileExcelOutlined,
@@ -65,7 +64,7 @@ export function ListsContainer() {
 
   const listId = (router.query.id as string) || "";
 
-  const { data, isLoading, fetchStatus, status } = useListInfoByID(listId);
+  const { data, status } = useListInfoByID(listId);
 
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
@@ -196,12 +195,11 @@ export function ListsContainer() {
       dataIndex: "ESTADO",
       width: 150,
       render: (text, record) => (
-        <span>
-          <Badge status={record.stateColor as PresetStatusColorType} />
-          {text}
-        </span>
+        <Badge
+          status={record.stateColor as PresetStatusColorType}
+          text={text}
+        />
       ),
-      // defaultSortOrder: "descend",
       sorter: (a, b) => a.ESTADO.localeCompare(b.ESTADO),
       sortDirections: ["descend", "ascend"],
     },

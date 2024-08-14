@@ -255,6 +255,77 @@ export const getArbolExpById = async (id: string) => {
   return data;
 };
 
+export const getArbolExpByExpCode = async (code: string) => {
+  const query = qs.stringify(
+    {
+      filters: {
+        expCode: {
+          $eq: code,
+        },
+      },
+      populate: [
+        //root
+        "parent",
+        "children",
+        "expediente_tipo",
+        "parent.children",
+        "parent.expediente_tipo",
+        "parent.children.expediente_tipo",
+        "parent.children.children",
+        "parent.children.children.expediente_tipo",
+        "parent.children.children.children",
+        "parent.children.children.children.expediente_tipo",
+        "parent.children.children.children.children",
+        "parent.children.children.children.children.expediente_tipo",
+        //level 1
+        "parent.parent",
+        "parent.parent.expediente_tipo",
+        "parent.parent.children",
+        "parent.parent.children.expediente_tipo",
+        "parent.parent.children.children",
+        "parent.parent.children.children.expediente_tipo",
+        "parent.parent.children.children.children",
+        "parent.parent.children.children.children.expediente_tipo",
+        //level 2
+        "parent.parent.parent",
+        "parent.parent.parent.expediente_tipo",
+        "parent.parent.parent.children",
+        "parent.parent.parent.children.expediente_tipo",
+        "parent.parent.parent.children.children",
+        "parent.parent.parent.children.children.expediente_tipo",
+        "parent.parent.parent.children.children.children",
+        "parent.parent.parent.children.children.children.expediente_tipo",
+        //level 3
+        "parent.parent.parent.parent",
+        "parent.parent.parent.parent.expediente_tipo",
+        "parent.parent.parent.parent.children",
+        "parent.parent.parent.parent.children.expediente_tipo",
+        "parent.parent.parent.parent.children.children",
+        "parent.parent.parent.parent.children.children.expediente_tipo",
+        "parent.parent.parent.parent.children.children.children",
+        "parent.parent.parent.parent.children.children.children.expediente_tipo",
+        //all children
+        "children.expediente_tipo",
+        "children.children",
+        "children.children.expediente_tipo",
+        "children.children.children",
+        "children.children.children.expediente_tipo",
+        "children.children.children.children",
+        "children.children.children.children.expediente_tipo",
+      ],
+    },
+    {
+      encodeValuesOnly: true, // prettify URL
+    }
+  );
+
+  const { data } = await api
+    .get<ExpRelacionResponse>(`/expedientes-relaciones?${query}`)
+    .then((res) => res.data);
+
+  return data;
+};
+
 export const getExpRelationById = async (id: number) => {
   const { data } = await api.get(`/expedientes-relaciones/${id}?populate=*`);
 

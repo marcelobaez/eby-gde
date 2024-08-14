@@ -17,7 +17,7 @@ export function ModalAssociateExistExp({
   existingIds: string[];
 }) {
   const queryClient = useQueryClient();
-  const [searchData, setSearchData] = useState<ExpSearchResponse[]>([]);
+  const [searchData, setSearchData] = useState<ExpSearchResponse>();
   const [isSearching, setIsSearching] = useState(false);
   const [showEmpty, setShowEmpty] = useState(false);
 
@@ -33,24 +33,25 @@ export function ModalAssociateExistExp({
 
     const hasResults = expedientes.length > 0;
 
-    setSearchData(expedientes);
+    setSearchData(expedientes[0]);
     setShowEmpty(!hasResults);
   };
 
   const handleReset = () => {
-    setSearchData([]);
+    setSearchData(undefined);
     setShowEmpty(false);
   };
 
   const addExpMutation = useMutation({
-    mutationFn: () => {
-      return api.put(`/expedientes-relaciones/updaterel/${targetExp.expId}`, {
+    mutationFn: (body: { id: number; searchData: ExpSearchResponse }) => {
+      const { id, searchData } = body;
+      return api.put(`/expedientes-relaciones/updaterel/${id}`, {
         data: {
           child: {
-            expId: searchData[0].ID,
-            expCode: searchData[0].CODIGO,
-            descripcion: searchData[0].DESCRIPCION.substring(0, 255),
-            fechaCreacion: searchData[0].FECHA_CREACION,
+            expId: searchData.ID,
+            expCode: searchData.CODIGO,
+            descripcion: searchData.DESCRIPCION.substring(0, 255),
+            fechaCreacion: searchData.FECHA_CREACION,
             isExp: true,
           },
         },
@@ -62,6 +63,9 @@ export function ModalAssociateExistExp({
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["arbolExp"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["arbolExpcode"],
       });
       message.success("Asociacion creada correctamente");
       handleReset();
@@ -95,6 +99,9 @@ export function ModalAssociateExistExp({
       queryClient.invalidateQueries({
         queryKey: ["arbolExp"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["arbolExpcode"],
+      });
       message.success("Relacion actualizada");
     },
     onSettled: () => {
@@ -118,7 +125,10 @@ export function ModalAssociateExistExp({
           existingIds={existingIds}
           showEmpty={showEmpty}
           searchData={searchData}
-          handleAssociate={() => addExpMutation.mutate()}
+          handleAssociate={() => {
+            if (searchData)
+              addExpMutation.mutate({ searchData, id: targetExp.expId });
+          }}
         />
       ),
     },

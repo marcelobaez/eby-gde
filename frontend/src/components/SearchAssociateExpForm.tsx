@@ -1,6 +1,7 @@
 import { ApartmentOutlined, FolderOutlined } from "@ant-design/icons";
 import { Col, List, Button, Card, Empty, Avatar, Space, Result } from "antd";
 import { SearchExpForm } from "./SearchExpForm";
+import { ExpSearchResponse } from "@/types/apiGde";
 
 export function SearchAssociateExpForm({
   handleSearch,
@@ -17,7 +18,7 @@ export function SearchAssociateExpForm({
   isSearching: boolean;
   existingIds: string[];
   showEmpty: boolean;
-  searchData: any[];
+  searchData?: ExpSearchResponse;
   handleAssociate: (isFather: boolean) => void;
   allowFather?: boolean;
 }) {
@@ -37,57 +38,54 @@ export function SearchAssociateExpForm({
           </Card>
         </Col>
       )}
-      {searchData.length > 0 &&
-        !existingIds.includes(String(searchData[0].ID)) && (
-          <Col span={24}>
-            <List
-              itemLayout="horizontal"
-              size="large"
-              dataSource={[
-                {
-                  code: searchData[0].CODIGO,
-                  description: searchData[0].DESCRIPCION,
-                },
-              ]}
-              loading={isSearching}
-              renderItem={(item, index) => (
-                <List.Item
-                  actions={[
-                    <Button
-                      key="asoc-father-btn"
-                      disabled={!allowFather}
-                      icon={<ApartmentOutlined />}
-                      onClick={() => handleAssociate(true)}
-                    >
-                      Asociar como Padre
-                    </Button>,
-                    <Button
-                      key="asoc-child-btn"
-                      icon={<ApartmentOutlined />}
-                      onClick={() => handleAssociate(false)}
-                    >
-                      Asociar como Hijo
-                    </Button>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    avatar={<Avatar icon={<FolderOutlined />} />}
-                    title={item.code}
-                    description={item.description}
-                  />
-                </List.Item>
-              )}
-            />
-          </Col>
-        )}
-      {/* Mostrar mensaje de error si se intenta asociar a si mismo */}
-      {searchData.length > 0 &&
-        existingIds.includes(String(searchData[0].ID)) && (
-          <Result
-            status="error"
-            title="No se puede asociar un expediente que ya existe en el arbol"
+      {searchData && !existingIds.includes(String(searchData.ID)) && (
+        <Col span={24}>
+          <List
+            itemLayout="horizontal"
+            size="large"
+            dataSource={[
+              {
+                code: searchData.CODIGO,
+                description: searchData.DESCRIPCION,
+              },
+            ]}
+            loading={isSearching}
+            renderItem={(item, index) => (
+              <List.Item
+                actions={[
+                  <Button
+                    key="asoc-father-btn"
+                    disabled={!allowFather}
+                    icon={<ApartmentOutlined />}
+                    onClick={() => handleAssociate(true)}
+                  >
+                    Asociar como Padre
+                  </Button>,
+                  <Button
+                    key="asoc-child-btn"
+                    icon={<ApartmentOutlined />}
+                    onClick={() => handleAssociate(false)}
+                  >
+                    Asociar como Hijo
+                  </Button>,
+                ]}
+              >
+                <List.Item.Meta
+                  title={item.code}
+                  description={item.description}
+                />
+              </List.Item>
+            )}
           />
-        )}
+        </Col>
+      )}
+      {/* Mostrar mensaje de error si se intenta asociar a si mismo */}
+      {searchData && existingIds.includes(String(searchData.ID)) && (
+        <Result
+          status="error"
+          title="No se puede asociar un expediente que ya existe en el arbol"
+        />
+      )}
     </Space>
   );
 }

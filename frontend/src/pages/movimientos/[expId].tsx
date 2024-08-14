@@ -23,8 +23,8 @@ import { useState } from "react";
 import ReactExport from "react-data-export";
 import { FileExcelOutlined } from "@ant-design/icons";
 import { authOptions } from "../api/auth/[...nextauth]";
-import { ArbolExp } from "../../components/ArbolExp";
-import { useHasRelPermission } from "../../hooks/useHasRelPermission";
+// import { ArbolExp } from "../../components/ArbolExp";
+// import { useHasRelPermission } from "../../hooks/useHasRelPermission";
 import { DocsResponse, GDEMovsResponse } from "@/types/apiGde";
 import { ColumnsType } from "antd/es/table";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
@@ -40,7 +40,7 @@ export default function Movimiento() {
 
   const expId = (router.query.expId as string) || "";
 
-  const hasRelsPermissions = useHasRelPermission();
+  // const hasRelsPermissions = useHasRelPermission();
 
   const [activeKey, setActiveKey] = useState("item-1");
 
@@ -305,25 +305,25 @@ export default function Movimiento() {
                       />
                     ),
                   },
-                  ...(hasRelsPermissions
-                    ? [
-                        {
-                          key: "item-3",
-                          label: "Jerarquia",
-                          children: (
-                            <ArbolExp
-                              exp={{
-                                id: expId,
-                                desc: movsData[0].DESCRIPCION,
-                                codigo: movsData[0].EXPEDIENTE,
-                                estado: movsData[0].ESTADO,
-                                fechaCreacion: movsData[0].FECHA_CREACION,
-                              }}
-                            />
-                          ),
-                        },
-                      ]
-                    : []),
+                  // ...(hasRelsPermissions
+                  //   ? [
+                  //       {
+                  //         key: "item-3",
+                  //         label: "Jerarquia",
+                  //         children: (
+                  //           <ArbolExp
+                  //             exp={{
+                  //               id: expId,
+                  //               desc: movsData[0].DESCRIPCION,
+                  //               codigo: movsData[0].EXPEDIENTE,
+                  //               estado: movsData[0].ESTADO,
+                  //               fechaCreacion: movsData[0].FECHA_CREACION,
+                  //             }}
+                  //           />
+                  //         ),
+                  //       },
+                  //     ]
+                  //   : []),
                 ]}
               />
             )}

@@ -75,6 +75,9 @@ export function ExpRelacionForm({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["arbolExp"] });
+      queryClient.invalidateQueries({
+        queryKey: ["arbolExpcode"],
+      });
       message.success("Relacion actualizada");
       handleSuccess();
     },
@@ -111,7 +114,7 @@ export function ExpRelacionForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {data && !data.attributes.isExp && (
+      {data && !data.attributes.isExp && !data.attributes.isExpDoc && (
         <Form.Item
           label="Titulo"
           labelCol={{ span: 24 }}

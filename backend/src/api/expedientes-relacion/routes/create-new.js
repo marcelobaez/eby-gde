@@ -2,9 +2,9 @@ module.exports = {
   routes: [
     {
       // Path defined with a URL parameter
-      method: "PUT",
-      path: "/expedientes-relaciones/updaterel/:id",
-      handler: "expedientes-relacion.updateExpRelation",
+      method: "POST",
+      path: "/expedientes-relaciones/createnew",
+      handler: "expedientes-relacion.createNew",
       config: {
         policies: ["is-admin"],
       },
