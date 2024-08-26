@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { Input, Flex, Empty, List, Button, Space } from "antd";
+import React, { useMemo, useState } from "react";
+import { Input, Flex, Empty, List, Button, Space, PaginationProps } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useDebouncedState } from "@react-hookz/web";
 import { api } from "@/lib/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExpDocDetailResponse, ExpDocsResponse } from "@/types/expDoc";
 import { sedesCodes } from "@/utils";
+const FETCH_SIZE = 5;
+
 const { Search } = Input;
 
 type SearchExpDocFormProps = {
@@ -28,21 +30,33 @@ const SearchDocExp = ({
   existingIds,
   allowFather = true,
 }: SearchExpDocFormProps) => {
+  const queryClient = useQueryClient();
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useDebouncedState("", 500);
-  const selectedMode = mode ?? "verify";
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["searchExp", debouncedValue],
+  const { data, isLoading, isFetching } = useQuery<ExpDocsResponse>({
+    queryKey: ["searchExp", debouncedValue, currentPage],
     queryFn: async () => {
       const { data } = await api.get<ExpDocsResponse>(
-        `/expedientes-docs?filters[$or][0][ASUNTO][$containsi]=${debouncedValue}&filters[$or][1][NRO_ORDEN][$containsi]=${debouncedValue}&filters[$or][2][CAUSANTE][$containsi]=${debouncedValue}`
+        `/expedientes-docs?filters[$or][0][ASUNTO][$containsi]=${debouncedValue}&filters[$or][1][NRO_ORDEN][$containsi]=${debouncedValue}&filters[$or][2][CAUSANTE][$containsi]=${debouncedValue}&pagination[withCount]=true&pagination[page]=${currentPage}&pagination[pageSize]=${FETCH_SIZE}`
       );
 
-      return data.data;
+      return data;
     },
     enabled: Boolean(debouncedValue) && debouncedValue.length > 2,
+    refetchOnWindowFocus: false,
   });
+
+  const memoData = useMemo(() => data?.data ?? [], [data]);
+
+  const totalDBRowCount = data?.meta?.pagination?.total ?? 0;
+
+  const onPageChange: PaginationProps["onChange"] = (page) => {
+    setCurrentPage(page);
+  };
+
+  const selectedMode = mode ?? "verify";
 
   return (
     <Flex gap="middle" align="center" justify="center" vertical>
@@ -53,7 +67,13 @@ const SearchDocExp = ({
         }}
         onSearch={(v, e, info) => {
           if (e && info?.source === "clear") {
-            handleSubmit && handleSubmit();
+            if (handleSubmit) {
+              handleSubmit();
+              queryClient.removeQueries({
+                queryKey: ["searchExp", debouncedValue],
+                exact: true,
+              });
+            }
           }
         }}
         value={value}
@@ -62,17 +82,31 @@ const SearchDocExp = ({
         loading={isLoading}
         style={{ maxWidth: 500 }}
       />
-      {data && data.length === 0 && (
-        <Empty description="No se encontraron resultados"></Empty>
-      )}
-      {data && data.length > 0 && (
+      {memoData.length === 0 &&
+        debouncedValue.length > 2 &&
+        !(isLoading || isFetching) && (
+          <Empty description="No se encontraron resultados"></Empty>
+        )}
+      {memoData.length > 0 && (
         <List
-          style={{ width: "100%" }}
-          dataSource={data}
-          renderItem={(item, index) => (
-            <List.Item>
+          pagination={{
+            onChange: onPageChange,
+            defaultCurrent: currentPage,
+            total: totalDBRowCount,
+            pageSize: FETCH_SIZE,
+            showTotal: (total, range) =>
+              `Mostrando ${range[0]}-${range[1]} de ${total} resultados`,
+          }}
+          dataSource={memoData}
+          style={{ maxHeight: 460, width: "100%" }}
+          renderItem={(item) => (
+            <List.Item style={{ padding: "5px 0px" }}>
               <List.Item.Meta
-                title={`Nro Orden: ${item.attributes.NRO_ORDEN} - Causante: ${item.attributes.CAUSANTE}`}
+                title={`${
+                  sedesCodes[item.attributes.SEDE as keyof typeof sedesCodes]
+                }-${item.attributes.NRO_ORDEN}-${item.attributes.NRO_EXPE}-${
+                  item.attributes.SEDE
+                }`}
                 description={item.attributes.ASUNTO}
               />
               {selectedMode === "verify" && (

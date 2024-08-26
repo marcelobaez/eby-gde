@@ -15,12 +15,6 @@
     "NRO_ORDEN": {
       "type": "biginteger"
     },
-    "TIPO_DOC": {
-      "type": "string"
-    },
-    "NRO_DOC": {
-      "type": "biginteger"
-    },
     "SEDE": {
       "type": "integer"
     },
@@ -41,12 +35,6 @@
     },
     "ASUNTO": {
       "type": "text"
-    },
-    "IMPORTE": {
-      "type": "float"
-    },
-    "N_RESOLUC": {
-      "type": "integer"
     }
   }
 }

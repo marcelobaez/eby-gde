@@ -22,7 +22,6 @@ export function ModalAssociateExpAlt({
   isRoot: boolean;
   onSuccess?: () => void;
 }) {
-  console.log({ isRoot, onlyChild });
   const [searchData, setSearchData] = useState<ExpSearchResponse>();
   const [isSearching, setIsSearching] = useState(false);
   const [showEmpty, setShowEmpty] = useState(false);

@@ -156,8 +156,6 @@ export function AssociateByGDE() {
     setAutoExpandParent(false);
   };
 
-  console.log({ currDepth });
-
   const hasGDENoParentAndChildren =
     data &&
     data.length > 0 &&
@@ -300,7 +298,8 @@ export function AssociateByGDE() {
       <Modal
         footer={null}
         centered
-        width={800}
+        width={1000}
+        styles={{ content: { minHeight: 700 } }}
         open={isFormModalOpen}
         onCancel={() => setIsFormModalOpen(false)}
         destroyOnClose
@@ -319,7 +318,8 @@ export function AssociateByGDE() {
         title="Buscar expediente a asociar"
         footer={null}
         centered
-        width={800}
+        width={1000}
+        styles={{ content: { minHeight: 700 } }}
         open={isTreeModalOpen}
         onCancel={() => setIsTreeModalOpen(false)}
         destroyOnClose

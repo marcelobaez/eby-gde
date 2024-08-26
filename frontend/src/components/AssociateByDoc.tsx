@@ -118,16 +118,6 @@ export function AssociateByDoc() {
   return (
     <Space size="middle" direction="vertical" style={{ width: "100%" }}>
       <SearchDocExpForm handleSubmit={handleCheckRelation} />
-      {isFetching && !expdDocData && (
-        <Flex
-          justify="center"
-          align="center"
-          vertical
-          style={{ width: "100%", height: 300 }}
-        >
-          <Spin size="large" />
-        </Flex>
-      )}
       {expdDocData &&
         (expdDocData.length === 0 || hasDOCNoParentAndChildren) &&
         selectedExpDoc && (
@@ -236,7 +226,8 @@ export function AssociateByDoc() {
       <Modal
         footer={null}
         centered
-        width={800}
+        width={1000}
+        styles={{ content: { minHeight: 700 } }}
         open={isFormModalOpen}
         onCancel={() => setIsFormModalOpen(false)}
         destroyOnClose
@@ -255,7 +246,8 @@ export function AssociateByDoc() {
         title="Buscar expediente a asociar"
         footer={null}
         centered
-        width={800}
+        width={1000}
+        styles={{ content: { minHeight: 700 } }}
         open={isTreeModalOpen}
         onCancel={() => setIsTreeModalOpen(false)}
         destroyOnClose
