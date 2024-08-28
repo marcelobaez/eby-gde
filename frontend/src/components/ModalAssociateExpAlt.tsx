@@ -167,7 +167,7 @@ export function ModalAssociateExpAlt({
               sedesCodes[selectedExp.attributes.SEDE as keyof typeof sedesCodes]
             }-${selectedExp.attributes.NRO_ORDEN}-${
               selectedExp.attributes.NRO_EXPE
-            }-${selectedExp.attributes.SEDE}`;
+            }-${selectedExp.attributes.CORRESPO}`;
             if (asFather) {
               await createExpRelMutation.mutateAsync({
                 parent: {

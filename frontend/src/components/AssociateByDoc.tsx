@@ -82,7 +82,7 @@ export function AssociateByDoc() {
       setSelectedExpCode(
         `${sedesCodes[values.attributes.SEDE as keyof typeof sedesCodes]}-${
           values.attributes.NRO_ORDEN
-        }-${values.attributes.NRO_EXPE}-${values.attributes.SEDE}`
+        }-${values.attributes.NRO_EXPE}-${values.attributes.CORRESPO}`
       );
     } else {
       setSelectedExpDoc(undefined);

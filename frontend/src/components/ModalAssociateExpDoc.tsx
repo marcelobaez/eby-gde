@@ -26,7 +26,7 @@ export function ModalAssociateExpDoc({
   const targetExpCode = `${
     sedesCodes[targetExpDoc.attributes.SEDE as keyof typeof sedesCodes]
   }-${targetExpDoc.attributes.NRO_ORDEN}-${targetExpDoc.attributes.NRO_EXPE}-${
-    targetExpDoc.attributes.SEDE
+    targetExpDoc.attributes.CORRESPO
   }`;
 
   const handleSearch = async (values: { year: number; number: number }) => {
@@ -173,7 +173,7 @@ export function ModalAssociateExpDoc({
               sedesCodes[selectedExp.attributes.SEDE as keyof typeof sedesCodes]
             }-${selectedExp.attributes.NRO_ORDEN}-${
               selectedExp.attributes.NRO_EXPE
-            }-${selectedExp.attributes.SEDE}`;
+            }-${selectedExp.attributes.CORRESPO}`;
             if (asFather) {
               await createExpRelMutation.mutateAsync({
                 parent: {

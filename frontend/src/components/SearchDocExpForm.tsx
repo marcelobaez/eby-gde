@@ -1,14 +1,23 @@
 import React, { useMemo, useState } from "react";
-import { Input, Flex, Empty, List, Button, Space, PaginationProps } from "antd";
+import {
+  Input,
+  Flex,
+  Empty,
+  List,
+  Button,
+  Space,
+  PaginationProps,
+  InputNumber,
+  Skeleton,
+} from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useDebouncedState } from "@react-hookz/web";
 import { api } from "@/lib/axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExpDocDetailResponse, ExpDocsResponse } from "@/types/expDoc";
 import { sedesCodes } from "@/utils";
-const FETCH_SIZE = 5;
 
-const { Search } = Input;
+const FETCH_SIZE = 5;
 
 type SearchExpDocFormProps = {
   handleSubmit?: (values?: ExpDocDetailResponse["data"]) => void;
@@ -31,20 +40,39 @@ const SearchDocExp = ({
   allowFather = true,
 }: SearchExpDocFormProps) => {
   const queryClient = useQueryClient();
-  const [value, setValue] = useState("");
-  const [debouncedValue, setDebouncedValue] = useDebouncedState("", 500);
+  const [asuntoValue, setValue] = useState("");
+  const [expteValue, setExpteValue] = useState("");
+  const [ordenValue, setOrdenValue] = useState("");
+  const [correspValue, setCorrespValue] = useState("");
+  const [debouncedAsunto, setDebouncedValue] = useDebouncedState("", 500);
+  const [debouncedExpte, setDebouncedExpte] = useDebouncedState("", 500);
+  const [debouncedOrden, setDebouncedOrden] = useDebouncedState("", 500);
+  const [debouncedCorresp, setDebouncedCorresp] = useDebouncedState("", 500);
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading, isFetching } = useQuery<ExpDocsResponse>({
-    queryKey: ["searchExp", debouncedValue, currentPage],
+    queryKey: [
+      "searchExp",
+      debouncedAsunto,
+      debouncedExpte,
+      debouncedOrden,
+      debouncedCorresp,
+      currentPage,
+      FETCH_SIZE,
+    ],
     queryFn: async () => {
       const { data } = await api.get<ExpDocsResponse>(
-        `/expedientes-docs?filters[$or][0][ASUNTO][$containsi]=${debouncedValue}&filters[$or][1][NRO_ORDEN][$containsi]=${debouncedValue}&filters[$or][2][CAUSANTE][$containsi]=${debouncedValue}&pagination[withCount]=true&pagination[page]=${currentPage}&pagination[pageSize]=${FETCH_SIZE}`
+        `/expedientes-docs?${generateQueryFilter(
+          debouncedAsunto,
+          debouncedOrden,
+          debouncedExpte,
+          debouncedCorresp
+        )}&pagination[withCount]=true&pagination[page]=${currentPage}&pagination[pageSize]=${FETCH_SIZE}`
       );
 
       return data;
     },
-    enabled: Boolean(debouncedValue) && debouncedValue.length > 2,
+    enabled: Boolean(debouncedAsunto || debouncedOrden),
     refetchOnWindowFocus: false,
   });
 
@@ -58,97 +86,144 @@ const SearchDocExp = ({
 
   const selectedMode = mode ?? "verify";
 
+  const handleReset = () => {
+    if (handleSubmit) {
+      setValue("");
+      setDebouncedValue("");
+      setOrdenValue("");
+      setDebouncedOrden("");
+      setExpteValue("");
+      setDebouncedExpte("");
+      handleSubmit();
+      queryClient.removeQueries({
+        queryKey: ["searchExp", debouncedAsunto],
+        exact: true,
+      });
+    }
+  };
+
   return (
     <Flex gap="middle" align="center" justify="center" vertical>
-      <Search
-        onChange={(e) => {
-          setValue(e.target.value);
-          setDebouncedValue(e.target.value);
-        }}
-        onSearch={(v, e, info) => {
-          if (e && info?.source === "clear") {
-            if (handleSubmit) {
-              handleSubmit();
-              queryClient.removeQueries({
-                queryKey: ["searchExp", debouncedValue],
-                exact: true,
-              });
+      <Flex gap="middle" align="center" justify="center">
+        <InputNumber
+          addonBefore="Orden"
+          value={ordenValue}
+          onChange={(e) => {
+            if (e && parseInt(e.toString()) > 0) {
+              setOrdenValue(e);
+              setDebouncedOrden(e.toString());
             }
-          }
-        }}
-        value={value}
-        placeholder="Buscar por numero de orden, expte, asunto, causante"
-        allowClear
-        loading={isLoading}
-        style={{ maxWidth: 500 }}
-      />
+          }}
+          style={{ maxWidth: 170 }}
+          controls={false}
+        />
+        <InputNumber
+          addonBefore="EXP"
+          value={expteValue}
+          onChange={(e) => {
+            if (e && parseInt(e.toString()) > 0) {
+              setExpteValue(e);
+              setDebouncedExpte(e.toString());
+            }
+          }}
+          controls={false}
+          style={{ maxWidth: 170 }}
+        />
+        <InputNumber
+          addonBefore="CDE"
+          value={correspValue}
+          onChange={(e) => {
+            if (e && parseInt(e.toString()) > 0) {
+              setCorrespValue(e);
+              setDebouncedCorresp(e.toString());
+            }
+          }}
+          controls={false}
+          style={{ maxWidth: 170 }}
+        />
+        <Input
+          onChange={(e) => {
+            setValue(e.target.value);
+            setDebouncedValue(e.target.value);
+          }}
+          addonBefore="Asunto"
+          value={asuntoValue}
+          allowClear
+          style={{ maxWidth: 330 }}
+        />
+        <Button onClick={handleReset}>Limpiar</Button>
+      </Flex>
       {memoData.length === 0 &&
-        debouncedValue.length > 2 &&
+        debouncedAsunto.length > 2 &&
         !(isLoading || isFetching) && (
           <Empty description="No se encontraron resultados"></Empty>
         )}
-      {memoData.length > 0 && (
-        <List
-          pagination={{
-            onChange: onPageChange,
-            defaultCurrent: currentPage,
-            total: totalDBRowCount,
-            pageSize: FETCH_SIZE,
-            showTotal: (total, range) =>
-              `Mostrando ${range[0]}-${range[1]} de ${total} resultados`,
-          }}
-          dataSource={memoData}
-          style={{ maxHeight: 460, width: "100%" }}
-          renderItem={(item) => (
-            <List.Item style={{ padding: "5px 0px" }}>
-              <List.Item.Meta
-                title={`${
-                  sedesCodes[item.attributes.SEDE as keyof typeof sedesCodes]
-                }-${item.attributes.NRO_ORDEN}-${item.attributes.NRO_EXPE}-${
-                  item.attributes.SEDE
-                }`}
-                description={item.attributes.ASUNTO}
-              />
-              {selectedMode === "verify" && (
-                <Button
-                  icon={<SearchOutlined />}
-                  onClick={() => {
-                    handleSubmit && handleSubmit(item);
-                  }}
-                >
-                  Ver relaciones
-                </Button>
-              )}
-              {selectedMode === "associate" && onAssociate && (
-                <Space>
+      {isFetching ? (
+        <Skeleton />
+      ) : (
+        memoData.length > 0 && (
+          <List
+            pagination={{
+              onChange: onPageChange,
+              defaultCurrent: currentPage,
+              total: totalDBRowCount,
+              pageSize: FETCH_SIZE,
+              showTotal: (total, range) =>
+                `Mostrando ${range[0]}-${range[1]} de ${total} resultados`,
+            }}
+            dataSource={memoData}
+            style={{ maxHeight: 460, width: "100%" }}
+            renderItem={(item) => (
+              <List.Item style={{ padding: "5px 0px" }}>
+                <List.Item.Meta
+                  title={`${
+                    sedesCodes[item.attributes.SEDE as keyof typeof sedesCodes]
+                  }-${item.attributes.NRO_ORDEN}-${item.attributes.NRO_EXPE}-${
+                    item.attributes.CORRESPO
+                  }`}
+                  description={item.attributes.ASUNTO}
+                />
+                {selectedMode === "verify" && (
                   <Button
-                    disabled={
-                      !targetExpCode ||
-                      !allowFather ||
-                      !getCanAssociate(item, targetExpCode, existingIds)
-                    }
+                    icon={<SearchOutlined />}
                     onClick={() => {
-                      onAssociate(true, item);
+                      handleSubmit && handleSubmit(item);
                     }}
                   >
-                    Asociar como Padre
+                    Ver relaciones
                   </Button>
-                  <Button
-                    disabled={
-                      !targetExpCode ||
-                      !getCanAssociate(item, targetExpCode, existingIds)
-                    }
-                    onClick={() => {
-                      onAssociate(false, item);
-                    }}
-                  >
-                    Asociar como Hijo
-                  </Button>
-                </Space>
-              )}
-            </List.Item>
-          )}
-        />
+                )}
+                {selectedMode === "associate" && onAssociate && (
+                  <Space>
+                    <Button
+                      disabled={
+                        !targetExpCode ||
+                        !allowFather ||
+                        !getCanAssociate(item, targetExpCode, existingIds)
+                      }
+                      onClick={() => {
+                        onAssociate(true, item);
+                      }}
+                    >
+                      Asociar como Padre
+                    </Button>
+                    <Button
+                      disabled={
+                        !targetExpCode ||
+                        !getCanAssociate(item, targetExpCode, existingIds)
+                      }
+                      onClick={() => {
+                        onAssociate(false, item);
+                      }}
+                    >
+                      Asociar como Hijo
+                    </Button>
+                  </Space>
+                )}
+              </List.Item>
+            )}
+          />
+        )
       )}
     </Flex>
   );
@@ -162,11 +237,49 @@ const getCanAssociate = (
   const code = `${
     sedesCodes[data.attributes.SEDE as keyof typeof sedesCodes]
   }-${data.attributes.NRO_ORDEN}-${data.attributes.NRO_EXPE}-${
-    data.attributes.SEDE
+    data.attributes.CORRESPO
   }`;
   return existingIds
     ? code !== targetExpCode && !existingIds.includes(code)
     : code !== targetExpCode;
 };
+
+function generateQueryFilter(
+  debouncedAsunto: string,
+  debouncedOrden: string,
+  debouncedExpte: string,
+  debouncedCorresp: string
+) {
+  const filters = [];
+
+  if (debouncedAsunto.length > 2) {
+    filters.push({ field: "ASUNTO", value: debouncedAsunto });
+  }
+
+  if (debouncedOrden.length > 0) {
+    filters.push({ field: "NRO_ORDEN", value: debouncedOrden });
+  }
+
+  if (debouncedExpte.length > 0) {
+    filters.push({ field: "NRO_EXPE", value: debouncedExpte });
+  }
+
+  if (debouncedCorresp.length > 0) {
+    filters.push({ field: "CORRESPO", value: debouncedCorresp });
+  }
+
+  if (filters.length === 0) {
+    return "";
+  }
+
+  const queryParts = filters.map(
+    (filter, index) =>
+      `filters[$and][${index}][${
+        filter.field
+      }][$containsi]=${encodeURIComponent(filter.value)}`
+  );
+
+  return queryParts.join("&");
+}
 
 export const SearchDocExpForm = React.memo(SearchDocExp);
