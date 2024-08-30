@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "expedientes_docs",
+  "info": {
+    "singularName": "expediente-doc",
+    "pluralName": "expedientes-docs",
+    "displayName": "ExpedientesDoc",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "NRO_ORDEN": {
+      "type": "biginteger"
+    },
+    "SEDE": {
+      "type": "integer"
+    },
+    "NRO_EXPE": {
+      "type": "biginteger"
+    },
+    "CORRESPO": {
+      "type": "integer"
+    },
+    "LETRA": {
+      "type": "string"
+    },
+    "CONTRATO": {
+      "type": "string"
+    },
+    "CAUSANTE": {
+      "type": "string"
+    },
+    "ASUNTO": {
+      "type": "text"
+    }
+  }
+}

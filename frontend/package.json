@@ -1,5 +1,5 @@
 {
-  "name": "with-ant-design",
+  "name": "eby-gde-frontend",
   "version": "1.0.0",
   "scripts": {
     "dev": "next",
@@ -8,35 +8,36 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ant-design/compatible": "^5.1.2",
     "@ant-design/cssinjs": "^1.16.1",
     "@ant-design/icons": "^5.2.4",
-    "@ant-design/pro-layout": "^7.16.7",
-    "antd": "^5.10.2",
-    "axios": "^0.21.1",
+    "@react-hookz/web": "^24.0.4",
+    "@tanstack/react-query": "^5.13.4",
+    "@tanstack/react-query-devtools": "^5.13.5",
+    "antd": "^5.17.3",
+    "axios": "^1.7.4",
     "date-fns": "^2.29.3",
     "dayjs": "1.8.28",
-    "esm": "^3.2.25",
     "export-to-csv": "^1.2.1",
-    "next": "^13.4.12",
-    "next-auth": "^4.22.3",
+    "next": "^14.2.6",
+    "next-auth": "^4.24.5",
     "oracledb": "^6.1.0",
     "qs": "^6.7.0",
     "react": "^18.2.0",
     "react-data-export": "^0.6.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.47.0",
-    "react-query": "^3.16.0",
-    "xlsx": "^0.18.5"
-  },
-  "browser": {
-    "fs": false,
-    "path": false
+    "xlsx": "^0.18.5",
+    "zustand": "^4.5.4"
   },
   "license": "MIT",
   "devDependencies": {
-    "copy-webpack-plugin": "^11.0.0",
+    "@types/node": "^20.10.4",
+    "@types/qs": "^6.9.10",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.17",
+    "copy-webpack-plugin": "^12.0.2",
     "eslint": "^8.39.0",
-    "eslint-config-next": "^13.4.12"
+    "eslint-config-next": "^14.2.6",
+    "typescript": "^5.3.3"
   }
 }

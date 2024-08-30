@@ -362,184 +362,6 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
-export interface ApiExpedienteExpediente extends Schema.CollectionType {
-  collectionName: 'expedientes';
-  info: {
-    singularName: 'expediente';
-    pluralName: 'expedientes';
-    displayName: 'Expediente';
-    name: 'expediente';
-  };
-  options: {
-    increments: true;
-    timestamps: true;
-    draftAndPublish: true;
-    populateCreatorFields: true;
-  };
-  attributes: {
-    id_expediente: Attribute.BigInteger & Attribute.Required;
-    lista: Attribute.Relation<
-      'api::expediente.expediente',
-      'manyToOne',
-      'api::lista.lista'
-    >;
-    usuario: Attribute.Relation<
-      'api::expediente.expediente',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
-    duracion_esperada: Attribute.Integer;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::expediente.expediente',
-      'oneToOne',
-      'admin::user'
-    >;
-    updatedBy: Attribute.Relation<
-      'api::expediente.expediente',
-      'oneToOne',
-      'admin::user'
-    >;
-  };
-}
-
-export interface ApiExpedienteTipoExpedienteTipo extends Schema.CollectionType {
-  collectionName: 'expedientes_tipos';
-  info: {
-    singularName: 'expediente-tipo';
-    pluralName: 'expedientes-tipos';
-    displayName: 'ExpedientesTipos';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    nombre: Attribute.String & Attribute.Required & Attribute.Unique;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::expediente-tipo.expediente-tipo',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::expediente-tipo.expediente-tipo',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiExpedientesRelacionExpedientesRelacion
-  extends Schema.CollectionType {
-  collectionName: 'expedientes_relaciones';
-  info: {
-    singularName: 'expedientes-relacion';
-    pluralName: 'expedientes-relaciones';
-    displayName: 'ExpedientesRelacion';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    expId: Attribute.BigInteger & Attribute.Unique;
-    expCode: Attribute.String & Attribute.Unique;
-    descripcion: Attribute.Text;
-    parent: Attribute.Relation<
-      'api::expedientes-relacion.expedientes-relacion',
-      'manyToOne',
-      'api::expedientes-relacion.expedientes-relacion'
-    >;
-    children: Attribute.Relation<
-      'api::expedientes-relacion.expedientes-relacion',
-      'oneToMany',
-      'api::expedientes-relacion.expedientes-relacion'
-    >;
-    notas: Attribute.String;
-    autor: Attribute.Relation<
-      'api::expedientes-relacion.expedientes-relacion',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
-    expediente_tipo: Attribute.Relation<
-      'api::expedientes-relacion.expedientes-relacion',
-      'oneToOne',
-      'api::expediente-tipo.expediente-tipo'
-    >;
-    isExp: Attribute.Boolean & Attribute.Required;
-    title: Attribute.String;
-    fechaCreacion: Attribute.DateTime;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::expedientes-relacion.expedientes-relacion',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::expedientes-relacion.expedientes-relacion',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiListaLista extends Schema.CollectionType {
-  collectionName: 'listas';
-  info: {
-    singularName: 'lista';
-    pluralName: 'listas';
-    displayName: 'Lista';
-    name: 'lista';
-  };
-  options: {
-    increments: true;
-    timestamps: true;
-    draftAndPublish: true;
-  };
-  attributes: {
-    titulo: Attribute.String &
-      Attribute.Required &
-      Attribute.SetMinMaxLength<{
-        minLength: 5;
-      }>;
-    usuario: Attribute.Relation<
-      'api::lista.lista',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    expedientes: Attribute.Relation<
-      'api::lista.lista',
-      'oneToMany',
-      'api::expediente.expediente'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::lista.lista',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::lista.lista',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -581,9 +403,12 @@ export interface PluginUploadFile extends Schema.CollectionType {
     folderPath: Attribute.String &
       Attribute.Required &
       Attribute.Private &
-      Attribute.SetMinMax<{
-        min: 1;
-      }>;
+      Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -619,9 +444,12 @@ export interface PluginUploadFolder extends Schema.CollectionType {
   attributes: {
     name: Attribute.String &
       Attribute.Required &
-      Attribute.SetMinMax<{
-        min: 1;
-      }>;
+      Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     pathId: Attribute.Integer & Attribute.Required & Attribute.Unique;
     parent: Attribute.Relation<
       'plugin::upload.folder',
@@ -640,9 +468,12 @@ export interface PluginUploadFolder extends Schema.CollectionType {
     >;
     path: Attribute.String &
       Attribute.Required &
-      Attribute.SetMinMax<{
-        min: 1;
-      }>;
+      Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -653,6 +484,105 @@ export interface PluginUploadFolder extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'plugin::upload.folder',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface PluginContentReleasesRelease extends Schema.CollectionType {
+  collectionName: 'strapi_releases';
+  info: {
+    singularName: 'release';
+    pluralName: 'releases';
+    displayName: 'Release';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    releasedAt: Attribute.DateTime;
+    scheduledAt: Attribute.DateTime;
+    timezone: Attribute.String;
+    status: Attribute.Enumeration<
+      ['ready', 'blocked', 'failed', 'done', 'empty']
+    > &
+      Attribute.Required;
+    actions: Attribute.Relation<
+      'plugin::content-releases.release',
+      'oneToMany',
+      'plugin::content-releases.release-action'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::content-releases.release',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'plugin::content-releases.release',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface PluginContentReleasesReleaseAction
+  extends Schema.CollectionType {
+  collectionName: 'strapi_release_actions';
+  info: {
+    singularName: 'release-action';
+    pluralName: 'release-actions';
+    displayName: 'Release Action';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    type: Attribute.Enumeration<['publish', 'unpublish']> & Attribute.Required;
+    entry: Attribute.Relation<
+      'plugin::content-releases.release-action',
+      'morphToOne'
+    >;
+    contentType: Attribute.String & Attribute.Required;
+    locale: Attribute.String;
+    release: Attribute.Relation<
+      'plugin::content-releases.release-action',
+      'manyToOne',
+      'plugin::content-releases.release'
+    >;
+    isEntryValid: Attribute.Boolean;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::content-releases.release-action',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'plugin::content-releases.release-action',
       'oneToOne',
       'admin::user'
     > &
@@ -682,10 +612,13 @@ export interface PluginI18NLocale extends Schema.CollectionType {
   };
   attributes: {
     name: Attribute.String &
-      Attribute.SetMinMax<{
-        min: 1;
-        max: 50;
-      }>;
+      Attribute.SetMinMax<
+        {
+          min: 1;
+          max: 50;
+        },
+        number
+      >;
     code: Attribute.String & Attribute.Unique;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -871,6 +804,223 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
+export interface ApiExpedienteExpediente extends Schema.CollectionType {
+  collectionName: 'expedientes';
+  info: {
+    singularName: 'expediente';
+    pluralName: 'expedientes';
+    displayName: 'Expediente';
+    name: 'expediente';
+  };
+  options: {
+    increments: true;
+    timestamps: true;
+    draftAndPublish: true;
+    populateCreatorFields: true;
+  };
+  attributes: {
+    id_expediente: Attribute.BigInteger & Attribute.Required;
+    lista: Attribute.Relation<
+      'api::expediente.expediente',
+      'manyToOne',
+      'api::lista.lista'
+    >;
+    usuario: Attribute.Relation<
+      'api::expediente.expediente',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    duracion_esperada: Attribute.Integer;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::expediente.expediente',
+      'oneToOne',
+      'admin::user'
+    >;
+    updatedBy: Attribute.Relation<
+      'api::expediente.expediente',
+      'oneToOne',
+      'admin::user'
+    >;
+  };
+}
+
+export interface ApiExpedienteDocExpedienteDoc extends Schema.CollectionType {
+  collectionName: 'expedientes_docs';
+  info: {
+    singularName: 'expediente-doc';
+    pluralName: 'expedientes-docs';
+    displayName: 'ExpedientesDoc';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    NRO_ORDEN: Attribute.BigInteger;
+    SEDE: Attribute.Integer;
+    NRO_EXPE: Attribute.BigInteger;
+    CORRESPO: Attribute.Integer;
+    LETRA: Attribute.String;
+    CONTRATO: Attribute.String;
+    CAUSANTE: Attribute.String;
+    ASUNTO: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::expediente-doc.expediente-doc',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::expediente-doc.expediente-doc',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiExpedienteTipoExpedienteTipo extends Schema.CollectionType {
+  collectionName: 'expedientes_tipos';
+  info: {
+    singularName: 'expediente-tipo';
+    pluralName: 'expedientes-tipos';
+    displayName: 'ExpedientesTipos';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    nombre: Attribute.String & Attribute.Required & Attribute.Unique;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::expediente-tipo.expediente-tipo',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::expediente-tipo.expediente-tipo',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiExpedientesRelacionExpedientesRelacion
+  extends Schema.CollectionType {
+  collectionName: 'expedientes_relaciones';
+  info: {
+    singularName: 'expedientes-relacion';
+    pluralName: 'expedientes-relaciones';
+    displayName: 'ExpedientesRelacion';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    expId: Attribute.BigInteger & Attribute.Unique;
+    expCode: Attribute.String & Attribute.Unique;
+    descripcion: Attribute.Text;
+    parent: Attribute.Relation<
+      'api::expedientes-relacion.expedientes-relacion',
+      'manyToOne',
+      'api::expedientes-relacion.expedientes-relacion'
+    >;
+    children: Attribute.Relation<
+      'api::expedientes-relacion.expedientes-relacion',
+      'oneToMany',
+      'api::expedientes-relacion.expedientes-relacion'
+    >;
+    notas: Attribute.String;
+    autor: Attribute.Relation<
+      'api::expedientes-relacion.expedientes-relacion',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    expediente_tipo: Attribute.Relation<
+      'api::expedientes-relacion.expedientes-relacion',
+      'oneToOne',
+      'api::expediente-tipo.expediente-tipo'
+    >;
+    isExp: Attribute.Boolean & Attribute.Required;
+    title: Attribute.String;
+    fechaCreacion: Attribute.DateTime;
+    isExpDoc: Attribute.Boolean;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::expedientes-relacion.expedientes-relacion',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::expedientes-relacion.expedientes-relacion',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiListaLista extends Schema.CollectionType {
+  collectionName: 'listas';
+  info: {
+    singularName: 'lista';
+    pluralName: 'listas';
+    displayName: 'Lista';
+    name: 'lista';
+  };
+  options: {
+    increments: true;
+    timestamps: true;
+    draftAndPublish: true;
+  };
+  attributes: {
+    titulo: Attribute.String &
+      Attribute.Required &
+      Attribute.SetMinMaxLength<{
+        minLength: 5;
+      }>;
+    usuario: Attribute.Relation<
+      'api::lista.lista',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    expedientes: Attribute.Relation<
+      'api::lista.lista',
+      'oneToMany',
+      'api::expediente.expediente'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::lista.lista',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::lista.lista',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -881,16 +1031,19 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
-      'api::expediente.expediente': ApiExpedienteExpediente;
-      'api::expediente-tipo.expediente-tipo': ApiExpedienteTipoExpedienteTipo;
-      'api::expedientes-relacion.expedientes-relacion': ApiExpedientesRelacionExpedientesRelacion;
-      'api::lista.lista': ApiListaLista;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
+      'plugin::content-releases.release': PluginContentReleasesRelease;
+      'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::expediente.expediente': ApiExpedienteExpediente;
+      'api::expediente-doc.expediente-doc': ApiExpedienteDocExpedienteDoc;
+      'api::expediente-tipo.expediente-tipo': ApiExpedienteTipoExpedienteTipo;
+      'api::expedientes-relacion.expedientes-relacion': ApiExpedientesRelacionExpedientesRelacion;
+      'api::lista.lista': ApiListaLista;
     }
   }
 }

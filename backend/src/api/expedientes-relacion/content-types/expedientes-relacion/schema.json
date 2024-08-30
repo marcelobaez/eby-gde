@@ -60,6 +60,9 @@
     },
     "fechaCreacion": {
       "type": "datetime"
+    },
+    "isExpDoc": {
+      "type": "boolean"
     }
   }
 }

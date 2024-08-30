@@ -79,28 +79,16 @@ module.exports = createCoreController(
     async findOne(ctx) {
       const { id } = ctx.request.params;
 
-      const expedientes = await strapi.entityService.findMany(
+      const expediente = await strapi.entityService.findOne(
         "api::expediente.expediente",
-        {
-          filters: {
-            id: {
-              $eq: id,
-            },
-            usuario: {
-              id: {
-                $eq: ctx.state.user.id,
-              },
-            },
-          },
-          limit: 1,
-        }
+        id
       );
 
-      if (expedientes.length === 0) {
-        return ctx.unauthorized(`No puedes ver expedientes que no creaste`);
+      if (!expediente) {
+        return ctx.notFound("Recurso no encontrado");
       }
 
-      const sanitizedResults = await this.sanitizeOutput(expedientes, ctx);
+      const sanitizedResults = await this.sanitizeOutput(expediente, ctx);
 
       return this.transformResponse(sanitizedResults);
     },
@@ -108,24 +96,13 @@ module.exports = createCoreController(
     async update(ctx) {
       const { id } = ctx.request.params;
 
-      const expedientes = await strapi.entityService.findMany(
+      const expediente = await strapi.entityService.findOne(
         "api::expediente.expediente",
-        {
-          filters: {
-            id: {
-              $eq: id,
-            },
-            usuario: {
-              id: {
-                $eq: ctx.state.user.id,
-              },
-            },
-          },
-        }
+        id
       );
 
-      if (expedientes.length === 0) {
-        return ctx.unauthorized(`No puedes ver expedientes que no creaste`);
+      if (!expediente) {
+        return ctx.notFound("Recurso no encontrado");
       }
 
       const entry = await strapi.entityService.update(
