@@ -72,7 +72,9 @@ const SearchDocExp = ({
 
       return data;
     },
-    enabled: Boolean(debouncedAsunto || debouncedOrden),
+    enabled: Boolean(
+      debouncedAsunto || debouncedOrden || debouncedCorresp || debouncedExpte
+    ),
     refetchOnWindowFocus: false,
   });
 
@@ -94,9 +96,17 @@ const SearchDocExp = ({
       setDebouncedOrden("");
       setExpteValue("");
       setDebouncedExpte("");
+      setCorrespValue("");
+      setDebouncedCorresp("");
       handleSubmit();
       queryClient.removeQueries({
-        queryKey: ["searchExp", debouncedAsunto],
+        queryKey: [
+          "searchExp",
+          debouncedAsunto,
+          debouncedCorresp,
+          debouncedExpte,
+          debouncedOrden,
+        ],
         exact: true,
       });
     }
