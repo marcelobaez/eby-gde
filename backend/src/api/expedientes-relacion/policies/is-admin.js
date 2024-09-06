@@ -5,7 +5,7 @@ module.exports = async (policyContext, config, { strapi }) => {
   // check if user is admin
   if (
     policyContext.state.user.role.type === "administrator" ||
-    policyContext.state.user.role.type === "exprelaciones"
+    policyContext.state.user.role.type === "expobras"
   ) {
     // Go to controller's action.
     return true;
