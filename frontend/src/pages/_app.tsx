@@ -10,6 +10,7 @@ import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
 import "antd/dist/reset.css";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { NuqsAdapter } from "nuqs/adapters/next/pages";
 
 const theme: ThemeConfig = {
   token: {
@@ -28,7 +29,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <ConfigProvider locale={esES} theme={theme}>
           <SessionProvider session={pageProps.session} refetchInterval={1 * 60}>
             <App>
-              <Component {...pageProps} />
+              <NuqsAdapter>
+                <Component {...pageProps} />
+              </NuqsAdapter>
             </App>
           </SessionProvider>
         </ConfigProvider>

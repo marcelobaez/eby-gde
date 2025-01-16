@@ -17,6 +17,7 @@ import {
   PartitionOutlined,
   FileOutlined,
   FolderOpenOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { Image } from "antd";
@@ -56,6 +57,7 @@ export function MainLayout({
   const user = useBoundStore((state) => state.user);
   const hasDocPermissions = user && user.hasDocsPermissions;
   const hasRelsPermissions = user && user.hasRelsPermissions;
+  const hasAllPermissions = user && user.hasAllPermissions;
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelected] = useState(["home"]);
 
@@ -176,6 +178,13 @@ export function MainLayout({
                   icon: <FolderOpenOutlined />,
                   label: <Link href="/seguimiento">Seguimiento</Link>,
                 },
+                hasAllPermissions
+                  ? {
+                      key: "search",
+                      icon: <SearchOutlined />,
+                      label: <Link href="/busqueda">Busqueda</Link>,
+                    }
+                  : null,
                 hasDocPermissions
                   ? {
                       key: "documentos",

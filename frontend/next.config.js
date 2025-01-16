@@ -16,6 +16,7 @@ const nextConfig = {
     "rc-tree",
     "rc-tooltip",
     "rc-table",
+    "rc-input",
   ],
 };
 

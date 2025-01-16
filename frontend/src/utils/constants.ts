@@ -613,3 +613,422 @@ export const repTypes = [
     label: "TTE#GAC",
   },
 ];
+
+export const TRAMITES = [
+  {
+    value: 1320907,
+    label: "Adenda - Acta Acuerdo",
+  },
+  {
+    value: 1320833,
+    label: "Aportes Institucionales",
+  },
+  {
+    value: 1320834,
+    label: "Aprobación de Planos",
+  },
+  {
+    value: 1320835,
+    label: "Autorizaciones en General",
+  },
+  {
+    value: 1320836,
+    label: "Aviso de Obra/Autorización de Obra",
+  },
+  {
+    value: 1320839,
+    label: "Baja de Vehículo",
+  },
+  {
+    value: 1320817,
+    label: "Certificación de Pago de Obra",
+  },
+  {
+    value: 1320840,
+    label: "Certificación en General",
+  },
+  {
+    value: 1320905,
+    label: "Certificado Redeterminado",
+  },
+  {
+    value: 1320898,
+    label: "Comisión de Servicio",
+  },
+  {
+    value: 1320816,
+    label: "Comodatos",
+  },
+  {
+    value: 1320841,
+    label: "Compra Directa",
+  },
+  {
+    value: 1320887,
+    label: "Compra Menor",
+  },
+  {
+    value: 1320813,
+    label: "Compra por Fondos Fijos",
+  },
+  {
+    value: 1320837,
+    label: "Compra/Venta Inmueble",
+  },
+  {
+    value: 1320811,
+    label: "Concurso Limitado de Precios",
+  },
+  {
+    value: 1320810,
+    label: "Concurso de Precios",
+  },
+  {
+    value: 1320812,
+    label: "Contratación Directa",
+  },
+  {
+    value: 1320838,
+    label: "Contratación de Agente",
+  },
+  {
+    value: 1320842,
+    label: "Contratos, Locación De Obra",
+  },
+  {
+    value: 1320843,
+    label: "Contratos, Locación De Servicios",
+  },
+  {
+    value: 1320815,
+    label: "Convenios",
+  },
+  {
+    value: 1320844,
+    label: "Copia de Plano",
+  },
+  {
+    value: 1320845,
+    label: "Declaraciones",
+  },
+  {
+    value: 1320846,
+    label: "Denuncia",
+  },
+  {
+    value: 1320897,
+    label: "Deposito Judicial",
+  },
+  {
+    value: 1320909,
+    label: "Desafectación Inmueble",
+  },
+  {
+    value: 1320901,
+    label: "Designación de Poderes",
+  },
+  {
+    value: 1320902,
+    label: "Devolución de Importes Retenidos por Fondo de Reparo",
+  },
+  {
+    value: 1320847,
+    label: "Donación",
+  },
+  {
+    value: 1320848,
+    label: "Ejecución Convenio",
+  },
+  {
+    value: 1320850,
+    label: "Ejecución Licitación/ Contratación",
+  },
+  {
+    value: 1320849,
+    label: "Ejecución de Obra",
+  },
+  {
+    value: 1320851,
+    label: "Escrituración",
+  },
+  {
+    value: 1320852,
+    label: "Estudio de Impacto Ambiental",
+  },
+  {
+    value: 1320906,
+    label: "Exenciones Impositivas",
+  },
+  {
+    value: 1320896,
+    label: "Expediente Reservado",
+  },
+  {
+    value: 1320820,
+    label: "Expropiacion",
+  },
+  {
+    value: 1320888,
+    label: "Factura",
+  },
+  {
+    value: 1320853,
+    label: "Final de Obra",
+  },
+  {
+    value: 1320854,
+    label: "Fiscalización de Obra",
+  },
+  {
+    value: 1320855,
+    label: "Fiscalización, Seguridad e Higiene",
+  },
+  {
+    value: 1320856,
+    label: "Habilitación de Microemprendimiento",
+  },
+  {
+    value: 1320857,
+    label: "Habilitación de Vehículo",
+  },
+  {
+    value: 1320858,
+    label: "Historia Clínica",
+  },
+  {
+    value: 1320859,
+    label: "Indemnización",
+  },
+  {
+    value: 1320908,
+    label: "Infracciones de Tránsito",
+  },
+  {
+    value: 1320860,
+    label: "Jubilaciones y Pensiones",
+  },
+  {
+    value: 1320861,
+    label: "Licencias",
+  },
+  {
+    value: 1320808,
+    label: "Licitación Internacional",
+  },
+  {
+    value: 1320862,
+    label: "Licitación Privada",
+  },
+  {
+    value: 1320809,
+    label: "Licitación Pública",
+  },
+  {
+    value: 1320863,
+    label: "Mediación",
+  },
+  {
+    value: 1320821,
+    label: "Oficio Judicial",
+  },
+  {
+    value: 1320822,
+    label: "Oficio Judicial Reservado",
+  },
+  {
+    value: 1320864,
+    label: "Pago de Deudas\n",
+  },
+  {
+    value: 1320865,
+    label: "Pagos y Acreditaciones",
+  },
+  {
+    value: 1320866,
+    label: "Patentes de Vehículos",
+  },
+  {
+    value: 1320867,
+    label: "Planillas de Guardias",
+  },
+  {
+    value: 1320868,
+    label: "Predios en General",
+  },
+  {
+    value: 1320869,
+    label: "Prefactibilidad",
+  },
+  {
+    value: 1320870,
+    label: "Presupuesto",
+  },
+  {
+    value: 1320893,
+    label: "Proceso Recursos Humanos",
+  },
+  {
+    value: 1320871,
+    label: "Programas",
+  },
+  {
+    value: 1320899,
+    label: "Propuesta de Precio",
+  },
+  {
+    value: 1320872,
+    label: "Proyecto de Disposición",
+  },
+  {
+    value: 1320873,
+    label: "Proyecto de Resolución",
+  },
+  {
+    value: 1320890,
+    label: "Prórroga",
+  },
+  {
+    value: 1320819,
+    label: "Recepción Definitiva de Obra",
+  },
+  {
+    value: 1320904,
+    label: "Recepción Definitiva de Obras",
+  },
+  {
+    value: 1320818,
+    label: "Recepción Provisoria de Obra",
+  },
+  {
+    value: 1320903,
+    label: "Recepción Provisoria de Obras",
+  },
+  {
+    value: 1320874,
+    label: "Reclamos",
+  },
+  {
+    value: 1320875,
+    label: "Reconocimiento de Deudas",
+  },
+  {
+    value: 1320876,
+    label: "Recupero de Honorarios",
+  },
+  {
+    value: 1320877,
+    label: "Recursos Humanos Baja de Agente",
+  },
+  {
+    value: 1320878,
+    label: "Recursos Humanos Designación De Agente",
+  },
+  {
+    value: 1320879,
+    label: "Recursos Humanos Designación De Funcionario, Autoridad Superior\n",
+  },
+  {
+    value: 1320823,
+    label: "Redeterminación de Precio",
+  },
+  {
+    value: 1320880,
+    label: "Registración de Planos",
+  },
+  {
+    value: 1320881,
+    label: "Registro de Proveedores",
+  },
+  {
+    value: 1320882,
+    label: "Reglamentación de Generales",
+  },
+  {
+    value: 1320883,
+    label: "Reintegros en General",
+  },
+  {
+    value: 1320884,
+    label: "Renuncias",
+  },
+  {
+    value: 1320885,
+    label: "Reserva de Sala/Salones",
+  },
+  {
+    value: 1320900,
+    label: "Restitución Fondo de Reparo",
+  },
+  {
+    value: 1320886,
+    label: "Siniestros",
+  },
+  {
+    value: 1320832,
+    label: "Solicitud De Cambio De Categoria",
+  },
+  {
+    value: 1320831,
+    label: "Solicitud De Certificado",
+  },
+  {
+    value: 1320830,
+    label: "Solicitud De Constancia De Parto",
+  },
+  {
+    value: 1320829,
+    label: "Solicitud De Desarchivo",
+  },
+  {
+    value: 1320828,
+    label: "Solicitud De Informe",
+  },
+  {
+    value: 1320894,
+    label: "Solicitud Externa",
+  },
+  {
+    value: 1320891,
+    label: "Solicitud de Adquisición",
+  },
+  {
+    value: 1320892,
+    label: "Solicitud de Contratación",
+  },
+  {
+    value: 1320895,
+    label: "Solicitud de Fondos",
+  },
+  {
+    value: 1320889,
+    label: "Solicitud de ampliación de plazo de obra",
+  },
+  {
+    value: 1320814,
+    label: "Sumarios",
+  },
+  {
+    value: 1320806,
+    label: "TESTGDE - Transferible int ",
+  },
+  {
+    value: 1320827,
+    label: "Tierras y Viviendas",
+  },
+  {
+    value: 1320826,
+    label: "Transferencias en General",
+  },
+  {
+    value: 1320807,
+    label: "Trámite de Prueba",
+  },
+  {
+    value: 1320825,
+    label: "Unificación de Partidas",
+  },
+  {
+    value: 1320824,
+    label: "Visacion De Plano De Mensura",
+  },
+];

@@ -126,7 +126,11 @@ export function ListsContainer() {
     setShowEmpty(false);
   };
 
-  const handleTableChange: TableProps["onChange"] = (pagination, _, sorter) => {
+  const handleTableChange: TableProps<ExtendedExp>["onChange"] = (
+    pagination,
+    _,
+    sorter
+  ) => {
     setTableParams({
       pagination,
       ...sorter,
