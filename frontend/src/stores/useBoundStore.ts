@@ -6,6 +6,7 @@ export interface User {
   hasAllPermissions: boolean;
   hasDocsPermissions: boolean;
   hasRelsPermissions: boolean;
+  hasSearchPermissions: boolean;
 }
 
 export interface UserSlice {

@@ -57,7 +57,7 @@ export function MainLayout({
   const user = useBoundStore((state) => state.user);
   const hasDocPermissions = user && user.hasDocsPermissions;
   const hasRelsPermissions = user && user.hasRelsPermissions;
-  const hasAllPermissions = user && user.hasAllPermissions;
+  const hasSearchPermissions = user && user.hasSearchPermissions;
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelected] = useState(["home"]);
 
@@ -71,6 +71,9 @@ export function MainLayout({
         hasRelsPermissions:
           data.role.name.toLowerCase() === "administrator" ||
           data.role.name.toLowerCase() === "expobras",
+        hasSearchPermissions:
+          data.role.name.toLowerCase() === "administrator" ||
+          data.role.name.toLowerCase() === "expsearch",
       });
     }
   }, [data]);
@@ -178,7 +181,7 @@ export function MainLayout({
                   icon: <FolderOpenOutlined />,
                   label: <Link href="/seguimiento">Seguimiento</Link>,
                 },
-                hasAllPermissions
+                hasSearchPermissions
                   ? {
                       key: "search",
                       icon: <SearchOutlined />,
@@ -192,7 +195,7 @@ export function MainLayout({
                       label: <Link href="/documentos">Docs historicos</Link>,
                     }
                   : null,
-                hasRelsPermissions
+                hasRelsPermissions || hasSearchPermissions
                   ? {
                       key: "asociaciones",
                       label: <Link href="/asociaciones">Jerarquias</Link>,

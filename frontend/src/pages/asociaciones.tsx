@@ -72,7 +72,8 @@ export async function getServerSideProps(
 
   const canAccess =
     data.role.name.toLowerCase() === "administrator" ||
-    data.role.name.toLowerCase() === "expobras";
+    data.role.name.toLowerCase() === "expobras" ||
+    data.role.name.toLowerCase() === "expsearch";
 
   if (data && !canAccess) {
     return {

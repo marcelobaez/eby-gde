@@ -95,7 +95,7 @@ export default async function handler(
         data.role.name.toLowerCase() === "expsearch";
 
       if (data && !canAccess) {
-        res.status(401);
+        return res.status(401).end();
       } else {
         // Extract query parameters
         const { searchQuery, page, pageSize, year, trata } = req.query;
@@ -170,7 +170,7 @@ export default async function handler(
       }
     } else {
       // Not Signed in
-      res.status(401);
+      return res.status(401).end();
     }
   } else {
     // Handle unsupported HTTP methods
