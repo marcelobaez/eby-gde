@@ -120,9 +120,10 @@ export default function SearchPage() {
 
   const onSearch: SearchProps["onSearch"] = (value) => {
     setSearchTerm(value);
+    setPage(1);
     if (value.length === 0) {
-      setPage(1);
-      // setItemsPerPage("7");
+      setYear(null);
+      setTrata(null);
       queryClient.removeQueries({ queryKey: ["search-exp"] });
     }
   };
@@ -134,8 +135,6 @@ export default function SearchPage() {
   const onClose = () => {
     setOpenDrawer(false);
   };
-
-  // console.log(data);
 
   const HighlightedText = ({
     text,
@@ -213,7 +212,6 @@ export default function SearchPage() {
   };
 
   const onChange: CheckboxProps["onChange"] = (e) => {
-    console.log("checked = ", e.target.checked);
     setWithFilters(e.target.checked);
   };
 
@@ -339,7 +337,9 @@ export default function SearchPage() {
                     pageSize: pageSize,
                     total: data?.pagination.totalCount,
                     position: "bottom",
-                    hideOnSinglePage: true,
+                    // hideOnSinglePage: true,
+                    showTotal: (total: number, range: number[]) =>
+                      `Viendo ${range[0]}-${range[1]} de ${total} resultados`,
                     current: page,
                     pageSizeOptions: ["7", "10", "20", "50"],
                   }}
