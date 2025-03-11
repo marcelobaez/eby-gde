@@ -5,13 +5,11 @@
     "singularName": "expediente",
     "pluralName": "expedientes",
     "displayName": "Expediente",
-    "name": "expediente"
+    "name": "expediente",
+    "description": ""
   },
   "options": {
-    "increments": true,
-    "timestamps": true,
-    "draftAndPublish": true,
-    "populateCreatorFields": true
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
@@ -32,6 +30,13 @@
     },
     "duracion_esperada": {
       "type": "integer"
+    },
+    "reminder_sent_at": {
+      "type": "datetime"
+    },
+    "send_reminder": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

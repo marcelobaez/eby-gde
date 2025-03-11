@@ -5,7 +5,16 @@ export type Expediente = {
   attributes: {
     id_expediente: string;
     duracion_esperada: number;
+    send_reminder: boolean | null;
+    reminder_sent_at: string | null;
   };
+};
+
+export type ExpedienteUpdateRequest = {
+  id: number;
+  send_reminder?: boolean | null;
+  reminder_sent_at?: string | null;
+  duracion_esperada?: number | null;
 };
 
 export type ExpedienteResponse = {

@@ -23,6 +23,8 @@ export type ExtendedExp = GDEExpResponse & {
   stateColor: string;
   lifetimeColor: string;
   daysOverdue: number | null;
+  send_reminder: boolean | null;
+  reminder_sent_at: string | null;
 };
 
 export type ExtendedListResponse = {
@@ -110,6 +112,8 @@ export const useListInfoByID = (id: string) => {
                     parseISO(exp.FECHA_CREACION)
                   ) - matchingEl.attributes.duracion_esperada
                 : null,
+            send_reminder: matchingEl.attributes.send_reminder,
+            reminder_sent_at: matchingEl.attributes.reminder_sent_at,
           };
         })
         .filter((exp) => exp) as ExtendedExp[];

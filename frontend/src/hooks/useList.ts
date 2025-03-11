@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/axios";
 import { message } from "antd";
+import { ExpedienteUpdateRequest } from "@/types/expediente";
 
 export function useRemoveExpMutation() {
   const queryClient = useQueryClient();
@@ -22,12 +23,10 @@ export function useRemoveExpMutation() {
 export function useUpdateExpMutation() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: async (body: { id: number; duracion_esperada: number }) => {
-      const { id, duracion_esperada } = body;
-      return await api.put(`/expedientes/${id}`, {
-        data: {
-          duracion_esperada,
-        },
+    mutationFn: async (body: ExpedienteUpdateRequest) => {
+      // const { id, duracion_esperada } = body;
+      return await api.put(`/expedientes/${body.id}`, {
+        data: body,
       });
     },
     onError: () => {

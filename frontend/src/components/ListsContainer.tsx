@@ -15,6 +15,7 @@ import {
   TableProps,
   GetProp,
   Flex,
+  Checkbox,
 } from "antd";
 import { SearchExpForm } from "./SearchExpForm";
 import { TableResults } from "./TableResults";
@@ -143,6 +144,8 @@ export function ListsContainer() {
       duracion_esperada: values.days,
     });
     setVisible(false);
+    setSelectedID(undefined);
+    setValue(0);
   };
 
   const onCancel = () => {
@@ -258,6 +261,23 @@ export function ListsContainer() {
       // defaultSortOrder: "descend",
       sorter: (a, b) => a.DESTINATARIO.localeCompare(b.DESTINATARIO),
       sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Recordatorio",
+      dataIndex: "send_reminder",
+      key: "send_reminder",
+      fixed: "right",
+      width: 110,
+      align: "center",
+      render: (text, record) => (
+        <Checkbox
+          checked={record.send_reminder ?? false}
+          disabled={record.ESTADO === "Guarda Temporal" || updateExpMutation.isPending}
+          onChange={(e) => {
+            updateExpMutation.mutate({ id: record.id_exp_list, send_reminder: e.target.checked });
+          }}
+        />
+      ),
     },
     {
       title: "Acciones",
@@ -406,7 +426,7 @@ export function ListsContainer() {
         </Col>
       )}
       <ModalSetDate
-        visible={visible}
+        visible={visible && selectedID !== undefined}
         onCancel={onCancel}
         onCreate={onCreate}
         value={value}

@@ -1,4 +1,4 @@
-import type { Schema, Attribute } from '@strapi/strapi';
+import type { Attribute, Schema } from '@strapi/strapi';
 
 export interface RelationsExpRel extends Schema.Component {
   collectionName: 'components_relations_exp_rels';
@@ -7,8 +7,8 @@ export interface RelationsExpRel extends Schema.Component {
     icon: 'archive';
   };
   attributes: {
-    expId: Attribute.BigInteger & Attribute.Required & Attribute.Unique;
     descripcion: Attribute.String;
+    expId: Attribute.BigInteger & Attribute.Required & Attribute.Unique;
     notas: Attribute.String;
   };
 }
