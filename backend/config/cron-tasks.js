@@ -169,7 +169,7 @@ module.exports = {
     },
     options: {
       // every tuesday at 1:45pm (UTC-3)
-      rule: "0 5 6 * * 1,3,5",
+      rule: "0 15 9 * * 1,3,5",
     },
   },
 };
