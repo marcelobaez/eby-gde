@@ -45,6 +45,7 @@ module.exports = {
   sendOverdueEmail: {
     task: async ({ strapi }) => {
       try {
+        console.log("cron started");
         // Obtener todas las listas con expedientes que tengan duracion_esperada y send_reminder = true
         const listas = await strapi.entityService.findMany(
           "api::lista.lista",
@@ -168,7 +169,7 @@ module.exports = {
     },
     options: {
       // every tuesday at 1:45pm (UTC-3)
-      rule: "0 0 5 * * 1,3,5",
+      rule: "0 5 6 * * 1,3,5",
     },
   },
 };
