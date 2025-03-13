@@ -1,6 +1,6 @@
 const axios = require("axios");
 const qs = require("qs");
-const { differenceInDays, sub } = require("date-fns");
+const { differenceInDays } = require("date-fns");
 const { parseISO } = require("date-fns");
 
 const listsReqOpts = {
@@ -118,28 +118,39 @@ module.exports = {
 
         if (!hasOverdueExpedientes) return;
 
+        // Group lists by user email
+        const listsByUser = exptesWithGdeData.reduce((acc, list) => {
+          const userEmail = list.usuario.email;
+          if (!acc[userEmail]) {
+            acc[userEmail] = {
+              email: userEmail,
+              lists: []
+            };
+          }
+          acc[userEmail].lists.push({
+            name: list.titulo,
+            expedientes: list.expedientes
+          });
+          return acc;
+        }, {});
+
+        // Send one email per user with all their lists
         await Promise.all(
-          exptesWithGdeData.map(async (el, idx) => {
+          Object.values(listsByUser).map(async (userData) => {
             await strapi
               .plugin("email-designer")
               .service("email")
               .sendTemplatedEmail(
                 {
-                  // required
-                  to: el.usuario.email,
+                  to: userData.email,
                   from: "expedientes@eby.org.ar",
                 },
                 {
-                  // required - Ref ID defined in the template designer (won't change on import)
                   templateReferenceId: 1,
-                  subject: `Expedientes Vencidos - ${el.titulo}`,
+                  subject: "Expedientes Vencidos",
                 },
                 {
-                  // this object must include all variables you're using in your email template
-                  list: {
-                    name: el.titulo,
-                    expedientes: el.expedientes,
-                  },
+                  lists: userData.lists
                 }
               );
           })
