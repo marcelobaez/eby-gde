@@ -16,10 +16,11 @@ import {
   GetProp,
   Flex,
   Checkbox,
+  notification,
 } from "antd";
 import { SearchExpForm } from "./SearchExpForm";
 import { TableResults } from "./TableResults";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { ExtendedExp, useListInfoByID } from "../lib/fetchers";
@@ -40,6 +41,7 @@ import Link from "next/link";
 import esLocale from "date-fns/locale/es";
 import ReactExport from "react-data-export";
 import { PresetStatusColorType } from "antd/es/_util/colors";
+import React from "react";
 
 const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
@@ -60,8 +62,12 @@ interface TableParams {
   filters?: Parameters<GetProp<TableProps, "onChange">>[1];
 }
 
+const Context = React.createContext({ name: "ListsContainer" });
+
 export function ListsContainer() {
   const router = useRouter();
+
+  const [api, contextHolder] = notification.useNotification();
 
   const listId = (router.query.id as string) || "";
 
@@ -152,6 +158,20 @@ export function ListsContainer() {
     setVisible(false);
   };
 
+  const openNotificationWithIcon = () => {
+    api["warning"]({
+      message: "Advertencia",
+      description: (
+        <>
+          <p>
+            Debe establecer un tiempo de trámite.
+          </p>
+          <p>Utilice el icono <CalendarOutlined /> en la columna acciones</p>
+        </>
+      ),
+    });
+  };
+
   const columns: ColumnsType<ExtendedExp> = [
     {
       title: "Expediente",
@@ -232,7 +252,7 @@ export function ListsContainer() {
       title: "Ultimo pase",
       dataIndex: "FECHA_OPERACION",
       key: "FECHA_OPERACION",
-      width: 100,
+      width: 120,
       render: (text) => (
         <Text>
           {format(parseISO(text), "P", {
@@ -244,7 +264,6 @@ export function ListsContainer() {
         new Date(a.FECHA_OPERACION).valueOf() -
         new Date(b.FECHA_OPERACION).valueOf(),
       sortDirections: ["descend", "ascend"],
-      // defaultSortOrder: "descend",
     },
     {
       title: "En poder",
@@ -272,9 +291,18 @@ export function ListsContainer() {
       render: (text, record) => (
         <Checkbox
           checked={record.send_reminder ?? false}
-          disabled={record.ESTADO === "Guarda Temporal" || updateExpMutation.isPending}
+          disabled={
+            record.ESTADO === "Guarda Temporal" || updateExpMutation.isPending
+          }
           onChange={(e) => {
-            updateExpMutation.mutate({ id: record.id_exp_list, send_reminder: e.target.checked });
+            if (e.target.checked && record.duracion_esperada === null) {
+              openNotificationWithIcon();
+            } else {
+              updateExpMutation.mutate({
+                id: record.id_exp_list,
+                send_reminder: e.target.checked,
+              });
+            }
           }}
         />
       ),
@@ -353,84 +381,89 @@ export function ListsContainer() {
     </ExcelFile>
   );
 
+  const contextValue = useMemo(() => ({ name: "ListsContainer" }), []);
+
   return (
-    <Row gutter={[16, 16]} justify="center">
-      <Col key="list-header" span={24}>
-        <Flex justify="space-between">
-          <Space direction="vertical">
-            <Title level={4} style={{ marginBottom: 0 }}>
-              {`Detalles: ${data ? data.listName : ""}`}
-            </Title>
-            <Typography.Text type="secondary">
-              Aqui vera los expedientes asociados a su lista. Puede agregar
-              nuevos expedientes utilizando el formulario al pie
-            </Typography.Text>
-          </Space>
-          <ExpsExport />
-        </Flex>
-      </Col>
-      <Col span={24}>
-        <Card bordered={false}>
-          <Row gutter={[16, 16]}>
-            {movsData.length > 0 && <ListStatistics movs={movsData} />}
-            <Col span={24}>
-              <ConfigProvider
-                renderEmpty={() => (
-                  <Empty
-                    description={<span>No hay expedientes en su lista</span>}
+    <Context.Provider value={contextValue}>
+      {contextHolder}
+      <Row gutter={[16, 16]} justify="center">
+        <Col key="list-header" span={24}>
+          <Flex justify="space-between">
+            <Space direction="vertical">
+              <Title level={4} style={{ marginBottom: 0 }}>
+                {`Detalles: ${data ? data.listName : ""}`}
+              </Title>
+              <Typography.Text type="secondary">
+                Aqui vera los expedientes asociados a su lista. Puede agregar
+                nuevos expedientes utilizando el formulario al pie
+              </Typography.Text>
+            </Space>
+            <ExpsExport />
+          </Flex>
+        </Col>
+        <Col span={24}>
+          <Card bordered={false}>
+            <Row gutter={[16, 16]}>
+              {movsData.length > 0 && <ListStatistics movs={movsData} />}
+              <Col span={24}>
+                <ConfigProvider
+                  renderEmpty={() => (
+                    <Empty
+                      description={<span>No hay expedientes en su lista</span>}
+                    />
+                  )}
+                >
+                  <Table
+                    columns={columns}
+                    rowKey="ID"
+                    loading={status === "pending"}
+                    dataSource={movsData}
+                    size="small"
+                    scroll={{ x: 1300 }}
+                    pagination={tableParams.pagination}
+                    onChange={handleTableChange}
                   />
-                )}
-              >
-                <Table
-                  columns={columns}
-                  rowKey="ID"
-                  loading={status === "pending"}
-                  dataSource={movsData}
-                  size="small"
-                  scroll={{ x: 1300 }}
-                  pagination={tableParams.pagination}
-                  onChange={handleTableChange}
-                />
-              </ConfigProvider>
-            </Col>
-          </Row>
-        </Card>
-      </Col>
-      <Col span={24}>
-        <Card bordered={false} style={{ width: "100%" }}>
-          <SearchExpForm
-            handleSubmit={handleSubmit}
-            handleReset={handleReset}
-            isSearching={isSearching}
-          />
-        </Card>
-      </Col>
-      {searchData.length > 0 && (
+                </ConfigProvider>
+              </Col>
+            </Row>
+          </Card>
+        </Col>
         <Col span={24}>
           <Card bordered={false} style={{ width: "100%" }}>
-            <TableResults
-              data={searchData}
-              handleAdd={(id: number) =>
-                addExpMutation.mutateAsync({ expId: id, listId })
-              }
-              isAdding={addExpMutation.isPending}
+            <SearchExpForm
+              handleSubmit={handleSubmit}
+              handleReset={handleReset}
+              isSearching={isSearching}
             />
           </Card>
         </Col>
-      )}
-      {showEmpty && (
-        <Col span={24}>
-          <Card bordered={false} style={{ width: "100%" }}>
-            <Empty description="No se encontraron resultados. Verifique los valores ingresados" />
-          </Card>
-        </Col>
-      )}
-      <ModalSetDate
-        visible={visible && selectedID !== undefined}
-        onCancel={onCancel}
-        onCreate={onCreate}
-        value={value}
-      />
-    </Row>
+        {searchData.length > 0 && (
+          <Col span={24}>
+            <Card bordered={false} style={{ width: "100%" }}>
+              <TableResults
+                data={searchData}
+                handleAdd={(id: number) =>
+                  addExpMutation.mutateAsync({ expId: id, listId })
+                }
+                isAdding={addExpMutation.isPending}
+              />
+            </Card>
+          </Col>
+        )}
+        {showEmpty && (
+          <Col span={24}>
+            <Card bordered={false} style={{ width: "100%" }}>
+              <Empty description="No se encontraron resultados. Verifique los valores ingresados" />
+            </Card>
+          </Col>
+        )}
+        <ModalSetDate
+          visible={visible && selectedID !== undefined}
+          onCancel={onCancel}
+          onCreate={onCreate}
+          value={value}
+        />
+      </Row>
+    </Context.Provider>
   );
 }
