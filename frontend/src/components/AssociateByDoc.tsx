@@ -40,7 +40,11 @@ import { ModalAssociateExpAlt } from "./ModalAssociateExpAlt";
 const { Text, Paragraph } = Typography;
 const { confirm } = Modal;
 
-export function AssociateByDoc() {
+export function AssociateByDoc({
+  mode,
+}: {
+  mode: "verify" | "associate" | "search";
+}) {
   const [isTreeModalOpen, setIsTreeModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const removeExpMutation = useRemoveExpMutation();
@@ -117,16 +121,22 @@ export function AssociateByDoc() {
 
   return (
     <Space size="middle" direction="vertical" style={{ width: "100%" }}>
-      <SearchDocExpForm handleSubmit={handleCheckRelation} />
+      <SearchDocExpForm handleSubmit={handleCheckRelation} mode={mode} />
       {expdDocData &&
         (expdDocData.length === 0 || hasDOCNoParentAndChildren) &&
         selectedExpDoc && (
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
             <Alert
-              message="No se encontraron asociaciones"
-              description="Puede crear una nueva asociacion haciendo click en el boton Asociar"
-              type="info"
-              showIcon
+              message={
+                mode === "verify" || mode === "associate"
+                  ? "No se encontraron asociaciones"
+                  : "No se encontraron resultados"
+              }
+              description={
+                mode === "verify" || mode === "associate"
+                  ? "Puede crear una nueva asociacion haciendo click en el boton Asociar"
+                  : ""
+              }
             />
             <Flex justify="space-between">
               <div>
@@ -139,17 +149,19 @@ export function AssociateByDoc() {
                   </Tooltip>
                 </div>
               </div>
-              <Space direction="vertical" size="small">
-                <Button
-                  size="small"
-                  type="primary"
-                  onClick={() => {
-                    setIsFormModalOpen(true);
-                  }}
-                >
-                  Asociar
-                </Button>
-              </Space>
+              {mode === "associate" && (
+                <Space direction="vertical" size="small">
+                  <Button
+                    size="small"
+                    type="primary"
+                    onClick={() => {
+                      setIsFormModalOpen(true);
+                    }}
+                  >
+                    Asociar
+                  </Button>
+                </Space>
+              )}
             </Flex>
           </Space>
         )}

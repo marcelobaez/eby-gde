@@ -21,7 +21,7 @@ const FETCH_SIZE = 5;
 
 type SearchExpDocFormProps = {
   handleSubmit?: (values?: ExpDocDetailResponse["data"]) => void;
-  mode?: "verify" | "associate";
+  mode?: "verify" | "associate" | "search";
   targetExpCode?: string;
   onAssociate?: (
     asFather: boolean,
@@ -193,16 +193,17 @@ const SearchDocExp = ({
                   }`}
                   description={item.attributes.ASUNTO}
                 />
-                {selectedMode === "verify" && (
-                  <Button
-                    icon={<SearchOutlined />}
-                    onClick={() => {
-                      handleSubmit && handleSubmit(item);
-                    }}
-                  >
-                    Ver relaciones
-                  </Button>
-                )}
+                {selectedMode === "verify" ||
+                  (selectedMode === "associate" && (
+                    <Button
+                      icon={<SearchOutlined />}
+                      onClick={() => {
+                        handleSubmit && handleSubmit(item);
+                      }}
+                    >
+                      Ver relaciones
+                    </Button>
+                  ))}
                 {selectedMode === "associate" && onAssociate && (
                   <Space>
                     <Button

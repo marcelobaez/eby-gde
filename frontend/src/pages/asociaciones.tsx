@@ -19,7 +19,7 @@ export default function Documents() {
     {
       key: "fisico",
       label: "Buscar por Expediente Fisico",
-      children: <AssociateByDoc />,
+      children: <AssociateByDoc mode="associate" />,
     },
   ];
 

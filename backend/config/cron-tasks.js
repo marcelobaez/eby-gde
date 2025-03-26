@@ -87,8 +87,8 @@ module.exports = {
           });
 
           // filter out expedientes that are overdue
-          const overdueExpedientes = augmentedExpedientes.filter(
-            (expediente) => {
+          const overdueExpedientes = augmentedExpedientes
+            .filter((expediente) => {
               return (
                 getIsOverdue(
                   expediente.gdeExp.FECHA_CREACION,
@@ -96,14 +96,15 @@ module.exports = {
                   expediente.duracion_esperada
                 ) && expediente.gdeExp.ESTADO !== "Guarda Temporal"
               );
-            }
-          ).map(exp => ({
-            ...exp,
-            days_overdue: differenceInDays(
-              parseISO(exp.gdeExp.FECHA_OPERACION),
-              parseISO(exp.gdeExp.FECHA_CREACION)
-            ) - exp.duracion_esperada
-          }));
+            })
+            .map((exp) => ({
+              ...exp,
+              days_overdue:
+                differenceInDays(
+                  parseISO(exp.gdeExp.FECHA_OPERACION),
+                  parseISO(exp.gdeExp.FECHA_CREACION)
+                ) - exp.duracion_esperada,
+            }));
 
           return {
             ...list,
@@ -124,12 +125,12 @@ module.exports = {
           if (!acc[userEmail]) {
             acc[userEmail] = {
               email: userEmail,
-              lists: []
+              lists: [],
             };
           }
           acc[userEmail].lists.push({
             name: list.titulo,
-            expedientes: list.expedientes
+            expedientes: list.expedientes,
           });
           return acc;
         }, {});
@@ -150,7 +151,7 @@ module.exports = {
                   subject: "Expedientes Vencidos",
                 },
                 {
-                  lists: userData.lists
+                  lists: userData.lists,
                 }
               );
           })
