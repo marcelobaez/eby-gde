@@ -31,21 +31,13 @@ import {
   useUpdateExpMutation,
 } from "../hooks/useList";
 import { ModalSetDate } from "./ModalSetDate";
-import {
-  CalendarOutlined,
-  DeleteOutlined,
-  FileExcelOutlined,
-} from "@ant-design/icons";
+import { CalendarOutlined, DeleteOutlined } from "@ant-design/icons";
 import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import esLocale from "date-fns/locale/es";
-import ReactExport from "react-data-export";
 import { PresetStatusColorType } from "antd/es/_util/colors";
 import React from "react";
-
-const ExcelFile = ReactExport.ExcelFile;
-const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
-const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
+import { ExportButton } from "./ExportButton";
 
 const { Text, Title } = Typography;
 
@@ -163,10 +155,10 @@ export function ListsContainer() {
       message: "Advertencia",
       description: (
         <>
+          <p>Debe establecer un tiempo de trámite.</p>
           <p>
-            Debe establecer un tiempo de trámite.
+            Utilice el icono <CalendarOutlined /> en la columna acciones
           </p>
-          <p>Utilice el icono <CalendarOutlined /> en la columna acciones</p>
         </>
       ),
     });
@@ -346,40 +338,40 @@ export function ListsContainer() {
     },
   ];
 
-  const ExpsExport = () => (
-    <ExcelFile
-      filename={`Expedientes Lista ${data ? data.listName : ""}`}
-      element={
-        <Button disabled={!data} icon={<FileExcelOutlined />}>
-          Exportar
-        </Button>
-      }
-    >
-      <ExcelSheet data={movsData} name="Expedientes">
-        <ExcelColumn label="Expediente" value="EXPEDIENTE" />
-        <ExcelColumn label="Descripcion" value="DESCRIPCION" />
-        <ExcelColumn label="Tiempo de vida" value="lifetime" />
-        <ExcelColumn label="Estado" value="ESTADO" />
-        <ExcelColumn
-          label="Creado"
-          value={(col: ExtendedExp) =>
-            format(parseISO(col.FECHA_CREACION), "P", {
-              locale: esLocale,
-            })
-          }
-        />
-        <ExcelColumn
-          label="Ultimo pase"
-          value={(col: ExtendedExp) =>
-            format(parseISO(col.FECHA_OPERACION), "P", {
-              locale: esLocale,
-            })
-          }
-        />
-        <ExcelColumn label="En poder" value="DESTINATARIO" />
-      </ExcelSheet>
-    </ExcelFile>
-  );
+  const exportColumns = [
+    {
+      key: "EXPEDIENTE",
+      label: "Expediente",
+    },
+    {
+      key: "DESCRIPCION",
+      label: "Descripción",
+    },
+    {
+      key: "lifetime",
+      label: "Tiempo de vida",
+    },
+    {
+      key: "ESTADO",
+      label: "Estado",
+    },
+    {
+      key: "FECHA_CREACION",
+      label: "Creado",
+      format: (value: string) =>
+        format(parseISO(value), "P", { locale: esLocale }),
+    },
+    {
+      key: "FECHA_OPERACION",
+      label: "Último pase",
+      format: (value: string) =>
+        format(parseISO(value), "P", { locale: esLocale }),
+    },
+    {
+      key: "DESTINATARIO",
+      label: "En poder",
+    },
+  ];
 
   const contextValue = useMemo(() => ({ name: "ListsContainer" }), []);
 
@@ -398,7 +390,13 @@ export function ListsContainer() {
                 nuevos expedientes utilizando el formulario al pie
               </Typography.Text>
             </Space>
-            <ExpsExport />
+            <Space>
+              <ExportButton
+                data={data?.expedientes || []}
+                filename={`Expedientes Lista ${data?.listName || ""}`}
+                columns={exportColumns}
+              />
+            </Space>
           </Flex>
         </Col>
         <Col span={24}>

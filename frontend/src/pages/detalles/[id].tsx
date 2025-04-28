@@ -11,7 +11,6 @@ import {
   Typography,
   Badge,
   Table,
-  Button,
   Tabs,
   Flex,
   Space,
@@ -20,16 +19,11 @@ import { setStatus } from "../../utils/index";
 import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
 import { useState } from "react";
-import ReactExport from "react-data-export";
-import { FileExcelOutlined } from "@ant-design/icons";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { DocsResponse, GDEMovsResponse } from "@/types/apiGde";
 import { ColumnsType } from "antd/es/table";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-
-const ExcelFile = ReactExport.ExcelFile;
-const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
-const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
+import { ExportButton } from "../../components/ExportButton";
 
 const { Text } = Typography;
 
@@ -72,79 +66,6 @@ export default function Movimiento() {
       </MainLayout>
     );
   }
-
-  const MovExport = () => (
-    <ExcelFile
-      filename={`Movimientos Expediente: ${
-        movsData ? movsData[0].EXPEDIENTE : ""
-      }`}
-      element={
-        <Button
-          disabled={!movsData || movsData.length === 0}
-          icon={<FileExcelOutlined />}
-        >
-          Exportar
-        </Button>
-      }
-    >
-      <ExcelSheet data={movsData} name="Movimientos">
-        <ExcelColumn label="Orden" value="ORD_HIST" />
-        <ExcelColumn
-          label="Fecha"
-          value={(col: GDEMovsResponse) =>
-            format(parseISO(col.FECHA_OPERACION), "P", {
-              locale: esLocale,
-            })
-          }
-        />
-        <ExcelColumn label="Motivo" value="MOTIVO" />
-        <ExcelColumn label="Emisor" value="USUARIO" />
-        <ExcelColumn label="Destino" value="DESTINATARIO" />
-        <ExcelColumn label="Estado" value="ESTADO" />
-      </ExcelSheet>
-    </ExcelFile>
-  );
-
-  const DocsExport = () => (
-    <ExcelFile
-      filename={`Documentos Expediente: ${
-        movsData ? movsData[0].EXPEDIENTE : ""
-      }`}
-      element={
-        <Button
-          disabled={!docsData || docsData.length === 0}
-          icon={<FileExcelOutlined />}
-        >
-          Exportar
-        </Button>
-      }
-    >
-      <ExcelSheet data={docsData} name="Documentos">
-        <ExcelColumn
-          label="Orden"
-          value={(col: DocsResponse) => col.POSICION + 1}
-        />
-        <ExcelColumn label="Documento" value="NOMBRE_ARCHIVO" />
-        <ExcelColumn label="Motivo" value="MOTIVO" />
-        <ExcelColumn
-          label="Fecha Asociacion"
-          value={(col: DocsResponse) =>
-            format(parseISO(col.FECHA_ASOCIACION), "P", {
-              locale: esLocale,
-            })
-          }
-        />
-        <ExcelColumn
-          label="Fecha Creacion"
-          value={(col: DocsResponse) =>
-            format(parseISO(col.FECHA_CREACION), "P", {
-              locale: esLocale,
-            })
-          }
-        />
-      </ExcelSheet>
-    </ExcelFile>
-  );
 
   const columns: ColumnsType<GDEMovsResponse> = [
     {
@@ -237,6 +158,63 @@ export default function Movimiento() {
     },
   ];
 
+  const movsExportColumns = [
+    {
+      key: "ORD_HIST",
+      label: "Orden",
+    },
+    {
+      key: "FECHA_OPERACION",
+      label: "Fecha",
+      format: (value: string) =>
+        format(parseISO(value), "P", { locale: esLocale }),
+    },
+    {
+      key: "MOTIVO",
+      label: "Motivo",
+    },
+    {
+      key: "USUARIO",
+      label: "Emisor",
+    },
+    {
+      key: "DESTINATARIO",
+      label: "Destino",
+    },
+    {
+      key: "ESTADO",
+      label: "Estado",
+    },
+  ];
+
+  const docsExportColumns = [
+    {
+      key: "POSICION",
+      label: "Orden",
+      format: (value: string) => (parseInt(value) + 1).toString(),
+    },
+    {
+      key: "NOMBRE_ARCHIVO",
+      label: "Documento",
+    },
+    {
+      key: "MOTIVO",
+      label: "Motivo",
+    },
+    {
+      key: "FECHA_ASOCIACION",
+      label: "Fecha Asociacion",
+      format: (value: string) =>
+        format(parseISO(value), "P", { locale: esLocale }),
+    },
+    {
+      key: "FECHA_CREACION",
+      label: "Fecha Creacion",
+      format: (value: string) =>
+        format(parseISO(value), "P", { locale: esLocale }),
+    },
+  ];
+
   return (
     <MainLayout>
       <Row gutter={[16, 16]} justify="center">
@@ -251,11 +229,29 @@ export default function Movimiento() {
                 movimientos, documentos asociados y jerarquias establecidas
               </Typography.Text>
             </Space>
-            {activeKey === "item-1" ? <MovExport /> : <DocsExport />}
+            <Space>
+              {activeKey === "item-1" ? (
+                <ExportButton
+                  data={movsData || []}
+                  filename={`Movimientos Expediente: ${
+                    movsData?.[0]?.EXPEDIENTE || ""
+                  }`}
+                  columns={movsExportColumns}
+                />
+              ) : (
+                <ExportButton
+                  data={docsData || []}
+                  filename={`Documentos Expediente: ${
+                    movsData?.[0]?.EXPEDIENTE || ""
+                  }`}
+                  columns={docsExportColumns}
+                />
+              )}
+            </Space>
           </Flex>
         </Col>
         <Col span={24}>
-          <Card bordered={false} style={{ minHeight: "300px" }}>
+          <Card variant="borderless" style={{ minHeight: "300px" }}>
             {movsData.length > 0 && (
               <Tabs
                 activeKey={activeKey}
