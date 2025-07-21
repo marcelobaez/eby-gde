@@ -170,10 +170,7 @@ export default function Categorias() {
           </Flex>
         </Col>
         <Col span={24}>
-          <Card
-            bordered={false}
-            style={{ width: "100%", minHeight: "calc(100vh - 250px)" }}
-          >
+          <Card style={{ width: "100%", minHeight: "calc(100vh - 250px)" }}>
             <Space size="middle" direction="vertical" style={{ width: "100%" }}>
               <Table
                 size="small"

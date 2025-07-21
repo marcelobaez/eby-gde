@@ -473,13 +473,11 @@ export default function SearchPage() {
                 },
                 {
                   label: "Modificado en",
-                  children: format(
-                    parseISO(selectedItem.fecha_modificacion),
-                    "P",
-                    {
-                      locale: esLocale,
-                    }
-                  ),
+                  children: selectedItem.fecha_modificacion
+                    ? format(parseISO(selectedItem.fecha_modificacion), "P", {
+                        locale: esLocale,
+                      })
+                    : "N/A",
                   span: 3,
                 },
               ]}

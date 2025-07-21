@@ -26,7 +26,7 @@ import { useRouter } from "next/router";
 import { useBoundStore } from "@/stores/useBoundStore";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
-import { api } from "@/lib/axios";
+import { api, clearTokenCache } from "@/lib/axios";
 import { User } from "@/types/user";
 
 const { Text } = Typography;
@@ -41,7 +41,7 @@ export function MainLayout({
   title?: string;
 }) {
   const {
-    token: { colorBgContainer, colorPrimary },
+    token: { colorPrimary },
   } = theme.useToken();
   const router = useRouter();
   const { data: session } = useSession();
@@ -84,6 +84,7 @@ export function MainLayout({
 
   useEffect(() => {
     const path = router.pathname.split("/");
+    console.log("path", path);
     if (path[1].length > 0) {
       setSelected([path[1]]);
     } else {
@@ -140,6 +141,7 @@ export function MainLayout({
                   <a
                     href="#"
                     onClick={() => {
+                      clearTokenCache();
                       signOut();
                     }}
                   >
@@ -183,7 +185,7 @@ export function MainLayout({
                 },
                 hasSearchPermissions
                   ? {
-                      key: "search",
+                      key: "busqueda",
                       icon: <SearchOutlined />,
                       label: <Link href="/busqueda">Busqueda</Link>,
                     }

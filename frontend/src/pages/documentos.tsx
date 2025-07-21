@@ -38,7 +38,7 @@ export default function Documents() {
           </Space>
         </Col>
         <Col span={24}>
-          <Card bordered={false}>
+          <Card>
             <Tabs defaultActiveKey="gde" items={tabs} />
           </Card>
         </Col>

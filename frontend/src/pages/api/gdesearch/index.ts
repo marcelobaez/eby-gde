@@ -12,7 +12,7 @@ export type GdeSearchResult = {
   usuario_creador: string;
   fecha_creacion: string;
   usuario_modificacion: string;
-  fecha_modificacion: string;
+  fecha_modificacion: string | null;
   tipo_documento: string;
   anio: number;
   numero: number;

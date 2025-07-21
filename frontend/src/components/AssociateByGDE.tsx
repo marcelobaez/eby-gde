@@ -187,7 +187,7 @@ export function AssociateByGDE() {
         withTitle={false}
       />
       {showEmpty && (
-        <Card bordered={false} style={{ width: "100%" }}>
+        <Card style={{ width: "100%" }}>
           <Empty description="No se encontro el expediente solicitado. Verifique los datos ingresados" />
         </Card>
       )}
