@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "logs_de_auditorias",
+  "info": {
+    "singularName": "logs-de-auditoria",
+    "pluralName": "logs-de-auditorias",
+    "displayName": "Logs de auditoria"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "page": {
+      "type": "string",
+      "required": true
+    },
+    "query": {
+      "type": "string",
+      "required": true
+    },
+    "logTime": {
+      "type": "datetime",
+      "required": true
+    },
+    "userId": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "logs_de_auditorias"
+    },
+    "userEmail": {
+      "type": "string",
+      "required": true
+    },
+    "filters": {
+      "type": "json"
+    },
+    "resultCount": {
+      "type": "biginteger"
+    }
+  }
+}
