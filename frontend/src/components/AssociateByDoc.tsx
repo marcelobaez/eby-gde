@@ -36,6 +36,8 @@ import { SearchDocExpForm } from "./SearchDocExpForm";
 import { useRemoveExpMutation } from "./AssociateExp.utils";
 import { ModalAssociateExpDoc } from "./ModalAssociateExpDoc";
 import { ModalAssociateExpAlt } from "./ModalAssociateExpAlt";
+import { canEditAsociaciones } from "@/utils/featureGuards";
+import FeatureGuard from "./FeatureGuard";
 
 const { Text, Paragraph } = Typography;
 const { confirm } = Modal;
@@ -151,15 +153,17 @@ export function AssociateByDoc({
               </div>
               {mode === "associate" && (
                 <Space direction="vertical" size="small">
-                  <Button
-                    size="small"
-                    type="primary"
-                    onClick={() => {
-                      setIsFormModalOpen(true);
-                    }}
-                  >
-                    Asociar
-                  </Button>
+                  <FeatureGuard guard={canEditAsociaciones}>
+                    <Button
+                      size="small"
+                      type="primary"
+                      onClick={() => {
+                        setIsFormModalOpen(true);
+                      }}
+                    >
+                      Asociar
+                    </Button>
+                  </FeatureGuard>
                 </Space>
               )}
             </Flex>

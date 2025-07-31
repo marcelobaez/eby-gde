@@ -46,7 +46,7 @@ function downloadBlob(blob: Blob, fileName: string) {
 
 export const useDownloadDocMutation = () =>
   useMutation({
-    mutationFn: async (doc: DocsResponse["docs"][number]) => {
+    mutationFn: async (doc: DocsResponse) => {
       const { type, year, number, location } = parseDocumentNameTyped(
         doc.NUMERO_SADE
       );

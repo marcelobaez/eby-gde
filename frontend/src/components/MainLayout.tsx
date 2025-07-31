@@ -18,16 +18,20 @@ import {
   FileOutlined,
   FolderOpenOutlined,
   SearchOutlined,
+  FileSearchOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { Image } from "antd";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useBoundStore } from "@/stores/useBoundStore";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
-import { api, clearTokenCache } from "@/lib/axios";
-import { User } from "@/types/user";
+import { clearTokenCache } from "@/lib/axios";
+import {
+  canEditAsociaciones,
+  canSearchDocs,
+  canSearchExp,
+  canViewAsociaciones,
+} from "@/utils/featureGuards";
 
 const { Text } = Typography;
 
@@ -45,46 +49,21 @@ export function MainLayout({
   } = theme.useToken();
   const router = useRouter();
   const { data: session } = useSession();
-  const { data } = useQuery({
-    queryKey: ["user"],
-    queryFn: async () =>
-      await api.get<User>("/users/me?populate=role").then((res) => res.data),
-    staleTime: Infinity,
-  });
 
-  const setUser = useBoundStore((state) => state.setUser);
-
-  const user = useBoundStore((state) => state.user);
-  const hasDocPermissions = user && user.hasDocsPermissions;
-  const hasRelsPermissions = user && user.hasRelsPermissions;
-  const hasSearchPermissions = user && user.hasSearchPermissions;
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelected] = useState(["home"]);
-
-  // Setear permisos en user store
-  React.useEffect(() => {
-    if (data) {
-      setUser({
-        email: data.email,
-        hasAllPermissions: data.role.name.toLowerCase() === "administrator",
-        hasDocsPermissions: data.role.name.toLowerCase() !== "authenticated",
-        hasRelsPermissions:
-          data.role.name.toLowerCase() === "administrator" ||
-          data.role.name.toLowerCase() === "expobras",
-        hasSearchPermissions:
-          data.role.name.toLowerCase() === "administrator" ||
-          data.role.name.toLowerCase() === "expsearch",
-      });
-    }
-  }, [data]);
 
   const handleCollapse = (collapsed: boolean) => {
     setCollapsed(collapsed);
   };
 
+  const hasCategoriesPermissions = canEditAsociaciones(session?.role);
+  const hasRelsPermissions = canViewAsociaciones(session?.role);
+  const hasSearchPermissions = canSearchExp(session?.role);
+  const hasDocPermissions = canSearchDocs(session?.role);
+
   useEffect(() => {
     const path = router.pathname.split("/");
-    console.log("path", path);
     if (path[1].length > 0) {
       setSelected([path[1]]);
     } else {
@@ -131,6 +110,9 @@ export function MainLayout({
           >
             GDE Seguimiento
           </h1>
+          <div style={{ color: "#fff", paddingLeft: "5px" }}>
+            {session?.role.toUpperCase()}
+          </div>
         </div>
         <Dropdown
           menu={{
@@ -167,6 +149,7 @@ export function MainLayout({
           collapsed={collapsed}
           onCollapse={handleCollapse}
           theme="light"
+          width={260}
         >
           <Flex
             gap="middle"
@@ -187,17 +170,33 @@ export function MainLayout({
                   ? {
                       key: "busqueda",
                       icon: <SearchOutlined />,
-                      label: <Link href="/busqueda">Busqueda</Link>,
+                      label: <Link href="/busqueda">Busqueda Expedientes</Link>,
                     }
                   : null,
                 hasDocPermissions
                   ? {
-                      key: "documentos",
-                      icon: <FileOutlined />,
-                      label: <Link href="/documentos">Docs historicos</Link>,
+                      key: "busqueda-docs",
+                      icon: <SearchOutlined />,
+                      label: (
+                        <Link href="/busqueda-docs">Busqueda Documentos</Link>
+                      ),
                     }
                   : null,
-                hasRelsPermissions || hasSearchPermissions
+                {
+                  key: "documentos",
+                  icon: <FileOutlined />,
+                  label: <Link href="/documentos">Docs historicos</Link>,
+                },
+                {
+                  key: "mis-documentos",
+                  icon: <FileSearchOutlined />,
+                  label: (
+                    <Link href="/mis-documentos">
+                      Documentos firmados por mi
+                    </Link>
+                  ),
+                },
+                hasRelsPermissions
                   ? {
                       key: "asociaciones",
                       label: <Link href="/asociaciones">Jerarquias</Link>,
@@ -206,7 +205,7 @@ export function MainLayout({
                   : null,
               ]}
             />
-            {hasRelsPermissions && (
+            {hasCategoriesPermissions && (
               <Menu
                 theme="light"
                 mode="inline"

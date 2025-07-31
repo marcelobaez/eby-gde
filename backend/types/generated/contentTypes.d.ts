@@ -581,6 +581,46 @@ export interface ApiListaLista extends Schema.CollectionType {
   };
 }
 
+export interface ApiLogsDeAuditoriaLogsDeAuditoria
+  extends Schema.CollectionType {
+  collectionName: 'logs_de_auditorias';
+  info: {
+    displayName: 'Logs de auditoria';
+    pluralName: 'logs-de-auditorias';
+    singularName: 'logs-de-auditoria';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::logs-de-auditoria.logs-de-auditoria',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    filters: Attribute.JSON;
+    logTime: Attribute.DateTime & Attribute.Required;
+    page: Attribute.String & Attribute.Required;
+    query: Attribute.String & Attribute.Required;
+    resultCount: Attribute.BigInteger;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::logs-de-auditoria.logs-de-auditoria',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    userEmail: Attribute.String & Attribute.Required;
+    userId: Attribute.Relation<
+      'api::logs-de-auditoria.logs-de-auditoria',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface PluginContentReleasesRelease extends Schema.CollectionType {
   collectionName: 'strapi_releases';
   info: {
@@ -1043,6 +1083,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::lista.lista'
     >;
+    logs_de_auditorias: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::logs-de-auditoria.logs-de-auditoria'
+    >;
     name: Attribute.String;
     password: Attribute.Password &
       Attribute.Private &
@@ -1087,6 +1132,7 @@ declare module '@strapi/types' {
       'api::expediente.expediente': ApiExpedienteExpediente;
       'api::expedientes-relacion.expedientes-relacion': ApiExpedientesRelacionExpedientesRelacion;
       'api::lista.lista': ApiListaLista;
+      'api::logs-de-auditoria.logs-de-auditoria': ApiLogsDeAuditoriaLogsDeAuditoria;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::email-designer.email-template': PluginEmailDesignerEmailTemplate;

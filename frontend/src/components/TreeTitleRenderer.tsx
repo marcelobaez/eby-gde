@@ -11,6 +11,8 @@ import { useRouter } from "next/router";
 import { TreeNode, findAdjacentExpId, findParentExpId } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/axios";
+import FeatureGuard from "./FeatureGuard";
+import { canEditAsociaciones } from "@/utils/featureGuards";
 
 const { Text } = Typography;
 
@@ -145,41 +147,45 @@ export function TreeTitleRenderer({
         />
       </Tooltip>
       {isExp && (
+        <FeatureGuard guard={canEditAsociaciones}>
+          <Tooltip
+            title={`${
+              nodeData.isEditable
+                ? "Agregar hijo"
+                : "Limite de profundidad alcanzado"
+            }`}
+          >
+            <Button
+              type="text"
+              disabled={!nodeData.isEditable}
+              icon={<FolderAddOutlined />}
+              onClick={() => {
+                setNodeData(nodeData);
+                onAssociate();
+              }}
+            />
+          </Tooltip>
+        </FeatureGuard>
+      )}
+      <FeatureGuard guard={canEditAsociaciones}>
         <Tooltip
           title={`${
-            nodeData.isEditable
-              ? "Agregar hijo"
-              : "Limite de profundidad alcanzado"
+            nodeData.children.length === 0
+              ? "Eliminar la relacion"
+              : "Para eliminar la relacion, primero elimine los hijos"
           }`}
         >
           <Button
             type="text"
-            disabled={!nodeData.isEditable}
-            icon={<FolderAddOutlined />}
+            disabled={nodeData.children.length > 0}
+            icon={<DeleteOutlined />}
             onClick={() => {
               setNodeData(nodeData);
-              onAssociate();
+              handleDelete(nodeData.expId);
             }}
           />
         </Tooltip>
-      )}
-      <Tooltip
-        title={`${
-          nodeData.children.length === 0
-            ? "Eliminar la relacion"
-            : "Para eliminar la relacion, primero elimine los hijos"
-        }`}
-      >
-        <Button
-          type="text"
-          disabled={nodeData.children.length > 0}
-          icon={<DeleteOutlined />}
-          onClick={() => {
-            setNodeData(nodeData);
-            handleDelete(nodeData.expId);
-          }}
-        />
-      </Tooltip>
+      </FeatureGuard>
       {nodeData.isExp && (
         <Tooltip title={`Navegar a detalles`}>
           <Button
@@ -190,22 +196,26 @@ export function TreeTitleRenderer({
         </Tooltip>
       )}
       {nodeData.key !== treeData.key && !nodeData.isFirst && (
-        <Tooltip title={`Mover hacia arriba`}>
-          <Button
-            type="text"
-            icon={<CaretUpOutlined />}
-            onClick={() => setNewPosition(nodeData, "before")}
-          />
-        </Tooltip>
+        <FeatureGuard guard={canEditAsociaciones}>
+          <Tooltip title={`Mover hacia arriba`}>
+            <Button
+              type="text"
+              icon={<CaretUpOutlined />}
+              onClick={() => setNewPosition(nodeData, "before")}
+            />
+          </Tooltip>
+        </FeatureGuard>
       )}
       {nodeData.key !== treeData.key && !nodeData.isLast && (
-        <Tooltip title={`Mover hacia abajo`}>
-          <Button
-            type="text"
-            icon={<CaretDownOutlined />}
-            onClick={() => setNewPosition(nodeData, "after")}
-          />
-        </Tooltip>
+        <FeatureGuard guard={canEditAsociaciones}>
+          <Tooltip title={`Mover hacia abajo`}>
+            <Button
+              type="text"
+              icon={<CaretDownOutlined />}
+              onClick={() => setNewPosition(nodeData, "after")}
+            />
+          </Tooltip>
+        </FeatureGuard>
       )}
     </Space>
   );

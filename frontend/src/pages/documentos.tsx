@@ -1,10 +1,8 @@
 import { MainLayout } from "../components/MainLayout";
 import { Col, Row, Typography, Card, Space, Tabs } from "antd";
-import axios from "axios";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { User } from "@/types/user";
 import { AssociateByDoc } from "@/components/AssociateByDoc";
 import SearchGdeDocs from "@/components/search-gde-docs";
 
@@ -58,21 +56,6 @@ export async function getServerSideProps(
         destination: "/login",
         permanent: false,
       },
-    };
-  }
-
-  const { data } = await axios.get<User>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.jwt}`,
-      },
-    }
-  );
-
-  if (data && data.role.name.toLowerCase() === "authenticated") {
-    return {
-      notFound: true,
     };
   }
 

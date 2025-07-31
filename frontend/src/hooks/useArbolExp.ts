@@ -10,6 +10,7 @@ export function useGetArbolExpByGdeId(id: string, options = {}) {
     queryKey: ["arbolExp", id],
     queryFn: async () => getArbolExpById(id),
     ...options,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -18,6 +19,7 @@ export function useGetArbolExpByExpCode(code: string, options = {}) {
     queryKey: ["arbolExpcode", code],
     queryFn: async () => getArbolExpByExpCode(code),
     ...options,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -26,5 +28,6 @@ export function useGetExpRelationById(id: number, options = {}) {
     queryKey: ["expRelDetails", id],
     queryFn: async () => getExpRelationById(id),
     ...options,
+    refetchOnWindowFocus: false,
   });
 }

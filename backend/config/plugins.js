@@ -18,4 +18,11 @@ module.exports = ({ env }) => ({
       },
     },
   },
+  "users-permissions": {
+    config: {
+      jwt: {
+        expiresIn: "8h", // Example: Token expires in 8 hours
+      },
+    },
+  },
 });

@@ -34,7 +34,7 @@ import { useRouter } from "next/router";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { TRAMITES } from "@/utils/constants";
-import { User } from "@/types/user";
+import { canSearchExp } from "@/utils/featureGuards";
 
 const { Text, Paragraph } = Typography;
 
@@ -531,20 +531,9 @@ export async function getServerSideProps(
     };
   }
 
-  const { data } = await axios.get<User>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.jwt}`,
-      },
-    }
-  );
+  const canAccess = canSearchExp(session.role);
 
-  const canAccess =
-    data.role.name.toLowerCase() === "administrator" ||
-    data.role.name.toLowerCase() === "expsearch";
-
-  if (data && !canAccess) {
+  if (!canAccess) {
     return {
       notFound: true,
     };

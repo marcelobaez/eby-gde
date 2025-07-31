@@ -3,11 +3,10 @@ import { MainLayout } from "../components/MainLayout";
 import { Card, Col, Row, Typography, Space, Tabs } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
-import axios from "axios";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { User } from "@/types/user";
 import { AssociateByGDE } from "@/components/AssociateByGDE";
 import { AssociateByDoc } from "@/components/AssociateByDoc";
+import { canViewAsociaciones } from "@/utils/featureGuards";
 
 export default function Documents() {
   const tabs = [
@@ -61,21 +60,9 @@ export async function getServerSideProps(
     };
   }
 
-  const { data } = await axios.get<User>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.jwt}`,
-      },
-    }
-  );
+  const canAccess = canViewAsociaciones(session.role);
 
-  const canAccess =
-    data.role.name.toLowerCase() === "administrator" ||
-    data.role.name.toLowerCase() === "expobras" ||
-    data.role.name.toLowerCase() === "expsearch";
-
-  if (data && !canAccess) {
+  if (!canAccess) {
     return {
       notFound: true,
     };

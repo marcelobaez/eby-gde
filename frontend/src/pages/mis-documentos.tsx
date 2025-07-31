@@ -14,6 +14,7 @@ import {
   Button,
   Flex,
   Tag,
+  TimeRangePickerProps,
 } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
@@ -36,11 +37,11 @@ import type { Dayjs } from "dayjs";
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
 
-const rangePresets: RangePickerProps["presets"] = [
-  { label: "Ultimos 7 Dias", value: () => [dayjs().add(-7, "d"), dayjs()] },
-  { label: "Ultimos 14 Dias", value: () => [dayjs().add(-14, "d"), dayjs()] },
-  { label: "Ultimos 30 Dias", value: () => [dayjs().add(-30, "d"), dayjs()] },
-  { label: "Ultimos 90 Dias", value: () => [dayjs().add(-90, "d"), dayjs()] },
+const rangePresets: TimeRangePickerProps["presets"] = [
+  { label: "Ultimos 7 Dias", value: [dayjs().add(-7, "d"), dayjs()] },
+  { label: "Ultimos 14 Dias", value: [dayjs().add(-14, "d"), dayjs()] },
+  { label: "Ultimos 30 Dias", value: [dayjs().add(-30, "d"), dayjs()] },
+  { label: "Ultimos 90 Dias", value: [dayjs().add(-90, "d"), dayjs()] },
   {
     label: "Este año",
     value: () => [dayjs().startOf("year"), dayjs().endOf("year")],
