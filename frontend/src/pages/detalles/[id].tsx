@@ -127,7 +127,7 @@ export default function Movimiento() {
     {
       title: "Documento",
       dataIndex: "NOMBRE_ARCHIVO",
-      width: 320,
+      width: 360,
       key: "NOMBRE_ARCHIVO",
       render: (text, record) => {
         if (record.DOWNLOADABLE) {

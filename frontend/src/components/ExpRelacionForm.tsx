@@ -148,6 +148,7 @@ export function ExpRelacionForm({
           render={({ field }) => (
             <TextArea
               {...field}
+              disabled={!canEdit}
               rows={4}
               maxLength={255}
               placeholder="Agregue sus notas aqui"
