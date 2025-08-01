@@ -1,25 +1,11 @@
 import { MainLayout } from "../components/MainLayout";
-import { Col, Row, Typography, Card, Space, Tabs } from "antd";
+import { Col, Row, Typography, Card, Space } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { AssociateByDoc } from "@/components/AssociateByDoc";
 import SearchGdeDocs from "@/components/search-gde-docs";
 
 const { Title } = Typography;
-
-const tabs = [
-  {
-    key: "gde",
-    label: "Buscar documentos en GDE",
-    children: <SearchGdeDocs />,
-  },
-  {
-    key: "fisico",
-    label: "Buscar Expedientes Físicos",
-    children: <AssociateByDoc mode="search" />,
-  },
-];
 
 export default function Documents() {
   return (
@@ -37,7 +23,7 @@ export default function Documents() {
         </Col>
         <Col span={24}>
           <Card>
-            <Tabs defaultActiveKey="gde" items={tabs} />
+            <SearchGdeDocs />
           </Card>
         </Col>
       </Row>

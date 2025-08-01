@@ -21,6 +21,7 @@ import {
   CheckboxProps,
   Select,
   Tag,
+  Tabs,
 } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
@@ -35,8 +36,9 @@ import { ArrowRightOutlined } from "@ant-design/icons";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { TRAMITES } from "@/utils/constants";
 import { canSearchExp } from "@/utils/featureGuards";
+import { AssociateByDoc } from "@/components/AssociateByDoc";
 
-const { Text, Paragraph } = Typography;
+const { Text, Paragraph, Title } = Typography;
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -72,7 +74,20 @@ function getLabelFromValue(value: number | string) {
   }
 }
 
-export default function SearchPage() {
+const tabs = [
+  {
+    key: "gde",
+    label: "Buscar en GDE",
+    children: <SearchGDEExps />,
+  },
+  {
+    key: "fisico",
+    label: "Buscar Expedientes Físicos",
+    children: <AssociateByDoc mode="search" />,
+  },
+];
+
+function SearchGDEExps() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -216,20 +231,7 @@ export default function SearchPage() {
   };
 
   return (
-    <MainLayout>
-      <Row gutter={16} justify="center" style={{ marginBottom: 16 }}>
-        <Col span={24}>
-          <Space direction="vertical">
-            <Typography.Title level={4} style={{ marginBottom: 0 }}>
-              Busqueda de expedientes
-            </Typography.Title>
-            <Typography.Text type="secondary">
-              Consulte expedientes por palabras clave. Agregue filtros por año o
-              tipo de tramitación
-            </Typography.Text>
-          </Space>
-        </Col>
-      </Row>
+    <>
       <Row gutter={[16, 16]} justify="center">
         <Card style={{ minHeight: "calc(100dvh - 210px)", width: "100%" }}>
           <Space direction="vertical" size="middle" style={{ display: "flex" }}>
@@ -513,6 +515,30 @@ export default function SearchPage() {
           </Flex>
         )}
       </Drawer>
+    </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <MainLayout>
+      <Row gutter={[16, 16]}>
+        <Col span={24}>
+          <Space direction="vertical">
+            <Title level={4} style={{ marginBottom: 0 }}>
+              Consulta de expedientes
+            </Title>
+            <Typography.Text type="secondary">
+              Aqui puede buscar expedientes en GDE y Fisicos
+            </Typography.Text>
+          </Space>
+        </Col>
+        <Col span={24}>
+          <Card>
+            <Tabs defaultActiveKey="gde" items={tabs} />
+          </Card>
+        </Col>
+      </Row>
     </MainLayout>
   );
 }
