@@ -37,6 +37,8 @@ import { parseAsInteger, useQueryState } from "nuqs";
 import { TRAMITES } from "@/utils/constants";
 import { canSearchExp } from "@/utils/featureGuards";
 import { AssociateByDoc } from "@/components/AssociateByDoc";
+import { createSearchLogData, logSearch } from "@/lib/searchLogger";
+import { useSession } from "next-auth/react";
 
 const { Text, Paragraph, Title } = Typography;
 
@@ -90,6 +92,7 @@ const tabs = [
 function SearchGDEExps() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [openDrawer, setOpenDrawer] = React.useState(false);
 
@@ -128,6 +131,25 @@ function SearchGDEExps() {
       const { data } = await axios.get<GdeSearchResponse>(
         `/api/gdesearch?searchQuery=${searchTerm}&page=${page}&pageSize=${pageSize}${filterQuery}`
       );
+
+      // Log search after successful query (only for page 1 to avoid logging pagination)
+      if (page === 1 && session) {
+        const filters: Record<string, any> = {};
+        if (year) filters.year = year;
+        if (trata) filters.type = trata;
+        if (withFilters) filters.withFilters = true;
+
+        const logData = createSearchLogData(
+          "Busqueda de Expedientes GDE",
+          searchTerm,
+          session,
+          Object.keys(filters).length > 0 ? filters : undefined,
+          data.pagination.totalCount
+        );
+
+        logSearch(logData).catch(console.error);
+      }
+
       return data;
     },
     enabled: searchTerm.length > 0,

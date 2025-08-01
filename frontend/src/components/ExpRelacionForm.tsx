@@ -15,6 +15,9 @@ import { api } from "../lib/axios";
 import { PlusOutlined } from "@ant-design/icons";
 import { ChangeEvent, useRef, useState } from "react";
 import { CategoriaResponse } from "@/types/categoria";
+import { canEditAsociaciones } from "@/utils/featureGuards";
+import FeatureGuard from "./FeatureGuard";
+import { useSession } from "next-auth/react";
 
 const { TextArea } = Input;
 
@@ -31,7 +34,9 @@ export function ExpRelacionForm({
   id: number;
   handleSuccess: () => void;
 }) {
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const canEdit = canEditAsociaciones(session?.role);
   // Obtener las etiquetas de la base de datos
   const { data: tagsData } = useQuery({
     queryKey: ["tags"],
@@ -165,7 +170,8 @@ export function ExpRelacionForm({
                 width: "100%",
               }}
               placeholder="Sin etiquetas"
-              dropdownRender={(menu) => (
+              disabled={!canEdit}
+              popupRender={(menu) => (
                 <>
                   {menu}
                   <Divider
@@ -212,9 +218,11 @@ export function ExpRelacionForm({
           )}
         />
       </Form.Item>
-      <Button type="primary" htmlType="submit">
-        Enviar
-      </Button>
+      <FeatureGuard guard={canEditAsociaciones}>
+        <Button type="primary" htmlType="submit">
+          Enviar
+        </Button>
+      </FeatureGuard>
     </form>
   );
 }
