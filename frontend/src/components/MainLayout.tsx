@@ -110,9 +110,6 @@ export function MainLayout({
           >
             GDE Seguimiento
           </h1>
-          <div style={{ color: "#fff", paddingLeft: "5px" }}>
-            {session?.role.toUpperCase()}
-          </div>
         </div>
         <Dropdown
           menu={{

@@ -551,7 +551,8 @@ export default function SearchPage() {
               Consulta de expedientes
             </Title>
             <Typography.Text type="secondary">
-              Aqui puede buscar expedientes en GDE y Fisicos
+              Aqui puede buscar expedientes en GDE y Fisicos. Las busquedas se
+              realizan sobre la caratula del expediente.
             </Typography.Text>
           </Space>
         </Col>
