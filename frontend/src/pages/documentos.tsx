@@ -1,27 +1,11 @@
 import { MainLayout } from "../components/MainLayout";
-import { Col, Row, Typography, Card, Space, Tabs } from "antd";
-import axios from "axios";
+import { Col, Row, Typography, Card, Space } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { User } from "@/types/user";
-import { AssociateByDoc } from "@/components/AssociateByDoc";
 import SearchGdeDocs from "@/components/search-gde-docs";
 
 const { Title } = Typography;
-
-const tabs = [
-  {
-    key: "gde",
-    label: "Buscar documentos en GDE",
-    children: <SearchGdeDocs />,
-  },
-  {
-    key: "fisico",
-    label: "Buscar Expedientes Físicos",
-    children: <AssociateByDoc mode="search" />,
-  },
-];
 
 export default function Documents() {
   return (
@@ -38,8 +22,8 @@ export default function Documents() {
           </Space>
         </Col>
         <Col span={24}>
-          <Card bordered={false}>
-            <Tabs defaultActiveKey="gde" items={tabs} />
+          <Card>
+            <SearchGdeDocs />
           </Card>
         </Col>
       </Row>
@@ -58,21 +42,6 @@ export async function getServerSideProps(
         destination: "/login",
         permanent: false,
       },
-    };
-  }
-
-  const { data } = await axios.get<User>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.jwt}`,
-      },
-    }
-  );
-
-  if (data && data.role.name.toLowerCase() === "authenticated") {
-    return {
-      notFound: true,
     };
   }
 

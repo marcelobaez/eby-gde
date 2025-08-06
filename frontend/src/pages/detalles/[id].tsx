@@ -14,6 +14,7 @@ import {
   Tabs,
   Flex,
   Space,
+  Button,
 } from "antd";
 import { setStatus } from "../../utils/index";
 import { parseISO, format } from "date-fns";
@@ -24,6 +25,8 @@ import { DocsResponse, GDEMovsResponse } from "@/types/apiGde";
 import { ColumnsType } from "antd/es/table";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import { ExportButton } from "../../components/ExportButton";
+import { useDownloadDocMutation } from "@/components/utils";
+import { DownloadOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
@@ -45,6 +48,8 @@ export default function Movimiento() {
     isError: isDocsError,
     status: docsStatus,
   } = useGetDocsByExpId(expId);
+
+  const docDownloadMutation = useDownloadDocMutation();
 
   if (movsStatus === "pending" || docsStatus === "pending") {
     return (
@@ -122,8 +127,23 @@ export default function Movimiento() {
     {
       title: "Documento",
       dataIndex: "NOMBRE_ARCHIVO",
-      width: 320,
+      width: 360,
       key: "NOMBRE_ARCHIVO",
+      render: (text, record) => {
+        if (record.DOWNLOADABLE) {
+          return (
+            <Button
+              color="primary"
+              variant="link"
+              onClick={() => docDownloadMutation.mutate(record)}
+            >
+              {text}
+              <DownloadOutlined style={{ marginLeft: 5 }} />
+            </Button>
+          );
+        }
+        return <Text>{text}</Text>;
+      },
     },
     {
       title: "Motivo",
@@ -278,6 +298,7 @@ export default function Movimiento() {
                         dataSource={docsData}
                         size="middle"
                         rowKey="ID"
+                        loading={docDownloadMutation.isPending}
                       />
                     ),
                   },

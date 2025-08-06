@@ -84,6 +84,12 @@
       "relation": "oneToOne",
       "target": "api::expedientes-relacion.expedientes-relacion",
       "mappedBy": "autor"
+    },
+    "logs_de_auditorias": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::logs-de-auditoria.logs-de-auditoria",
+      "mappedBy": "userId"
     }
   }
 }

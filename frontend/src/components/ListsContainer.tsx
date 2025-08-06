@@ -400,7 +400,7 @@ export function ListsContainer() {
           </Flex>
         </Col>
         <Col span={24}>
-          <Card bordered={false}>
+          <Card>
             <Row gutter={[16, 16]}>
               {movsData.length > 0 && <ListStatistics movs={movsData} />}
               <Col span={24}>
@@ -427,7 +427,7 @@ export function ListsContainer() {
           </Card>
         </Col>
         <Col span={24}>
-          <Card bordered={false} style={{ width: "100%" }}>
+          <Card style={{ width: "100%" }}>
             <SearchExpForm
               handleSubmit={handleSubmit}
               handleReset={handleReset}
@@ -437,7 +437,7 @@ export function ListsContainer() {
         </Col>
         {searchData.length > 0 && (
           <Col span={24}>
-            <Card bordered={false} style={{ width: "100%" }}>
+            <Card style={{ width: "100%" }}>
               <TableResults
                 data={searchData}
                 handleAdd={(id: number) =>
@@ -450,7 +450,7 @@ export function ListsContainer() {
         )}
         {showEmpty && (
           <Col span={24}>
-            <Card bordered={false} style={{ width: "100%" }}>
+            <Card style={{ width: "100%" }}>
               <Empty description="No se encontraron resultados. Verifique los valores ingresados" />
             </Card>
           </Col>

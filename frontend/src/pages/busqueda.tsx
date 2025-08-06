@@ -21,6 +21,7 @@ import {
   CheckboxProps,
   Select,
   Tag,
+  Tabs,
 } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
@@ -34,9 +35,12 @@ import { useRouter } from "next/router";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { TRAMITES } from "@/utils/constants";
-import { User } from "@/types/user";
+import { canSearchExp } from "@/utils/featureGuards";
+import { AssociateByDoc } from "@/components/AssociateByDoc";
+import { createSearchLogData, logSearch } from "@/lib/searchLogger";
+import { useSession } from "next-auth/react";
 
-const { Text, Paragraph } = Typography;
+const { Text, Paragraph, Title } = Typography;
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -72,9 +76,23 @@ function getLabelFromValue(value: number | string) {
   }
 }
 
-export default function SearchPage() {
+const tabs = [
+  {
+    key: "gde",
+    label: "Buscar en GDE",
+    children: <SearchGDEExps />,
+  },
+  {
+    key: "fisico",
+    label: "Buscar Expedientes Físicos",
+    children: <AssociateByDoc mode="search" />,
+  },
+];
+
+function SearchGDEExps() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [openDrawer, setOpenDrawer] = React.useState(false);
 
@@ -113,6 +131,25 @@ export default function SearchPage() {
       const { data } = await axios.get<GdeSearchResponse>(
         `/api/gdesearch?searchQuery=${searchTerm}&page=${page}&pageSize=${pageSize}${filterQuery}`
       );
+
+      // Log search after successful query (only for page 1 to avoid logging pagination)
+      if (page === 1 && session) {
+        const filters: Record<string, any> = {};
+        if (year) filters.year = year;
+        if (trata) filters.type = trata;
+        if (withFilters) filters.withFilters = true;
+
+        const logData = createSearchLogData(
+          "Busqueda de Expedientes GDE",
+          searchTerm,
+          session,
+          Object.keys(filters).length > 0 ? filters : undefined,
+          data.pagination.totalCount
+        );
+
+        logSearch(logData).catch(console.error);
+      }
+
       return data;
     },
     enabled: searchTerm.length > 0,
@@ -216,20 +253,7 @@ export default function SearchPage() {
   };
 
   return (
-    <MainLayout>
-      <Row gutter={16} justify="center" style={{ marginBottom: 16 }}>
-        <Col span={24}>
-          <Space direction="vertical">
-            <Typography.Title level={4} style={{ marginBottom: 0 }}>
-              Busqueda de expedientes
-            </Typography.Title>
-            <Typography.Text type="secondary">
-              Consulte expedientes por palabras clave. Agregue filtros por año o
-              tipo de tramitación
-            </Typography.Text>
-          </Space>
-        </Col>
-      </Row>
+    <>
       <Row gutter={[16, 16]} justify="center">
         <Card style={{ minHeight: "calc(100dvh - 210px)", width: "100%" }}>
           <Space direction="vertical" size="middle" style={{ display: "flex" }}>
@@ -473,13 +497,11 @@ export default function SearchPage() {
                 },
                 {
                   label: "Modificado en",
-                  children: format(
-                    parseISO(selectedItem.fecha_modificacion),
-                    "P",
-                    {
-                      locale: esLocale,
-                    }
-                  ),
+                  children: selectedItem.fecha_modificacion
+                    ? format(parseISO(selectedItem.fecha_modificacion), "P", {
+                        locale: esLocale,
+                      })
+                    : "N/A",
                   span: 3,
                 },
               ]}
@@ -515,6 +537,30 @@ export default function SearchPage() {
           </Flex>
         )}
       </Drawer>
+    </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <MainLayout>
+      <Row gutter={[16, 16]}>
+        <Col span={24}>
+          <Space direction="vertical">
+            <Title level={4} style={{ marginBottom: 0 }}>
+              Consulta de expedientes
+            </Title>
+            <Typography.Text type="secondary">
+              Aqui puede buscar expedientes en GDE y Fisicos
+            </Typography.Text>
+          </Space>
+        </Col>
+        <Col span={24}>
+          <Card>
+            <Tabs defaultActiveKey="gde" items={tabs} />
+          </Card>
+        </Col>
+      </Row>
     </MainLayout>
   );
 }
@@ -533,20 +579,9 @@ export async function getServerSideProps(
     };
   }
 
-  const { data } = await axios.get<User>(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.jwt}`,
-      },
-    }
-  );
+  const canAccess = canSearchExp(session.role);
 
-  const canAccess =
-    data.role.name.toLowerCase() === "administrator" ||
-    data.role.name.toLowerCase() === "expsearch";
-
-  if (data && !canAccess) {
+  if (!canAccess) {
     return {
       notFound: true,
     };

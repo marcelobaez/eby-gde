@@ -33,7 +33,7 @@ export function SearchAssociateExpForm({
       {/* Mostrar resultados de busqueda */}
       {showEmpty && (
         <Col span={24}>
-          <Card bordered={false} style={{ width: "100%" }}>
+          <Card style={{ width: "100%" }}>
             <Empty description="No se encontro el expediente solicitado. Verifique los datos ingresados" />
           </Card>
         </Col>

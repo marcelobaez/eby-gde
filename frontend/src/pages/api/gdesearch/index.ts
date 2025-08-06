@@ -1,9 +1,8 @@
-import { User } from "@/types/user";
-import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { Pool } from "pg";
 import { authOptions } from "../auth/[...nextauth]";
+import { canSearchExp, canSearchExpAll } from "@/utils/featureGuards";
 
 export type GdeSearchResult = {
   id: number;
@@ -12,7 +11,7 @@ export type GdeSearchResult = {
   usuario_creador: string;
   fecha_creacion: string;
   usuario_modificacion: string;
-  fecha_modificacion: string;
+  fecha_modificacion: string | null;
   tipo_documento: string;
   anio: number;
   numero: number;
@@ -81,20 +80,9 @@ export default async function handler(
   if (req.method === "GET") {
     const session = await getServerSession(req, res, authOptions);
     if (session) {
-      const { data } = await axios.get<User>(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/me?populate=role`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.jwt}`,
-          },
-        }
-      );
+      const canAccess = canSearchExp(session.role);
 
-      const canAccess =
-        data.role.name.toLowerCase() === "administrator" ||
-        data.role.name.toLowerCase() === "expsearch";
-
-      if (data && !canAccess) {
+      if (!canAccess) {
         return res.status(401).end();
       } else {
         // Extract query parameters
@@ -122,25 +110,38 @@ export default async function handler(
 
         let paramCount = 3;
 
+        const canSearchAll = canSearchExpAll(session.role);
+
+        let whereClauses = [
+          "search_vector @@ websearch_to_tsquery('spanish', $1)",
+        ];
+        if (!canSearchAll) {
+          whereClauses.push("es_reservado != '1'");
+        }
+        if (yearFilter) {
+          whereClauses.push(`anio = $${++paramCount}`);
+        }
+        if (trataFilter) {
+          whereClauses.push(`id_trata = $${++paramCount}`);
+        }
+
         const query = {
           text: `
-        SELECT 
-          *,
-          ts_rank(search_vector, websearch_to_tsquery('spanish', $1)) as rank,
-          COUNT(*) OVER() as total_count
-        FROM EE_EXPEDIENTE_ELECTRONICO
-        WHERE search_vector @@ websearch_to_tsquery('spanish', $1)
-        ${yearFilter ? `AND anio = $${++paramCount}` : ""}
-    ${trataFilter ? `AND id_trata = $${++paramCount}` : ""}
-        ORDER BY rank DESC, id
-        LIMIT $2
-        OFFSET $3
-      `,
+    SELECT 
+      *,
+      ts_rank(search_vector, websearch_to_tsquery('spanish', $1)) as rank,
+      COUNT(*) OVER() as total_count
+    FROM EE_EXPEDIENTE_ELECTRONICO
+    WHERE ${whereClauses.join(" AND ")}
+    ORDER BY rank DESC, id
+    LIMIT $2
+    OFFSET $3
+  `,
           values: [
             searchQuery,
             itemsCount,
             offset,
-            ...(yearFilter ? [yearFilter] : []), // Add year value only if yearFilter is true
+            ...(yearFilter ? [yearFilter] : []),
             ...(trataFilter ? [trataFilter] : []),
           ],
         };

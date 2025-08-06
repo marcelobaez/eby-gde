@@ -16,6 +16,7 @@ export type GDEMovsResponse = {
 
 export type DocsResponse = {
   ID: number;
+  NUMERO_SADE: string;
   MOTIVO: string;
   NOMBRE_ARCHIVO: string;
   FECHA_CREACION: string;
@@ -23,6 +24,7 @@ export type DocsResponse = {
   NOMBRE: string;
   ACRONIMO: string;
   POSICION: number;
+  DOWNLOADABLE: boolean;
 };
 
 export type GDEExpResponse = {

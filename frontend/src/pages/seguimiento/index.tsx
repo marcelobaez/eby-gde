@@ -2,14 +2,12 @@ import {
   Card,
   Col,
   Row,
-  Skeleton,
   Alert,
   Space,
   Button,
   message,
   Typography,
   Popconfirm,
-  Tooltip,
   Flex,
   Empty,
 } from "antd";
@@ -17,12 +15,7 @@ import { MainLayout } from "../../components/MainLayout";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getListas } from "../../lib/fetchers";
 import { getServerSession } from "next-auth/next";
-import Link from "next/link";
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { api } from "../../lib/axios";
 import {
@@ -66,10 +59,10 @@ export default function Seguimiento({
 
   const removeListMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/listas/${id}`),
-    onError: (err, variables, previousValue) => {
+    onError: () => {
       message.error("No fue posible eliminar la lista");
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["listas"] });
       message.success("Lista eliminada");
     },
@@ -79,7 +72,7 @@ export default function Seguimiento({
     return (
       <MainLayout>
         <Flex gap="middle">
-          {[0, 1, 2].map((item, idx) => (
+          {[0, 1, 2].map((_, idx) => (
             <Card
               style={{ width: 300 }}
               key={idx + "card-loading"}
@@ -161,7 +154,6 @@ export default function Seguimiento({
                     onClick={() => router.push(`/seguimiento/${list.id}`)}
                   ></Button>,
                 ]}
-                bordered={false}
               >
                 <Meta
                   title={

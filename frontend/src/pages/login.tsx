@@ -18,7 +18,7 @@ export default function Login() {
       >
         <Row gutter={16} justify="center" style={{ height: "100%" }}>
           <Col span={8} style={{ textAlign: "center" }}>
-            <Card bordered={false}>
+            <Card>
               <Space direction="vertical" size="large">
                 <Image src="/logo-big.png" alt="logo" width="250" height="50" />
                 <Text>Herramienta de seguimiento de expedientes</Text>

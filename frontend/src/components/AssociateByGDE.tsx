@@ -38,6 +38,8 @@ import { ModalAssociateExpAlt } from "./ModalAssociateExpAlt";
 import { ExpRelacionForm } from "./ExpRelacionForm";
 import dayjs from "dayjs";
 import { useRemoveExpMutation } from "./AssociateExp.utils";
+import { canEditAsociaciones } from "@/utils/featureGuards";
+import FeatureGuard from "./FeatureGuard";
 
 const { Text, Paragraph } = Typography;
 const { confirm } = Modal;
@@ -187,7 +189,7 @@ export function AssociateByGDE() {
         withTitle={false}
       />
       {showEmpty && (
-        <Card bordered={false} style={{ width: "100%" }}>
+        <Card style={{ width: "100%" }}>
           <Empty description="No se encontro el expediente solicitado. Verifique los datos ingresados" />
         </Card>
       )}
@@ -212,14 +214,16 @@ export function AssociateByGDE() {
                     </Tooltip>
                   </div>
                 </div>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    setIsFormModalOpen(true);
-                  }}
-                >
-                  Asociar
-                </Button>
+                <FeatureGuard guard={canEditAsociaciones}>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      setIsFormModalOpen(true);
+                    }}
+                  >
+                    Asociar
+                  </Button>
+                </FeatureGuard>
               </Flex>
             </Space>
           </>
@@ -302,7 +306,7 @@ export function AssociateByGDE() {
         styles={{ content: { minHeight: 700 } }}
         open={isFormModalOpen}
         onCancel={() => setIsFormModalOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <QueryClientProvider client={queryClient}>
           {searchData && (
@@ -322,7 +326,7 @@ export function AssociateByGDE() {
         styles={{ content: { minHeight: 700 } }}
         open={isTreeModalOpen}
         onCancel={() => setIsTreeModalOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <QueryClientProvider client={queryClient}>
           {selectedNodeData && treeData && (

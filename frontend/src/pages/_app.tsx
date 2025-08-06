@@ -15,7 +15,11 @@ import { NuqsAdapter } from "nuqs/adapters/next/pages";
 const theme: ThemeConfig = {
   token: {
     colorPrimary: "#006C42",
-    // colorBgContainer: "#fff",
+  },
+  components: {
+    Menu: {
+      itemSelectedBg: "rgba(0,0,0,0.11)",
+    },
   },
 };
 
