@@ -3,6 +3,7 @@ import { ExpRelacion } from "@/types/expRelacion";
 import { FileTwoTone, FolderTwoTone } from "@ant-design/icons";
 import { BasicDataNode, DataNode } from "antd/es/tree";
 import { parseISO, differenceInDays } from "date-fns";
+import dayjs, { Dayjs } from "dayjs";
 import React from "react";
 
 export type TreeNode = (BasicDataNode | DataNode) & {
@@ -337,3 +338,43 @@ export function findParentExpId(
 
   return null;
 }
+
+// Helper function to format dates for API
+export const formatDateForAPI = (date: Date): string => {
+  return date.toISOString().split("T")[0];
+};
+
+// Utility function to trigger a download from a Blob
+export function downloadBlob(blob: Blob, fileName: string) {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+// Parse document number to extract components
+export function parseDocumentNumber(numero: string) {
+  const parts = numero.split("-");
+  if (parts.length < 5) {
+    throw new Error("Invalid document number format");
+  }
+
+  return {
+    type: parts[0],
+    year: parts[1],
+    number: parseInt(parts[2], 10).toString(), // Remove leading zeros
+    system: parts[3],
+    location: parts[4],
+  };
+}
+
+// Get default date range (last month)
+export const getDefaultDateRange = (): [Dayjs, Dayjs] => {
+  const endDate = dayjs().endOf("year");
+  const startDate = dayjs().startOf("year");
+  return [startDate, endDate];
+};

@@ -22,6 +22,7 @@ import {
   Select,
   Tag,
   Tabs,
+  DatePicker,
 } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
@@ -33,14 +34,19 @@ import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
 import { useRouter } from "next/router";
 import { ArrowRightOutlined } from "@ant-design/icons";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { TRAMITES } from "@/utils/constants";
 import { canSearchExp } from "@/utils/featureGuards";
 import { AssociateByDoc } from "@/components/AssociateByDoc";
 import { createSearchLogData, logSearch } from "@/lib/searchLogger";
 import { useSession } from "next-auth/react";
+import dayjs from "dayjs";
+import { formatDateForAPI } from "@/utils";
+import { RangePickerProps } from "antd/es/date-picker";
 
 const { Text, Paragraph, Title } = Typography;
+
+const { RangePicker } = DatePicker;
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -108,7 +114,12 @@ function SearchGDEExps() {
   const [year, setYear] = useQueryState("year", parseAsInteger);
   const [trata, setTrata] = useQueryState("trata", parseAsInteger);
 
-  const [withFilters, setWithFilters] = React.useState(Boolean(year || trata));
+  const [startDate, setStartDate] = useQueryState("startDate", parseAsString);
+  const [endDate, setEndDate] = useQueryState("endDate", parseAsString);
+
+  const [withFilters, setWithFilters] = React.useState(
+    Boolean(year || trata || (startDate && endDate))
+  );
 
   const [selectedItem, setSelectedItem] =
     React.useState<GdeSearchResult | null>(null);
@@ -116,7 +127,16 @@ function SearchGDEExps() {
 
   // Fetch data
   const { data, status, isLoading, isFetching } = useQuery({
-    queryKey: ["search-exp", searchTerm, page, pageSize, year, trata],
+    queryKey: [
+      "search-exp",
+      searchTerm,
+      page,
+      pageSize,
+      year,
+      trata,
+      startDate,
+      endDate,
+    ],
     queryFn: async () => {
       let filterQuery = "";
       if (withFilters) {
@@ -126,6 +146,8 @@ function SearchGDEExps() {
           filterQuery = `&year=${year}`;
         } else if (trata) {
           filterQuery = `&trata=${trata}`;
+        } else if (startDate && endDate) {
+          filterQuery = `&startDate=${startDate}&endDate=${endDate}`;
         }
       }
       const { data } = await axios.get<GdeSearchResponse>(
@@ -252,6 +274,19 @@ function SearchGDEExps() {
     setWithFilters(e.target.checked);
   };
 
+  const handleDateRangeChange: RangePickerProps["onChange"] = (dates) => {
+    if (dates && dates[0] && dates[1]) {
+      const [start, end] = dates;
+      setStartDate(formatDateForAPI(start.toDate()));
+      setEndDate(formatDateForAPI(end.toDate()));
+      setPage(1); // Reset to first page when dates change
+    } else {
+      // Handle clearing the date range
+      setStartDate(null);
+      setEndDate(null);
+    }
+  };
+
   return (
     <>
       <Row gutter={[16, 16]} justify="center">
@@ -318,11 +353,27 @@ function SearchGDEExps() {
                     }
                   }}
                 />
+                <Flex justify="center" align="center" gap="middle">
+                  <Space>
+                    <Text>Fecha creación:</Text>
+                    <RangePicker
+                      {...(startDate && endDate
+                        ? { value: [dayjs(startDate), dayjs(endDate)] }
+                        : {})}
+                      onChange={handleDateRangeChange}
+                      format="DD/MM/YYYY"
+                      placeholder={["Fecha desde", "Fecha hasta"]}
+                    />
+                  </Space>
+                </Flex>
                 <Button
                   variant="outlined"
                   onClick={() => {
                     setYear(null);
                     setTrata(null);
+                    setStartDate(null);
+                    setEndDate(null);
+                    setPage(1);
                   }}
                 >
                   Limpiar filtros

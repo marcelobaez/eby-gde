@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { Pool } from "pg";
 import { authOptions } from "../auth/[...nextauth]";
 import { canSearchExp, canSearchExpAll } from "@/utils/featureGuards";
+import { parseISO } from "date-fns";
 
 export type GdeSearchResult = {
   id: number;
@@ -86,7 +87,8 @@ export default async function handler(
         return res.status(401).end();
       } else {
         // Extract query parameters
-        const { searchQuery, page, pageSize, year, trata } = req.query;
+        const { searchQuery, page, pageSize, year, trata, startDate, endDate } =
+          req.query;
 
         // Validate query parameters
         if (!searchQuery || !page || !pageSize) {
@@ -99,6 +101,10 @@ export default async function handler(
         const itemsCount = parseInt(pageSize as string, 10);
         const yearFilter = parseInt(year as string, 10);
         const trataFilter = parseInt(trata as string, 10);
+        const startDateFilter = startDate
+          ? parseISO(startDate as string)
+          : null;
+        const endDateFilter = endDate ? parseISO(endDate as string) : null;
 
         if (isNaN(pageNumber) || isNaN(itemsCount)) {
           return res
@@ -124,6 +130,11 @@ export default async function handler(
         if (trataFilter) {
           whereClauses.push(`id_trata = $${++paramCount}`);
         }
+        if (startDateFilter && endDateFilter) {
+          whereClauses.push(
+            `fecha_creacion >= $${++paramCount} AND fecha_creacion <= $${++paramCount}`
+          );
+        }
 
         const query = {
           text: `
@@ -143,8 +154,13 @@ export default async function handler(
             offset,
             ...(yearFilter ? [yearFilter] : []),
             ...(trataFilter ? [trataFilter] : []),
+            ...(startDateFilter && endDateFilter
+              ? [startDateFilter, endDateFilter]
+              : []),
           ],
         };
+
+        console.log("Executing query:", query);
 
         const result = await pool.query(query);
 

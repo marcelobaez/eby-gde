@@ -32,7 +32,12 @@ import { message } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { RangePickerProps } from "antd/es/date-picker";
-import type { Dayjs } from "dayjs";
+import {
+  downloadBlob,
+  formatDateForAPI,
+  getDefaultDateRange,
+  parseDocumentNumber,
+} from "@/utils";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -54,46 +59,6 @@ const rangePresets: TimeRangePickerProps["presets"] = [
     ],
   },
 ];
-
-// Helper function to format dates for API
-const formatDateForAPI = (date: Date): string => {
-  return date.toISOString().split("T")[0];
-};
-
-// Utility function to trigger a download from a Blob
-function downloadBlob(blob: Blob, fileName: string) {
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.URL.revokeObjectURL(url);
-}
-
-// Parse document number to extract components
-function parseDocumentNumber(numero: string) {
-  const parts = numero.split("-");
-  if (parts.length < 5) {
-    throw new Error("Invalid document number format");
-  }
-
-  return {
-    type: parts[0],
-    year: parts[1],
-    number: parseInt(parts[2], 10).toString(), // Remove leading zeros
-    system: parts[3],
-    location: parts[4],
-  };
-}
-
-// Get default date range (last month)
-const getDefaultDateRange = (): [Dayjs, Dayjs] => {
-  const endDate = dayjs().endOf("year");
-  const startDate = dayjs().startOf("year");
-  return [startDate, endDate];
-};
 
 export default function MisDocumentosPage() {
   // Download mutation
