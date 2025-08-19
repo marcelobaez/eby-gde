@@ -91,7 +91,7 @@ export default async function handler(
           req.query;
 
         // Validate query parameters
-        if (!searchQuery || !page || !pageSize) {
+        if (!page || !pageSize) {
           return res
             .status(400)
             .json({ error: "Missing required query parameters." });
@@ -99,8 +99,8 @@ export default async function handler(
 
         const pageNumber = parseInt(page as string, 10);
         const itemsCount = parseInt(pageSize as string, 10);
-        const yearFilter = parseInt(year as string, 10);
-        const trataFilter = parseInt(trata as string, 10);
+        const yearFilter = year ? parseInt(year as string, 10) : null;
+        const trataFilter = trata ? parseInt(trata as string, 10) : null;
         const startDateFilter = startDate
           ? parseISO(startDate as string)
           : null;
@@ -114,53 +114,74 @@ export default async function handler(
 
         const offset = (pageNumber - 1) * itemsCount;
 
-        let paramCount = 3;
+        const searchTerm = searchQuery ? (searchQuery as string).trim() : "";
 
         const canSearchAll = canSearchExpAll(session.role);
 
-        let whereClauses = [
-          "search_vector @@ websearch_to_tsquery('spanish', $1)",
-        ];
+        let whereClauses = [];
+        let queryValues = [];
+        let paramIndex = 0;
+
+        // Build WHERE clauses and values dynamically
+        if (searchTerm) {
+          whereClauses.push(
+            `search_vector @@ websearch_to_tsquery('spanish', $${++paramIndex})`
+          );
+          queryValues.push(searchTerm);
+        }
         if (!canSearchAll) {
           whereClauses.push("es_reservado != '1'");
         }
-        if (yearFilter) {
-          whereClauses.push(`anio = $${++paramCount}`);
+        if (yearFilter && !isNaN(yearFilter)) {
+          whereClauses.push(`anio = $${++paramIndex}`);
+          queryValues.push(yearFilter);
         }
-        if (trataFilter) {
-          whereClauses.push(`id_trata = $${++paramCount}`);
+        if (trataFilter && !isNaN(trataFilter)) {
+          whereClauses.push(`id_trata = $${++paramIndex}`);
+          queryValues.push(trataFilter);
         }
         if (startDateFilter && endDateFilter) {
+          const startParam = ++paramIndex;
+          const endParam = ++paramIndex;
           whereClauses.push(
-            `fecha_creacion >= $${++paramCount} AND fecha_creacion <= $${++paramCount}`
+            `fecha_creacion >= $${startParam}::date AND fecha_creacion <= $${endParam}::date`
+          );
+          queryValues.push(
+            startDateFilter.toISOString().split("T")[0],
+            endDateFilter.toISOString().split("T")[0]
           );
         }
 
-        const query = {
-          text: `
+        // Add LIMIT and OFFSET parameters
+        const limitParam = `$${++paramIndex}`;
+        const offsetParam = `$${++paramIndex}`;
+        queryValues.push(itemsCount, offset);
+
+        let selectClause, orderClause;
+        if (searchTerm) {
+          selectClause = `ts_rank(search_vector, websearch_to_tsquery('spanish', $1)) as rank,`;
+          orderClause = "rank DESC,";
+        } else {
+          selectClause = "0 as rank,";
+          orderClause = "";
+        }
+
+        const baseQuery = `
     SELECT 
       *,
-      ts_rank(search_vector, websearch_to_tsquery('spanish', $1)) as rank,
+      ${selectClause}
       COUNT(*) OVER() as total_count
     FROM EE_EXPEDIENTE_ELECTRONICO
-    WHERE ${whereClauses.join(" AND ")}
-    ORDER BY rank DESC, id
-    LIMIT $2
-    OFFSET $3
-  `,
-          values: [
-            searchQuery,
-            itemsCount,
-            offset,
-            ...(yearFilter ? [yearFilter] : []),
-            ...(trataFilter ? [trataFilter] : []),
-            ...(startDateFilter && endDateFilter
-              ? [startDateFilter, endDateFilter]
-              : []),
-          ],
-        };
+    ${whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""}
+    ORDER BY ${orderClause} id
+    LIMIT ${limitParam}
+    OFFSET ${offsetParam}
+  `;
 
-        console.log("Executing query:", query);
+        const query = {
+          text: baseQuery,
+          values: queryValues,
+        };
 
         const result = await pool.query(query);
 

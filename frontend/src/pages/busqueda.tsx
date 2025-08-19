@@ -23,6 +23,7 @@ import {
   Tag,
   Tabs,
   DatePicker,
+  Modal,
 } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
@@ -43,6 +44,7 @@ import { useSession } from "next-auth/react";
 import dayjs from "dayjs";
 import { formatDateForAPI } from "@/utils";
 import { RangePickerProps } from "antd/es/date-picker";
+import { HighlightedText } from "@/components/highlight-text";
 
 const { Text, Paragraph, Title } = Typography;
 
@@ -51,10 +53,6 @@ const { RangePicker } = DatePicker;
 type SearchProps = GetProps<typeof Input.Search>;
 
 const { Search } = Input;
-
-function normalizeText(str: string): string {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remover acentos
-}
 
 function generateYearsToNow() {
   const yearsOptions = [
@@ -125,8 +123,10 @@ function SearchGDEExps() {
     React.useState<GdeSearchResult | null>(null);
   const [inputValue, setInputValue] = React.useState(searchTerm);
 
+  const [isRangeNeeded, setIsRangeNeeded] = React.useState(false);
+
   // Fetch data
-  const { data, status, isLoading, isFetching } = useQuery({
+  const { data, status, isFetching } = useQuery({
     queryKey: [
       "search-exp",
       searchTerm,
@@ -140,22 +140,25 @@ function SearchGDEExps() {
     queryFn: async () => {
       let filterQuery = "";
       if (withFilters) {
-        if (year && trata) {
-          filterQuery = `&year=${year}&trata=${trata}`;
-        } else if (year) {
-          filterQuery = `&year=${year}`;
-        } else if (trata) {
-          filterQuery = `&trata=${trata}`;
-        } else if (startDate && endDate) {
-          filterQuery = `&startDate=${startDate}&endDate=${endDate}`;
+        const filterParams = [];
+        if (year) {
+          filterParams.push(`year=${year}`);
         }
+        if (trata) {
+          filterParams.push(`trata=${trata}`);
+        }
+        if (startDate && endDate) {
+          filterParams.push(`startDate=${startDate}&endDate=${endDate}`);
+        }
+        filterQuery =
+          filterParams.length > 0 ? `&${filterParams.join("&")}` : "";
       }
       const { data } = await axios.get<GdeSearchResponse>(
         `/api/gdesearch?searchQuery=${searchTerm}&page=${page}&pageSize=${pageSize}${filterQuery}`
       );
 
       // Log search after successful query (only for page 1 to avoid logging pagination)
-      if (page === 1 && session) {
+      if (searchTerm && page === 1 && session) {
         const filters: Record<string, any> = {};
         if (year) filters.year = year;
         if (trata) filters.type = trata;
@@ -174,16 +177,21 @@ function SearchGDEExps() {
 
       return data;
     },
-    enabled: searchTerm.length > 0,
+    enabled: Boolean(searchTerm.length > 0 || (startDate && endDate)),
   });
 
-  const onSearch: SearchProps["onSearch"] = (value) => {
+  const onSearch: SearchProps["onSearch"] = (value, event, info) => {
     setSearchTerm(value);
     setPage(1);
-    if (value.length === 0) {
-      setYear(null);
-      setTrata(null);
-      queryClient.removeQueries({ queryKey: ["search-exp"] });
+    if (
+      value.length === 0 &&
+      (!startDate || !endDate) &&
+      info?.source !== "clear"
+    ) {
+      setIsRangeNeeded(true);
+      // setYear(null);
+      // setTrata(null);
+      // queryClient.removeQueries({ queryKey: ["search-exp"] });
     }
   };
 
@@ -193,81 +201,6 @@ function SearchGDEExps() {
 
   const onClose = () => {
     setOpenDrawer(false);
-  };
-
-  const HighlightedText = ({
-    text,
-    searchTerm,
-    maxLength = 150,
-  }: {
-    text: string;
-    searchTerm: string;
-    maxLength?: number;
-  }) => {
-    if (!searchTerm) return <Text>{text}</Text>;
-
-    // Normalize and split the search term into words
-    const normalizedSearchTerms = normalizeText(searchTerm)
-      .split(/\s+/) // Split on whitespace
-      .filter((term) => term.length > 0) // Remove empty strings
-      .map((term) => term.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")); // Escape special characters
-
-    if (normalizedSearchTerms.length === 0) return <Text>{text}</Text>;
-
-    // Create a regex to match any of the terms
-    const regex = new RegExp(`(${normalizedSearchTerms.join("|")})`, "gi");
-
-    // Normalize the input text for comparison
-    const normalizedText = normalizeText(text);
-
-    // // Split the normalized text based on the regex matches
-    // const parts = normalizedText.split(regex);
-    // Find all matches and calculate their positions
-    const matches = [...normalizedText.matchAll(regex)].map((match) => ({
-      start: match.index || 0,
-      end: (match.index || 0) + match[0].length,
-    }));
-
-    if (matches.length === 0) return <Text>{text}</Text>;
-
-    // Determine the range of text to keep
-    const firstMatchStart = matches[0].start;
-    const lastMatchEnd = matches[matches.length - 1].end;
-
-    const displayStart = Math.max(
-      0,
-      firstMatchStart - Math.floor(maxLength / 2)
-    );
-    const displayEnd = Math.min(
-      text.length,
-      lastMatchEnd + Math.floor(maxLength / 2)
-    );
-    const isTruncatedStart = displayStart > 0;
-    const isTruncatedEnd = displayEnd < text.length;
-
-    const visibleText = text.slice(displayStart, displayEnd);
-
-    // Split the visible text based on the regex
-    const parts = visibleText.split(regex);
-
-    return (
-      <Text>
-        {isTruncatedStart && "..."}
-        {parts.map((part, index) => {
-          const isMatch = normalizedSearchTerms.some(
-            (term) => normalizeText(part).toLowerCase() === term.toLowerCase()
-          );
-          return isMatch ? (
-            <Text key={index} mark>
-              {part}
-            </Text>
-          ) : (
-            <React.Fragment key={index}>{part}</React.Fragment>
-          );
-        })}
-        {isTruncatedEnd && "..."}
-      </Text>
-    );
   };
 
   const onChange: CheckboxProps["onChange"] = (e) => {
@@ -588,6 +521,21 @@ function SearchGDEExps() {
           </Flex>
         )}
       </Drawer>
+      <Modal
+        title="Rango requerido"
+        open={isRangeNeeded}
+        onOk={() => setIsRangeNeeded(false)}
+        onCancel={() => setIsRangeNeeded(false)}
+        cancelButtonProps={{ style: { display: "none" } }}
+      >
+        <p>
+          La busqueda sin palabras clave requiere de al menos un rango de fechas
+        </p>
+        <p>
+          Por favor, active "Busqueda con filtros" y luego seleccione un rango
+          de fechas.
+        </p>
+      </Modal>
     </>
   );
 }
