@@ -474,17 +474,25 @@ function SearchGDEExps() {
                 // },
                 {
                   label: "Caratulado en",
-                  children: format(parseISO(selectedItem.fecha_creacion), "P", {
-                    locale: esLocale,
-                  }),
+                  children: format(
+                    parseISO(selectedItem.fecha_creacion.split("T")[0]),
+                    "P",
+                    {
+                      locale: esLocale,
+                    }
+                  ),
                   span: 3,
                 },
                 {
                   label: "Modificado en",
                   children: selectedItem.fecha_modificacion
-                    ? format(parseISO(selectedItem.fecha_modificacion), "P", {
-                        locale: esLocale,
-                      })
+                    ? format(
+                        parseISO(selectedItem.fecha_modificacion.split("T")[0]),
+                        "P",
+                        {
+                          locale: esLocale,
+                        }
+                      )
                     : "N/A",
                   span: 3,
                 },
