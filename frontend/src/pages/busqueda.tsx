@@ -540,8 +540,8 @@ function SearchGDEExps() {
           La busqueda sin palabras clave requiere de al menos un rango de fechas
         </p>
         <p>
-          Por favor, active "Busqueda con filtros" y luego seleccione un rango
-          de fechas.
+          Por favor, active &quot;Busqueda con filtros&quot; y luego seleccione
+          un rango de fechas.
         </p>
       </Modal>
     </>
