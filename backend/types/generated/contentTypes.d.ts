@@ -459,7 +459,10 @@ export interface ApiExpedienteExpediente extends Schema.CollectionType {
     >;
     publishedAt: Attribute.DateTime;
     reminder_sent_at: Attribute.DateTime;
+    reminder_sent_mov_at: Attribute.DateTime;
     send_reminder: Attribute.Boolean & Attribute.DefaultTo<false>;
+    send_reminder_mov: Attribute.Boolean & Attribute.DefaultTo<false>;
+    ult_mov_id: Attribute.BigInteger;
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<
       'api::expediente.expediente',

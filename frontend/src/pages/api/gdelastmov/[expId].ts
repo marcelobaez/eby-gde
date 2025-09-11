@@ -1,16 +1,12 @@
 const oracledb = require("oracledb");
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function movsHandler(
+export default async function lastMovHandler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   let connection;
-  let ids = req.query["expIds[]"];
-
-  if (Array.isArray(ids)) {
-    ids = ids.join(" ,");
-  }
+  let { expId } = req.query;
 
   try {
     oracledb.initOracleClient();
@@ -20,21 +16,24 @@ export default async function movsHandler(
       connectString: process.env.NODE_ORACLEDB_CONNECTIONSTRING,
     });
 
-    const sql = `select * from 
-    (select mov.id as id_mov, ee.id, ee.descripcion, mov.expediente, mov.motivo, mov.usuario, mov.estado, ee.fecha_creacion, mov.id_expediente, mov.ord_hist,mov.descripcion_reparticion_destin,mov.destinatario,mov.fecha_operacion, row_number ()  
-    over (partition by id_expediente order by ord_hist desc)
-    rn from ee_ged.historialoperacion mov 
+    const sql = `select mov.id from ee_ged.historialoperacion mov 
     INNER JOIN ee_ged.ee_expediente_electronico ee ON ee.id = mov.id_expediente
-    where id_expediente in (${ids}) )
-    where  rn<=10`;
+    where id_expediente = ${expId}
+    order by ord_hist desc
+    FETCH FIRST 1 ROWS ONLY`;
 
     const result = await connection.execute(sql, [], {
       outFormat: oracledb.OUT_FORMAT_OBJECT,
     });
 
-    res.status(200).json(result.rows);
+    if (result.rows && result.rows.length > 0) {
+      res.status(200).json({ lastMovId: result.rows[0].ID });
+    } else {
+      res.status(404).json({ error: "No movements found for this expediente" });
+    }
   } catch (error) {
     console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   } finally {
     if (connection) {
       try {

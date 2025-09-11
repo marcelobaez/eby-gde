@@ -37,6 +37,16 @@
     "send_reminder": {
       "type": "boolean",
       "default": false
+    },
+    "send_reminder_mov": {
+      "type": "boolean",
+      "default": false
+    },
+    "reminder_sent_mov_at": {
+      "type": "datetime"
+    },
+    "ult_mov_id": {
+      "type": "biginteger"
     }
   }
 }

@@ -24,7 +24,10 @@ export type ExtendedExp = GDEExpResponse & {
   lifetimeColor: string;
   daysOverdue: number | null;
   send_reminder: boolean | null;
+  send_reminder_mov: boolean;
   reminder_sent_at: string | null;
+  reminder_sent_mov_at: string | null;
+  ult_mov_id: number | null;
 };
 
 export type ExtendedListResponse = {
@@ -113,6 +116,7 @@ export const useListInfoByID = (id: string) => {
                   ) - matchingEl.attributes.duracion_esperada
                 : null,
             send_reminder: matchingEl.attributes.send_reminder,
+            send_reminder_mov: matchingEl.attributes.send_reminder_mov,
             reminder_sent_at: matchingEl.attributes.reminder_sent_at,
           };
         })
@@ -124,6 +128,7 @@ export const useListInfoByID = (id: string) => {
       };
     },
     enabled: Boolean(id),
+    staleTime: 15 * 60 * 1000,
   });
 };
 

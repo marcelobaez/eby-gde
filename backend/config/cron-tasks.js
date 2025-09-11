@@ -31,6 +31,19 @@ const listsReqOpts = {
 };
 
 const GDE_EXPS_URL = process.env.FRONTEND_URL + "/api/gdeexps";
+const GET_EXP_HAS_MOVS_URL = process.env.FRONTEND_URL + "/api/getExpHasMovs";
+
+const expedientesReqOpts = {
+  filters: {
+    send_reminder_mov: { $eq: true },
+  },
+  populate: {
+    usuario: {
+      fields: ["email"],
+    },
+  },
+  fields: ["id_expediente", "ult_mov_id"],
+};
 
 function getIsOverdue(initial, last, expected) {
   const elapsed = differenceInDays(parseISO(last), parseISO(initial));
@@ -120,20 +133,22 @@ module.exports = {
         if (!hasOverdueExpedientes) return;
 
         // Group lists by user email
-        const listsByUser = exptesWithGdeData.reduce((acc, list) => {
-          const userEmail = list.usuario.email;
-          if (!acc[userEmail]) {
-            acc[userEmail] = {
-              email: userEmail,
-              lists: [],
-            };
-          }
-          acc[userEmail].lists.push({
-            name: list.titulo,
-            expedientes: list.expedientes,
-          });
-          return acc;
-        }, {});
+        const listsByUser = exptesWithGdeData
+          .filter((list) => list.expedientes.length > 0)
+          .reduce((acc, list) => {
+            const userEmail = list.usuario.email;
+            if (!acc[userEmail]) {
+              acc[userEmail] = {
+                email: userEmail,
+                lists: [],
+              };
+            }
+            acc[userEmail].lists.push({
+              name: list.titulo,
+              expedientes: list.expedientes,
+            });
+            return acc;
+          }, {});
 
         // Send one email per user with all their lists
         await Promise.all(
@@ -180,8 +195,114 @@ module.exports = {
       }
     },
     options: {
-      // every tuesday at 1:45pm (UTC-3)
+      // every tuesday at 5:00am (UTC-3)
       rule: "0 0 8 * * 1,3,5",
+    },
+  },
+  sendNewMovEmail: {
+    task: async ({ strapi }) => {
+      try {
+        console.log("sendNewMovEmail cron iniciado");
+
+        // Get all expedientes with send_reminder_mov = true
+        const expedientes = await strapi.entityService.findMany(
+          "api::expediente.expediente",
+          expedientesReqOpts
+        );
+
+        if (expedientes.length === 0) return;
+
+        // Check each expediente for new movements
+        const expedientesWithNewMovs = [];
+
+        for (const expediente of expedientes) {
+          try {
+            const { data } = await axios.get(
+              `${GET_EXP_HAS_MOVS_URL}/${expediente.id_expediente}/${expediente.ult_mov_id}`
+            );
+
+            if (data.hasMovs && data.count > 0) {
+              expedientesWithNewMovs.push({
+                ...expediente,
+                newMovsCount: data.count,
+                lastMovId: data.lastId,
+                codigo: data.codigo,
+                descripcion: data.descripcion,
+              });
+            }
+          } catch (error) {
+            console.error(
+              `Error checking movements for expediente ${expediente.id_expediente}:`,
+              error
+            );
+          }
+        }
+
+        if (expedientesWithNewMovs.length === 0) return;
+
+        // Group expedientes by user email
+        const expedientesByUser = expedientesWithNewMovs.reduce(
+          (acc, expediente) => {
+            const userEmail = expediente.usuario.email;
+            if (!acc[userEmail]) {
+              acc[userEmail] = {
+                email: userEmail,
+                expedientes: [],
+              };
+            }
+            acc[userEmail].expedientes.push({
+              titulo: expediente.descripcion,
+              codigo: expediente.codigo,
+              id_expediente: expediente.id_expediente,
+              newMovsCount: expediente.newMovsCount,
+              descripcion: expediente.descripcion,
+            });
+            return acc;
+          },
+          {}
+        );
+
+        // Send one email per user with all their expedientes
+        await Promise.all(
+          Object.values(expedientesByUser).map(async (userData) => {
+            console.log(JSON.stringify(userData, null, 4));
+            await strapi
+              .plugin("email-designer")
+              .service("email")
+              .sendTemplatedEmail(
+                {
+                  to: userData.email,
+                  from: "expedientes@eby.org.ar",
+                },
+                {
+                  templateReferenceId: 2,
+                  subject: "Nuevos Movimientos de Expedientes",
+                },
+                {
+                  expedientes: userData.expedientes,
+                }
+              );
+          })
+        ).then(() => {
+          console.log("New movement emails sent ");
+        });
+
+        // Update expedientes ult_mov_id with the latest movement ID
+        for (const expediente of expedientesWithNewMovs) {
+          if (expediente.lastMovId) {
+            await strapi.db.query("api::expediente.expediente").update({
+              where: { id: expediente.id },
+              data: { ult_mov_id: expediente.lastMovId },
+            });
+          }
+        }
+      } catch (error) {
+        console.log("Error in sendNewMovEmail:", error);
+      }
+    },
+    options: {
+      // every day at 8:00am (UTC-3) - same schedule as sendOverdueEmail
+      rule: "0 0 11 * * *",
     },
   },
 };

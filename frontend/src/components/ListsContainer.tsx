@@ -29,6 +29,7 @@ import {
   useAddExpMutation,
   useRemoveExpMutation,
   useUpdateExpMutation,
+  useToggleReminderMovMutation,
 } from "../hooks/useList";
 import { ModalSetDate } from "./ModalSetDate";
 import { CalendarOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -93,6 +94,13 @@ export function ListsContainer() {
   const addExpMutation = useAddExpMutation();
   const removeExpMutation = useRemoveExpMutation();
   const updateExpMutation = useUpdateExpMutation();
+  const toggleReminderMovMutation = useToggleReminderMovMutation();
+
+  const anyMutationPending =
+    addExpMutation.isPending ||
+    removeExpMutation.isPending ||
+    updateExpMutation.isPending ||
+    toggleReminderMovMutation.isPending;
 
   const [searchData, setSearchData] = useState([]);
   const [showEmpty, setShowEmpty] = useState(false);
@@ -274,11 +282,11 @@ export function ListsContainer() {
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Recordatorio",
+      title: "Aviso Venc.",
       dataIndex: "send_reminder",
       key: "send_reminder",
       fixed: "right",
-      width: 110,
+      width: 100,
       align: "center",
       render: (text, record) => (
         <Checkbox
@@ -295,6 +303,27 @@ export function ListsContainer() {
                 send_reminder: e.target.checked,
               });
             }
+          }}
+        />
+      ),
+    },
+    {
+      title: "Aviso Mov.",
+      dataIndex: "send_reminder_mov",
+      key: "send_reminder_mov",
+      fixed: "right",
+      width: 100,
+      align: "center",
+      render: (text, record) => (
+        <Checkbox
+          checked={record.send_reminder_mov ?? false}
+          onChange={(e) => {
+            toggleReminderMovMutation.mutate({
+              id: record.id_exp_list,
+              id_expediente: record.ID.toString(),
+              ult_mov_id: record.ult_mov_id,
+              send_reminder_mov: e.target.checked,
+            });
           }}
         />
       ),
@@ -414,7 +443,7 @@ export function ListsContainer() {
                   <Table
                     columns={columns}
                     rowKey="ID"
-                    loading={status === "pending"}
+                    loading={status === "pending" || anyMutationPending}
                     dataSource={movsData}
                     size="small"
                     scroll={{ x: 1300 }}

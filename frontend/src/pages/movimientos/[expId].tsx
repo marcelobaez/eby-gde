@@ -160,8 +160,7 @@ export default function Movimiento() {
       dataIndex: "ESTADO",
       render: (text) => (
         <span>
-          <Badge status={setStatus(text)} />
-          {text}
+          <Badge status={setStatus(text)} text={text} />
         </span>
       ),
     },
