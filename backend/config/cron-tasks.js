@@ -302,7 +302,7 @@ module.exports = {
     },
     options: {
       // every day at 8:00am (UTC-3) - same schedule as sendOverdueEmail
-      rule: "0 0 11 * * *",
+      rule: "0 0 11,17 * * *",
     },
   },
 };
