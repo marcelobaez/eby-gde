@@ -118,6 +118,7 @@ export const useListInfoByID = (id: string) => {
             send_reminder: matchingEl.attributes.send_reminder,
             send_reminder_mov: matchingEl.attributes.send_reminder_mov,
             reminder_sent_at: matchingEl.attributes.reminder_sent_at,
+            ult_mov_id: matchingEl.attributes.ult_mov_id,
           };
         })
         .filter((exp) => exp) as ExtendedExp[];
