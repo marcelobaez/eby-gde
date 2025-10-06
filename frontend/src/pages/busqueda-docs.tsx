@@ -150,9 +150,15 @@ export default function SearchPage() {
       message.success("Documento descargado exitosamente");
     },
     onError: (error) => {
-      message.error(
-        "Ocurrió un error al intentar descargar el archivo. Por favor, intente nuevamente."
-      );
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 404) {
+          message.warning(
+            "El documento aun no se encuentra disponible para descargar"
+          );
+        } else {
+          message.error("Ocurrió un error al intentar descargar el archivo");
+        }
+      }
     },
   });
 
