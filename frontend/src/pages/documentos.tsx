@@ -1,5 +1,5 @@
 import { MainLayout } from "../components/MainLayout";
-import { Col, Row, Typography, Card, Space } from "antd";
+import { Col, Row, Typography, Card, Space, Alert, Flex } from "antd";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
@@ -23,6 +23,15 @@ export default function Documents() {
         </Col>
         <Col span={24}>
           <Card>
+            <Flex justify="center">
+              <Alert
+                message="Aviso importante"
+                description="No podrá descargar documentos que fueron creados en los ultimos 30 dias. Para esos casos utilice GDE"
+                type="info"
+                showIcon
+                style={{ maxWidth: "450px", marginBottom: 20 }}
+              />
+            </Flex>
             <SearchGdeDocs />
           </Card>
         </Col>

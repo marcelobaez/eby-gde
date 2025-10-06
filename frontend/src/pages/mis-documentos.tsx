@@ -92,10 +92,16 @@ export default function MisDocumentosPage() {
       downloadBlob(blob, fileName);
       message.success("Documento descargado exitosamente");
     },
-    onError: () => {
-      message.error(
-        "Ocurrió un error al intentar descargar el archivo. Por favor, intente nuevamente."
-      );
+    onError: (error) => {
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 404) {
+          message.warning(
+            "El documento aun no se encuentra disponible para descargar"
+          );
+        } else {
+          message.error("Ocurrió un error al intentar descargar el archivo");
+        }
+      }
     },
   });
 
