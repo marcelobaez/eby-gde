@@ -7,7 +7,7 @@ export const ROLE_ADMIN = "admin";
 export const ROLE_GENERAL_OPERATOR = "authenticated";
 export const ROLE_OBYA_OPERATOR = "operador-obya";
 export const ROLE_FULL_VIEW = "full-view";
-export const ROLE_FULL_VIEW_RESTRICT = "full-view-restrict";
+export const ROLE_FULL_VIEW_RESTRICT = "restricted-view";
 
 export const isAdmin = (role: Role) => role === ROLE_ADMIN;
 
@@ -27,20 +27,20 @@ export const canSearchDocsAll = (role: Role) =>
   isAdmin(role) || isFullView(role);
 
 export const canSearchDocs = (role: Role) =>
-  isAdmin(role) || isFullView(role);
+  isAdmin(role) || isFullView(role) || isFullViewRestrict(role);
 
 export const canDownloadDocsAll = (role: Role) =>
   isAdmin(role) || isFullView(role);
 
 // Feature guards
 export const canSearchExp = (role: Role) =>
-  isAdmin(role) || isFullView(role);
+  isAdmin(role) || isFullView(role) || isFullViewRestrict(role);
 
 export const canSearchExpAll = (role: Role) =>
   isAdmin(role) || isFullView(role);
 
 export const canViewAsociaciones = (role: Role) =>
-  isAdmin(role) || isFullView(role) || isObyaOperator(role);
+  isAdmin(role) || isFullView(role) || isObyaOperator(role) || isFullViewRestrict(role);
 
 export const canEditAsociaciones = (role: Role) =>
   isAdmin(role) || isObyaOperator(role);

@@ -2,7 +2,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { Pool } from "pg";
 import { authOptions } from "../auth/[...nextauth]";
-import { canSearchDocs, canSearchDocsAll, canDownloadDocsAll } from "@/utils/featureGuards";
+import { canSearchDocs, canSearchDocsAll } from "@/utils/featureGuards";
+import {
+  validateSearchQuery,
+  validatePageNumber,
+  validatePageSize,
+  validateYear,
+  validateDocumentType,
+} from "@/utils/queryValidation";
 
 export type GdeDocSearchResult = {
   numero: string;
@@ -60,23 +67,43 @@ export default async function handler(
         // Extract query parameters
         const { searchQuery, page, pageSize, year, type } = req.query;
 
-        // Validate query parameters
+        // Validate required parameters
         if (!searchQuery || !page || !pageSize) {
           return res
             .status(400)
             .json({ error: "Missing required query parameters." });
         }
 
-        const pageNumber = parseInt(page as string, 10);
-        const itemsCount = parseInt(pageSize as string, 10);
-        const yearFilter = year ? parseInt(year as string, 10) : null;
-        const typeFilter = type as string;
-
-        if (isNaN(pageNumber) || isNaN(itemsCount)) {
-          return res
-            .status(400)
-            .json({ error: "Page and itemsPerPage must be valid numbers." });
+        // Security: Validate and sanitize inputs using utility functions
+        const searchQueryValidation = validateSearchQuery(searchQuery);
+        if (!searchQueryValidation.isValid) {
+          return res.status(400).json({ error: searchQueryValidation.error });
         }
+        const searchQueryStr = searchQueryValidation.value as string;
+
+        const pageValidation = validatePageNumber(page);
+        if (!pageValidation.isValid) {
+          return res.status(400).json({ error: pageValidation.error });
+        }
+        const pageNumber = pageValidation.value as number;
+
+        const pageSizeValidation = validatePageSize(pageSize);
+        if (!pageSizeValidation.isValid) {
+          return res.status(400).json({ error: pageSizeValidation.error });
+        }
+        const itemsCount = pageSizeValidation.value as number;
+
+        const yearValidation = validateYear(year);
+        if (!yearValidation.isValid) {
+          return res.status(400).json({ error: yearValidation.error });
+        }
+        const yearFilter = yearValidation.value as number | null;
+
+        const typeValidation = validateDocumentType(type);
+        if (!typeValidation.isValid) {
+          return res.status(400).json({ error: typeValidation.error });
+        }
+        const typeFilter = typeValidation.value as string | null;
 
         const offset = (pageNumber - 1) * itemsCount;
         let paramCount = 3;
@@ -89,6 +116,7 @@ export default async function handler(
             doc.usuariogenerador,
             doc.datos_usuario,
             doc.anio,
+            doc.id,
             tip.esconfidencial,
             tip.nombre as tipo_documento,
             ts_rank(doc.search_vector, websearch_to_tsquery('spanish', $1)) as rank,
@@ -105,8 +133,9 @@ export default async function handler(
             ) as expedientes_ids
           FROM public.gedo_documento doc
           LEFT JOIN public.gedo_tipodocumento tip ON doc.tipo = tip.id
-          LEFT JOIN ee_expediente_documentos red ON doc.id = red.id_documento  
-          LEFT JOIN EE_EXPEDIENTE_ELECTRONICO exp ON red.id = exp.id
+          LEFT JOIN DOCUMENTO EDOC ON doc.numero = EDOC.NUMERO_SADE
+          LEFT JOIN ee_expediente_documentos red ON EDOC.id = red.id_documento
+          LEFT JOIN EE_EXPEDIENTE_ELECTRONICO exp ON red.id = exp.id  
           WHERE doc.search_vector @@ websearch_to_tsquery('spanish', $1)
           ${yearFilter ? `AND doc.anio = $${++paramCount}` : ""}
           ${typeFilter ? `AND tip.acronimo ILIKE $${++paramCount}` : ""}
@@ -120,7 +149,7 @@ export default async function handler(
             OFFSET $3
           `,
           values: [
-            searchQuery,
+            searchQueryStr,
             itemsCount,
             offset,
             ...(yearFilter ? [yearFilter] : []),
@@ -128,15 +157,19 @@ export default async function handler(
           ],
         };
 
+        const queryRestrictedText = baseQuery.replace(
+          'GROUP BY',
+          `AND tip.esconfidencial != '1'\n          GROUP BY`
+        );
+
         const queryRestricted = {
-          text: `${baseQuery}
-            AND tip.esconfidencial != '1'
-            ORDER BY rank DESC, doc.id
+          text: `${queryRestrictedText}
+            ORDER BY total_expedientes DESC, rank DESC, doc.id
             LIMIT $2
             OFFSET $3
           `,
           values: [
-            searchQuery,
+            searchQueryStr,
             itemsCount,
             offset,
             ...(yearFilter ? [yearFilter] : []),
@@ -144,9 +177,7 @@ export default async function handler(
           ],
         };
 
-        const result = await pool.query(
-          canDownloadDocsAll(session.role) ? queryNoRestrict : queryRestricted
-        );
+        const result = await pool.query(canSearchDocsAll(session.role) ? queryNoRestrict : queryRestricted);
 
         // Calculate pagination info
         const totalCount = parseInt(result.rows[0]?.total_count as string) || 0;
