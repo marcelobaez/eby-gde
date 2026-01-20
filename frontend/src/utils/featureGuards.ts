@@ -8,6 +8,8 @@ export const ROLE_GENERAL_OPERATOR = "authenticated";
 export const ROLE_OBYA_OPERATOR = "operador-obya";
 export const ROLE_FULL_VIEW = "full-view";
 export const ROLE_FULL_VIEW_RESTRICT = "restricted-view";
+export const ROLE_FULL_VIEW_RESTRICT_DADM = "restricted-view-dadm";
+export const ROLE_MESA_OPERATOR = "operador-dadm";
 
 export const isAdmin = (role: Role) => role === ROLE_ADMIN;
 
@@ -22,6 +24,11 @@ export const isFullView = (role: Role) =>
 
 export const isFullViewRestrict = (role: Role) =>
   role === ROLE_FULL_VIEW_RESTRICT;
+
+export const isFullViewRestrictDadm = (role: Role) =>
+  role === ROLE_FULL_VIEW_RESTRICT_DADM;
+
+export const isMesaOperator = (role: Role) => role === ROLE_MESA_OPERATOR;
 
 export const canSearchDocsAll = (role: Role) =>
   isAdmin(role) || isFullView(role);
@@ -47,5 +54,8 @@ export const canEditAsociaciones = (role: Role) =>
 
 export const canAccessCategorias = (role: Role) =>
   isAdmin(role) || isObyaOperator(role);
+
+export const canAccessMesas = (role: Role) =>
+  isAdmin(role) || isFullViewRestrictDadm(role) || isMesaOperator(role);
 
 // Add more guards as needed for other features

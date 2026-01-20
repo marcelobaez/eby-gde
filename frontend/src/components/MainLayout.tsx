@@ -19,6 +19,7 @@ import {
   FolderOpenOutlined,
   SearchOutlined,
   FileSearchOutlined,
+  DashboardOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { Image } from "antd";
@@ -27,6 +28,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { clearTokenCache } from "@/lib/axios";
 import {
+  canAccessMesas,
   canEditAsociaciones,
   canSearchDocs,
   canSearchExp,
@@ -61,6 +63,7 @@ export function MainLayout({
   const hasRelsPermissions = canViewAsociaciones(session?.role);
   const hasSearchPermissions = canSearchExp(session?.role);
   const hasDocPermissions = canSearchDocs(session?.role);
+  const hasMesaPermissions = canAccessMesas(session?.role);
 
   useEffect(() => {
     const path = router.pathname.split("/");
@@ -163,6 +166,13 @@ export function MainLayout({
                   icon: <FolderOpenOutlined />,
                   label: <Link href="/seguimiento">Seguimiento</Link>,
                 },
+                hasMesaPermissions
+                  ? {
+                      key: "toldo",
+                      icon: <DashboardOutlined />,
+                      label: <Link href="/toldo">TOLDO</Link>,
+                    }
+                  : null,
                 hasSearchPermissions
                   ? {
                       key: "busqueda",
