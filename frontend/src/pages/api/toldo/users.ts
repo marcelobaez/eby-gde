@@ -2,7 +2,7 @@ const oracledb = require("oracledb");
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
-import { canSearchDocs } from "@/utils/featureGuards";
+import { canAccessMesas } from "@/utils/featureGuards";
 
 // Location mapping: ID_SECTOR_INTERNO -> location code
 const LOCATION_MAP: Record<number, string> = {
@@ -40,7 +40,7 @@ export default async function handler(
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const canAccess = canSearchDocs(session.role);
+    const canAccess = canAccessMesas(session.role);
     if (!canAccess) {
       return res.status(401).json({ error: "Unauthorized" });
     }
