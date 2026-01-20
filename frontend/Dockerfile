@@ -1,5 +1,8 @@
 FROM marcelobaez/oracle8-ic-node20
 
+# Set timezone for Node.js process
+ENV TZ=America/Argentina/Buenos_Aires
+
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
