@@ -34,20 +34,20 @@ export const canSearchDocsAll = (role: Role) =>
   isAdmin(role) || isFullView(role);
 
 export const canSearchDocs = (role: Role) =>
-  isAdmin(role) || isFullView(role) || isFullViewRestrict(role);
+  isAdmin(role) || isFullView(role) || isFullViewRestrict(role) || isFullViewRestrictDadm(role);
 
 export const canDownloadDocsAll = (role: Role) =>
   isAdmin(role) || isFullView(role);
 
 // Feature guards
 export const canSearchExp = (role: Role) =>
-  isAdmin(role) || isFullView(role) || isFullViewRestrict(role);
+  isAdmin(role) || isFullView(role) || isFullViewRestrict(role) || isFullViewRestrictDadm(role);
 
 export const canSearchExpAll = (role: Role) =>
   isAdmin(role) || isFullView(role);
 
 export const canViewAsociaciones = (role: Role) =>
-  isAdmin(role) || isFullView(role) || isObyaOperator(role) || isFullViewRestrict(role);
+  isAdmin(role) || isFullView(role) || isObyaOperator(role) || isFullViewRestrict(role) || isFullViewRestrictDadm(role);
 
 export const canEditAsociaciones = (role: Role) =>
   isAdmin(role) || isObyaOperator(role);
