@@ -184,13 +184,28 @@ export default async function handler(
           baseValues.push(endDateFilter);
         }
 
-        // Track where tipos filter starts for the main query
-        const conditionsBeforeTipos = [...baseConditions];
-        const valuesBeforeTipos = [...baseValues];
+        // Build conditions in stages:
+        // 1. baseConditions: date filters only
+        // 2. conditionsWithUsuarios: base + usuarios (for doc type stats - shows all types but filtered by location)
+        // 3. conditions: base + usuarios + tipos (for main query and percentage stats)
 
-        // Full conditions including tipos filter (for main data query)
+        // Full conditions including all filters (for main data query)
         const conditions = [...baseConditions];
         const values: (string | number)[] = [itemsCount, offset, ...baseValues];
+
+        // Add usuarios filter first (before tipos)
+        if (usuariosFilter.length > 0) {
+          const usuariosPlaceholders = usuariosFilter.map(() => {
+            paramCount++;
+            return `$${paramCount}`;
+          }).join(", ");
+          conditions.push(`doc.usuariogenerador IN (${usuariosPlaceholders})`);
+          values.push(...usuariosFilter);
+        }
+
+        // Capture conditions with usuarios but without tipos (for doc type stats)
+        const conditionsWithUsuarios = [...conditions];
+        const valuesWithUsuarios = [...baseValues, ...usuariosFilter];
 
         if (tiposFilter.length > 0) {
           const tiposPlaceholders = tiposFilter.map(() => {
@@ -199,15 +214,6 @@ export default async function handler(
           }).join(", ");
           conditions.push(`tip.nombre IN (${tiposPlaceholders})`);
           values.push(...tiposFilter);
-        }
-
-        if (usuariosFilter.length > 0) {
-          const usuariosPlaceholders = usuariosFilter.map(() => {
-            paramCount++;
-            return `$${paramCount}`;
-          }).join(", ");
-          conditions.push(`doc.usuariogenerador IN (${usuariosPlaceholders})`);
-          values.push(...usuariosFilter);
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -275,23 +281,24 @@ export default async function handler(
         const hasNextPage = pageNumber < totalPages;
         const hasPreviousPage = pageNumber > 1;
 
-        // Build stats query for doc types - use base conditions WITHOUT tipos filter
-        // so all document types are shown for filtering UI
+        // Build stats query for doc types - use conditions WITH usuarios but WITHOUT tipos filter
+        // so all document types are shown for filtering UI, but filtered by location
         let statsParamCount = 0;
-        const statsConditions = conditionsBeforeTipos.map(cond => {
+        const statsConditions = conditionsWithUsuarios.map(cond => {
           // Replace $3, $4, etc with $1, $2, etc for stats query
           return cond.replace(/\$(\d+)/g, () => `$${++statsParamCount}`);
         });
         const statsWhereClauseRenumbered = statsConditions.length > 0 ? `WHERE ${statsConditions.join(' AND ')}` : '';
-        const statsValues = valuesBeforeTipos;
+        const statsValues = valuesWithUsuarios;
 
-        // Build filtered stats query - includes tipos filter for accurate percentage
+        // Build filtered stats query - includes ALL filters for accurate percentage
         let filteredStatsParamCount = 0;
         const filteredStatsConditions = conditions.map(cond => {
           return cond.replace(/\$(\d+)/g, () => `$${++filteredStatsParamCount}`);
         });
         const filteredStatsWhereClause = filteredStatsConditions.length > 0 ? `WHERE ${filteredStatsConditions.join(' AND ')}` : '';
-        const filteredStatsValues = [...valuesBeforeTipos, ...tiposFilter, ...usuariosFilter];
+        // Note: order is baseValues, usuariosFilter, tiposFilter (matching condition order)
+        const filteredStatsValues = [...baseValues, ...usuariosFilter, ...tiposFilter];
 
         // Percentage stats query (WITH tipos filter for accurate results)
         const filteredStatsQuery = canSearchDocsAll(session.role)
