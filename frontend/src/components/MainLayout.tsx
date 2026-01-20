@@ -111,7 +111,7 @@ export function MainLayout({
               lineHeight: "32px",
             }}
           >
-            GDE Seguimiento
+            Plataforma Integral de GDE
           </h1>
         </div>
         <Dropdown

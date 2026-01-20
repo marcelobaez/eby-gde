@@ -180,7 +180,8 @@ export default async function handler(
 
         if (endDateFilter) {
           paramCount++;
-          baseConditions.push(`doc.fechacreacion <= $${paramCount}::timestamp + interval '1 day'`);
+          // Use < instead of <= to exclude midnight of the next day (timezone boundary)
+          baseConditions.push(`doc.fechacreacion < $${paramCount}::timestamp + interval '1 day'`);
           baseValues.push(endDateFilter);
         }
 

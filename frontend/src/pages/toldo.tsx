@@ -668,7 +668,7 @@ export default function ToldoPage() {
                   label: "Fecha de creación",
                   children: format(
                     parseISO(selectedItem.fechacreacion),
-                    "PPP p",
+                    "PPP",
                     { locale: esLocale }
                   ),
                   span: 3,
