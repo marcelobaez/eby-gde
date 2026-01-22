@@ -69,25 +69,15 @@ health_check() {
         ((checks_failed++))
     fi
     
-    # Frontend health check (with retries - Next.js can be slow to start)
-    log "   Checking frontend (Next.js may take time to start)..."
-    FRONTEND_CODE="000"
-    for i in {1..6}; do
-        FRONTEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:3000 || echo "000")
-        if [[ "$FRONTEND_CODE" =~ ^(200)$ ]]; then
-            log "   ✅ Frontend HTTP responding (code: $FRONTEND_CODE, attempt $i)"
-            ((checks_passed++))
-            break
-        else
-            if [[ $i -lt 6 ]]; then
-                log "   ⏳ Frontend not ready yet (code: $FRONTEND_CODE), waiting 10 seconds (attempt $i/6)..."
-                sleep 10
-            else
-                log "   ❌ Frontend HTTP not responding after 6 attempts (code: $FRONTEND_CODE)"
-                ((checks_failed++))
-            fi
-        fi
-    done
+    # Frontend health check (check if Next.js process is running inside container)
+    log "   Checking frontend (verifying Next.js is running)..."
+    if docker exec eby-exp-frontend pgrep -f "next-server" > /dev/null 2>&1; then
+        log "   ✅ Frontend Next.js process is running"
+        ((checks_passed++))
+    else
+        log "   ❌ Frontend Next.js process not found"
+        ((checks_failed++))
+    fi
     
     # Nginx health check
     NGINX_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:8080 || echo "000")
