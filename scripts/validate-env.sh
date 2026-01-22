@@ -75,12 +75,18 @@ if ! check_env_file \
     MISSING_VARS=1
 fi
 
-# Check frontend .env (or .env.production as fallback)
+# Check frontend .env (with fallbacks for .env.production and .env.production.local)
 FRONTEND_ENV="$REPO_ROOT/frontend/.env"
-if [[ ! -f "$FRONTEND_ENV" ]] && [[ -f "$REPO_ROOT/frontend/.env.production" ]]; then
-    FRONTEND_ENV="$REPO_ROOT/frontend/.env.production"
-    echo ""
-    echo "ℹ️  Using .env.production for frontend (instead of .env)"
+if [[ ! -f "$FRONTEND_ENV" ]]; then
+    if [[ -f "$REPO_ROOT/frontend/.env.production.local" ]]; then
+        FRONTEND_ENV="$REPO_ROOT/frontend/.env.production.local"
+        echo ""
+        echo "ℹ️  Using .env.production.local for frontend (instead of .env)"
+    elif [[ -f "$REPO_ROOT/frontend/.env.production" ]]; then
+        FRONTEND_ENV="$REPO_ROOT/frontend/.env.production"
+        echo ""
+        echo "ℹ️  Using .env.production for frontend (instead of .env)"
+    fi
 fi
 
 if ! check_env_file \
