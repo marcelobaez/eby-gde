@@ -48,7 +48,7 @@ health_check() {
         ((checks_failed++))
     fi
     
-    if docker ps --filter "name=nginx" --filter "status=running" --format "{{.Names}}" | grep -q "nginx"; then
+    if docker ps --filter "name=eby-exp-nginx" --filter "status=running" --format "{{.Names}}" | grep -q "eby-exp-nginx"; then
         log "   ✅ Nginx container is running"
         ((checks_passed++))
     else
@@ -60,29 +60,32 @@ health_check() {
     log "   Checking HTTP endpoints..."
     
     # Backend health check
-    if curl -f -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:1337 | grep -q "200\|404"; then
-        log "   ✅ Backend HTTP responding"
+    BACKEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:1337 || echo "000")
+    if [[ "$BACKEND_CODE" =~ ^(200|404)$ ]]; then
+        log "   ✅ Backend HTTP responding (code: $BACKEND_CODE)"
         ((checks_passed++))
     else
-        log "   ❌ Backend HTTP not responding"
+        log "   ❌ Backend HTTP not responding (code: $BACKEND_CODE)"
         ((checks_failed++))
     fi
     
     # Frontend health check
-    if curl -f -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:3000 | grep -q "200"; then
-        log "   ✅ Frontend HTTP responding"
+    FRONTEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:3000 || echo "000")
+    if [[ "$FRONTEND_CODE" =~ ^(200)$ ]]; then
+        log "   ✅ Frontend HTTP responding (code: $FRONTEND_CODE)"
         ((checks_passed++))
     else
-        log "   ❌ Frontend HTTP not responding"
+        log "   ❌ Frontend HTTP not responding (code: $FRONTEND_CODE)"
         ((checks_failed++))
     fi
     
     # Nginx health check
-    if curl -f -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:8080 | grep -q "200\|30[0-9]"; then
-        log "   ✅ Nginx HTTP responding"
+    NGINX_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:8080 || echo "000")
+    if [[ "$NGINX_CODE" =~ ^(200|30[0-9])$ ]]; then
+        log "   ✅ Nginx HTTP responding (code: $NGINX_CODE)"
         ((checks_passed++))
     else
-        log "   ❌ Nginx HTTP not responding"
+        log "   ❌ Nginx HTTP not responding (code: $NGINX_CODE)"
         ((checks_failed++))
     fi
     

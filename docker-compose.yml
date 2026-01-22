@@ -35,6 +35,7 @@ services:
       - "3000:3000"
 
   nginx:
+    container_name: eby-exp-nginx
     build:
       context: ./nginx
     environment:
