@@ -49,14 +49,26 @@ echo ""
 echo "👤 Setting up runner user..."
 if ! id "$RUNNER_USER" &>/dev/null; then
     # Try adduser first (Debian/Ubuntu), then useradd (RHEL/CentOS)
-    if command -v adduser &> /dev/null; then
-        adduser --disabled-password --gecos "" "$RUNNER_USER"
+    # Check both in PATH and common locations
+    if command -v adduser &> /dev/null || [[ -x /usr/sbin/adduser ]]; then
+        if command -v adduser &> /dev/null; then
+            adduser --disabled-password --gecos "" "$RUNNER_USER"
+        else
+            /usr/sbin/adduser --disabled-password --gecos "" "$RUNNER_USER"
+        fi
         echo "   Created user: $RUNNER_USER"
-    elif command -v useradd &> /dev/null; then
-        useradd -m -s /bin/bash "$RUNNER_USER"
+    elif command -v useradd &> /dev/null || [[ -x /usr/sbin/useradd ]]; then
+        if command -v useradd &> /dev/null; then
+            useradd -m -s /bin/bash "$RUNNER_USER"
+        else
+            /usr/sbin/useradd -m -s /bin/bash "$RUNNER_USER"
+        fi
         echo "   Created user: $RUNNER_USER"
     else
-        echo "   ❌ ERROR: Neither adduser nor useradd found. Please create user manually."
+        echo "   ❌ ERROR: Neither adduser nor useradd found."
+        echo "   Searched in PATH and /usr/sbin/"
+        echo "   Please install user management tools or create user manually:"
+        echo "   sudo /usr/sbin/adduser --disabled-password --gecos \"\" $RUNNER_USER"
         exit 1
     fi
 else
@@ -65,14 +77,25 @@ fi
 
 # Add runner user to docker group
 if ! groups "$RUNNER_USER" | grep -q docker; then
-    if command -v usermod &> /dev/null; then
-        usermod -aG docker "$RUNNER_USER"
+    # Check both in PATH and common locations
+    if command -v usermod &> /dev/null || [[ -x /usr/sbin/usermod ]]; then
+        if command -v usermod &> /dev/null; then
+            usermod -aG docker "$RUNNER_USER"
+        else
+            /usr/sbin/usermod -aG docker "$RUNNER_USER"
+        fi
         echo "   ✅ Added $RUNNER_USER to docker group"
-    elif command -v gpasswd &> /dev/null; then
-        gpasswd -a "$RUNNER_USER" docker
+    elif command -v gpasswd &> /dev/null || [[ -x /usr/bin/gpasswd ]]; then
+        if command -v gpasswd &> /dev/null; then
+            gpasswd -a "$RUNNER_USER" docker
+        else
+            /usr/bin/gpasswd -a "$RUNNER_USER" docker
+        fi
         echo "   ✅ Added $RUNNER_USER to docker group"
     else
         echo "   ❌ ERROR: Neither usermod nor gpasswd found."
+        echo "   Please add user to docker group manually:"
+        echo "   sudo /usr/sbin/usermod -aG docker $RUNNER_USER"
         exit 1
     fi
 else
