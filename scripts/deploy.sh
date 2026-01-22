@@ -69,15 +69,25 @@ health_check() {
         ((checks_failed++))
     fi
     
-    # Frontend health check
-    FRONTEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:3000 || echo "000")
-    if [[ "$FRONTEND_CODE" =~ ^(200)$ ]]; then
-        log "   ✅ Frontend HTTP responding (code: $FRONTEND_CODE)"
-        ((checks_passed++))
-    else
-        log "   ❌ Frontend HTTP not responding (code: $FRONTEND_CODE)"
-        ((checks_failed++))
-    fi
+    # Frontend health check (with retries - Next.js can be slow to start)
+    log "   Checking frontend (Next.js may take time to start)..."
+    FRONTEND_CODE="000"
+    for i in {1..6}; do
+        FRONTEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:3000 || echo "000")
+        if [[ "$FRONTEND_CODE" =~ ^(200)$ ]]; then
+            log "   ✅ Frontend HTTP responding (code: $FRONTEND_CODE, attempt $i)"
+            ((checks_passed++))
+            break
+        else
+            if [[ $i -lt 6 ]]; then
+                log "   ⏳ Frontend not ready yet (code: $FRONTEND_CODE), waiting 10 seconds (attempt $i/6)..."
+                sleep 10
+            else
+                log "   ❌ Frontend HTTP not responding after 6 attempts (code: $FRONTEND_CODE)"
+                ((checks_failed++))
+            fi
+        fi
+    done
     
     # Nginx health check
     NGINX_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:8080 || echo "000")
