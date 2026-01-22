@@ -116,9 +116,13 @@ create_backup() {
         log "   Backed up backend .env"
     fi
     
+    # Frontend: check for .env or .env.production
     if [[ -f "$REPO_ROOT/frontend/.env" ]]; then
         cp "$REPO_ROOT/frontend/.env" "$BACKUP_DIR/frontend.env"
         log "   Backed up frontend .env"
+    elif [[ -f "$REPO_ROOT/frontend/.env.production" ]]; then
+        cp "$REPO_ROOT/frontend/.env.production" "$BACKUP_DIR/frontend.env.production"
+        log "   Backed up frontend .env.production"
     fi
     
     log "   ✅ Backup completed"
@@ -146,9 +150,13 @@ rollback() {
         log "   Restored backend .env"
     fi
     
+    # Frontend: restore .env or .env.production based on what was backed up
     if [[ -f "$BACKUP_DIR/frontend.env" ]]; then
         cp "$BACKUP_DIR/frontend.env" "$REPO_ROOT/frontend/.env"
         log "   Restored frontend .env"
+    elif [[ -f "$BACKUP_DIR/frontend.env.production" ]]; then
+        cp "$BACKUP_DIR/frontend.env.production" "$REPO_ROOT/frontend/.env.production"
+        log "   Restored frontend .env.production"
     fi
     
     # Checkout previous commit
