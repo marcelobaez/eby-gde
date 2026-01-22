@@ -7,6 +7,5 @@
 data
 .vscode
 
-# Deployment artifacts
-logs/
+# Deployment artifacts (logs are now in /var/log/eby-gde/)
 *.log

@@ -201,6 +201,15 @@ chmod 755 "$BACKUP_DIR"
 echo "   ✅ Created $BACKUP_DIR"
 echo ""
 
+# Create log directory with proper permissions
+echo "📁 Creating log directory..."
+LOG_DIR="/var/log/eby-gde"
+mkdir -p "$LOG_DIR"
+chown "$RUNNER_USER:$RUNNER_USER" "$LOG_DIR"
+chmod 755 "$LOG_DIR"
+echo "   ✅ Created $LOG_DIR"
+echo ""
+
 # Install systemd service
 echo "⚙️  Installing systemd service..."
 
@@ -264,6 +273,6 @@ echo "   3. View runner logs:"
 echo "      sudo journalctl -u actions-runner -f"
 echo ""
 echo "   4. View deployment logs:"
-echo "      tail -f /home/sistemas/desarrollos/eby-gde/logs/deployment-*.log"
+echo "      tail -f /var/log/eby-gde/deployment-*.log"
 echo ""
 echo "=================================================="

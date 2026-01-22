@@ -241,13 +241,13 @@ When you add a new feature that requires new environment variables:
 **Deployment logs:**
 ```bash
 # Latest deployment
-ls -lt /home/sistemas/desarrollos/eby-gde/logs/ | head -1
+ls -lt /var/log/eby-gde/ | head -1
 
 # View specific log
-tail -f /home/sistemas/desarrollos/eby-gde/logs/deployment-20260122-143022.log
+tail -f /var/log/eby-gde/deployment-20260122-143022.log
 
 # View all logs
-ls -lh /home/sistemas/desarrollos/eby-gde/logs/
+ls -lh /var/log/eby-gde/
 ```
 
 **Runner logs:**
@@ -493,7 +493,7 @@ ls -t | tail -n +11 | xargs rm -rf
 Logs are kept indefinitely. To clean old logs:
 
 ```bash
-cd /home/sistemas/desarrollos/eby-gde/logs
+cd /var/log/eby-gde
 
 # List logs by size
 ls -lh
@@ -640,11 +640,12 @@ Server Paths:
 │  │  ├─ deploy.sh                    # Main deployment
 │  │  ├─ validate-env.sh              # Environment validation
 │  │  └─ setup-runner.sh              # Setup script
-│  ├─ logs/                           # Deployment logs
-│  │  └─ deployment-*.log             # Log files
 │  ├─ .env                            # Environment variables
 │  ├─ backend/.env                    # Backend environment
 │  └─ frontend/.env                   # Frontend environment
+│
+├─ /var/log/eby-gde/                  # Deployment logs (outside repo)
+│  └─ deployment-*.log                # Timestamped log files
 │
 └─ /var/backups/eby-gde/              # Backups (outside repo)
    └─ backup-YYYYMMDD-HHMMSS/         # Timestamped backups

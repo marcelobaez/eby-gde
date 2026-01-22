@@ -5,13 +5,13 @@ set -e  # Exit on any error (will trigger rollback)
 # Configuration
 REPO_ROOT="/home/sistemas/desarrollos/eby-gde"
 BACKUP_ROOT="/var/backups/eby-gde"
-LOG_DIR="$REPO_ROOT/logs"
+LOG_DIR="/var/log/eby-gde"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 BACKUP_DIR="$BACKUP_ROOT/backup-$TIMESTAMP"
 LOG_FILE="$LOG_DIR/deployment-$TIMESTAMP.log"
 
 # Ensure log directory exists
-mkdir -p "$LOG_DIR"
+mkdir -p "$LOG_DIR" 2>/dev/null || true
 
 # Function to log messages
 log() {
