@@ -1,0 +1,17 @@
+[Unit]
+Description=GitHub Actions Runner for eby-gde
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=actions-runner
+WorkingDirectory=/opt/actions-runner
+ExecStart=/opt/actions-runner/run.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

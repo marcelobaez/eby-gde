@@ -1,0 +1,27 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Ubuntu Server
+    runs-on: self-hosted
+    
+    defaults:
+      run:
+        working-directory: /home/sistemas/desarrollos/eby-gde
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for rollback
+      
+      - name: Validate environment variables
+        run: bash scripts/validate-env.sh
+      
+      - name: Deploy with rollback capability
+        run: bash scripts/deploy.sh
