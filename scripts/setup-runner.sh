@@ -48,16 +48,33 @@ echo ""
 # Create runner user if doesn't exist
 echo "👤 Setting up runner user..."
 if ! id "$RUNNER_USER" &>/dev/null; then
-    useradd -m -s /bin/bash "$RUNNER_USER"
-    echo "   Created user: $RUNNER_USER"
+    # Try adduser first (Debian/Ubuntu), then useradd (RHEL/CentOS)
+    if command -v adduser &> /dev/null; then
+        adduser --disabled-password --gecos "" "$RUNNER_USER"
+        echo "   Created user: $RUNNER_USER"
+    elif command -v useradd &> /dev/null; then
+        useradd -m -s /bin/bash "$RUNNER_USER"
+        echo "   Created user: $RUNNER_USER"
+    else
+        echo "   ❌ ERROR: Neither adduser nor useradd found. Please create user manually."
+        exit 1
+    fi
 else
     echo "   User already exists: $RUNNER_USER"
 fi
 
 # Add runner user to docker group
 if ! groups "$RUNNER_USER" | grep -q docker; then
-    usermod -aG docker "$RUNNER_USER"
-    echo "   ✅ Added $RUNNER_USER to docker group"
+    if command -v usermod &> /dev/null; then
+        usermod -aG docker "$RUNNER_USER"
+        echo "   ✅ Added $RUNNER_USER to docker group"
+    elif command -v gpasswd &> /dev/null; then
+        gpasswd -a "$RUNNER_USER" docker
+        echo "   ✅ Added $RUNNER_USER to docker group"
+    else
+        echo "   ❌ ERROR: Neither usermod nor gpasswd found."
+        exit 1
+    fi
 else
     echo "   User already in docker group"
 fi
