@@ -69,14 +69,22 @@ health_check() {
         ((checks_failed++))
     fi
     
-    # Frontend health check (check if Next.js process is running inside container)
-    log "   Checking frontend (verifying Next.js is running)..."
-    if docker exec eby-exp-frontend pgrep -f "next-server" > /dev/null 2>&1; then
-        log "   ✅ Frontend Next.js process is running"
+    # Frontend health check (accepts 200 or 307 redirect for auth)
+    log "   Checking frontend (accepts 307 redirect for auth)..."
+    FRONTEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:3000 2>/dev/null || echo "000")
+    if [[ "$FRONTEND_CODE" =~ ^(200|307)$ ]]; then
+        log "   ✅ Frontend HTTP responding (code: $FRONTEND_CODE)"
         ((checks_passed++))
     else
-        log "   ❌ Frontend Next.js process not found"
-        ((checks_failed++))
+        # Fallback: check if Next.js process is running
+        log "   HTTP check returned $FRONTEND_CODE, checking process..."
+        if docker exec eby-exp-frontend pgrep -f "next-server" > /dev/null 2>&1; then
+            log "   ✅ Frontend Next.js process is running"
+            ((checks_passed++))
+        else
+            log "   ❌ Frontend not responding and process not found"
+            ((checks_failed++))
+        fi
     fi
     
     # Nginx health check
