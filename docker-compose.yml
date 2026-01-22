@@ -37,6 +37,9 @@ services:
   nginx:
     build:
       context: ./nginx
+    environment:
+      - BACKEND_SERVER_NAME=${BACKEND_SERVER_NAME}
+      - FRONTEND_SERVER_NAME=${FRONTEND_SERVER_NAME}
     ports:
       - 8080:80
       - 443:443

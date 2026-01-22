@@ -77,10 +77,16 @@ nano .env  # Fill in all values
 cp backend/.env.example backend/.env
 nano backend/.env  # Fill in all values
 
-# Frontend .env
+# Frontend .env (or .env.production on server)
 cp frontend/.env.example frontend/.env
 nano frontend/.env  # Fill in all values
 ```
+
+**Important:** Make sure to set the nginx server names in root `.env`:
+- `BACKEND_SERVER_NAME` - Domain for backend API (e.g., `gdeapi.eby.org.ar` or `gdeapi-dev.eby.org.ar`)
+- `FRONTEND_SERVER_NAME` - Domain(s) for frontend (e.g., `expedientes.eby.org.ar` or `expedientes-dev.eby.org.ar`)
+
+These allow nginx to work in different environments without manual config changes.
 
 ### Step 4: Pull Latest Code with Scripts
 
