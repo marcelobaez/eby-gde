@@ -19,7 +19,6 @@ import {
   Empty,
   Tag,
   DatePicker,
-  TimeRangePickerProps,
   Statistic,
   Select,
   Tabs,
@@ -39,9 +38,10 @@ import {
   useQueryState,
   useQueryStates,
 } from "nuqs";
-import { canAccessMesas } from "@/utils/featureGuards";
+import { canAccessMesas, canSearchDocs } from "@/utils/featureGuards";
 import { message } from "antd";
 import { downloadBlob, formatDateForAPI, parseDocumentNumber } from "@/utils";
+import { getDefaultDateRange, rangePresets } from "@/utils/date-range";
 import dayjs from "dayjs";
 import type { RangePickerProps } from "antd/es/date-picker";
 import { parseISO, format } from "date-fns";
@@ -49,41 +49,6 @@ import esLocale from "date-fns/locale/es";
 
 const { Text, Paragraph } = Typography;
 const { RangePicker } = DatePicker;
-
-// Default to today and yesterday (2 full days)
-const getDefaultDateRange = (): [dayjs.Dayjs, dayjs.Dayjs] => {
-  const startDate = dayjs().subtract(1, "day").startOf("day");
-  const endDate = dayjs();
-  return [startDate, endDate];
-};
-
-const rangePresets: TimeRangePickerProps["presets"] = [
-  {
-    label: "Hoy y ayer",
-    value: () => [dayjs().subtract(1, "day").startOf("day"), dayjs()],
-  },
-  {
-    label: "Ultimas 24 horas",
-    value: () => [dayjs().subtract(24, "hour"), dayjs()],
-  },
-  {
-    label: "Ultimos 7 Dias",
-    value: () => [dayjs().subtract(7, "day"), dayjs()],
-  },
-  {
-    label: "Ultimos 14 Dias",
-    value: () => [dayjs().subtract(14, "day"), dayjs()],
-  },
-  {
-    label: "Ultimos 30 Dias",
-    value: () => [dayjs().subtract(30, "day"), dayjs()],
-  },
-  {
-    label: "Ultimos 90 Dias",
-    value: () => [dayjs().subtract(90, "day"), dayjs()],
-  },
-  { label: "Este año", value: () => [dayjs().startOf("year"), dayjs()] },
-];
 
 export default function ToldoPage() {
   const router = useRouter();
