@@ -660,4 +660,110 @@ Systemd:
 
 ---
 
+## Common Issues & Solutions (From Production Experience)
+
+### Issue: Permission Denied Creating Logs
+
+**Symptom:** `mkdir: no se puede crear el directorio '/var/log/eby-gde': Permiso denegado`
+
+**Solution:** The setup script creates this automatically, but if you encounter this:
+```bash
+sudo mkdir -p /var/log/eby-gde
+sudo chown actions-runner:actions-runner /var/log/eby-gde
+sudo chmod 755 /var/log/eby-gde
+```
+
+### Issue: Git Permission Denied (FETCH_HEAD)
+
+**Symptom:** `error: no se puede abrir .git/FETCH_HEAD: Permiso denegado`
+
+**Solution:** The repository must be owned by the actions-runner user:
+```bash
+sudo chown -R actions-runner:actions-runner /home/sistemas/desarrollos/eby-gde
+```
+
+### Issue: Frontend Environment File Not Found
+
+**Symptom:** Validation fails with `frontend/.env NOT found`
+
+**Solution:** This project uses `.env.production.local` for frontend in production:
+```bash
+# The validation script automatically checks for these in order:
+# 1. frontend/.env
+# 2. frontend/.env.production.local  (typically used in production)
+# 3. frontend/.env.production
+
+# Make sure one of these exists on the server
+cp frontend/.env.example frontend/.env.production.local
+nano frontend/.env.production.local
+```
+
+### Issue: Nginx Container Not Found in Health Checks
+
+**Symptom:** `Nginx container is NOT running` but `docker ps` shows it running
+
+**Solution:** Fixed in latest version. Nginx now has explicit container name `eby-exp-nginx` in docker-compose.yml.
+
+### Issue: Frontend Health Check Fails (307 Response)
+
+**Symptom:** Frontend returns HTTP 307 but deployment considers it unhealthy
+
+**Solution:** Fixed in latest version. Health checks now accept 307 (redirect to auth) as a valid healthy response, since the frontend requires authentication.
+
+### Issue: Missing Nginx Environment Variables
+
+**Symptom:** Nginx fails to start or shows `${BACKEND_SERVER_NAME}` in logs
+
+**Solution:** Add these to root `.env`:
+```bash
+BACKEND_SERVER_NAME=gdeapi.eby.org.ar
+FRONTEND_SERVER_NAME=www.expedientes.eby.org.ar expedientes.eby.org.ar
+```
+
+### Issue: Runner User Can't Run Docker Commands
+
+**Symptom:** `permission denied while trying to connect to the Docker daemon`
+
+**Solution:** Ensure actions-runner is in docker group:
+```bash
+sudo usermod -aG docker actions-runner
+# Then restart the runner
+sudo systemctl restart actions-runner
+```
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Check runner status
+sudo systemctl status actions-runner
+
+# View runner logs
+sudo journalctl -u actions-runner -f
+
+# View latest deployment log
+ls -lt /var/log/eby-gde/ | head -1
+tail -f /var/log/eby-gde/deployment-$(ls -t /var/log/eby-gde/ | head -1)
+
+# Check container status
+docker ps -a | grep eby-exp
+
+# Manual deployment test
+cd /home/sistemas/desarrollos/eby-gde
+bash scripts/validate-env.sh
+bash scripts/deploy.sh
+
+# Debug frontend issues
+bash scripts/debug-frontend.sh
+
+# Check health manually
+bash scripts/check-health.sh
+
+# View GitHub Actions
+# https://github.com/marcelobaez/eby-gde/actions
+```
+
+---
+
 **Last updated:** 2026-01-22
