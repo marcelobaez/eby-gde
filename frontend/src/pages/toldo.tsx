@@ -40,7 +40,12 @@ import {
 } from "nuqs";
 import { canAccessMesas, canSearchDocs } from "@/utils/featureGuards";
 import { message } from "antd";
-import { downloadBlob, formatDateForAPI, parseDocumentNumber } from "@/utils";
+import {
+  downloadBlob,
+  formatDateForAPI,
+  parseDocumentNumber,
+  sanitizeCSVField,
+} from "@/utils";
 import { getDefaultDateRange, rangePresets } from "@/utils/date-range";
 import dayjs from "dayjs";
 import type { RangePickerProps } from "antd/es/date-picker";
@@ -223,19 +228,19 @@ export default function ToldoPage() {
       });
 
       const transformedData = response.data.map((item) => ({
-        Número: item.numero || "",
-        "Tipo Documento": item.tipo_documento || "",
-        Motivo: item.motivo || "",
+        Número: sanitizeCSVField(item.numero),
+        "Tipo Documento": sanitizeCSVField(item.tipo_documento),
+        Motivo: sanitizeCSVField(item.motivo),
         "Fecha Creación": item.fechacreacion
           ? format(parseISO(item.fechacreacion), "dd/MM/yyyy HH:mm", {
               locale: esLocale,
             })
           : "",
         Año: item.anio?.toString() || "",
-        "Usuario Generador": item.usuariogenerador || "",
-        "Datos Usuario": item.datos_usuario || "",
+        "Usuario Generador": sanitizeCSVField(item.usuariogenerador),
+        "Datos Usuario": sanitizeCSVField(item.datos_usuario),
         "Total Expedientes": item.total_expedientes?.toString() || "0",
-        "Expedientes Asociados": item.expedientes_asociados || "",
+        "Expedientes Asociados": sanitizeCSVField(item.expedientes_asociados),
       }));
 
       const csv = generateCsv(csvConfig)(transformedData);
