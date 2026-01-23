@@ -232,9 +232,21 @@ When you add a new feature that requires new environment variables:
 3. Click any run to see detailed logs
 
 **Email Notifications:**
-- Configure in: https://github.com/settings/notifications
-- Or repository: https://github.com/marcelobaez/eby-gde/settings
-- You'll receive emails on deployment success/failure
+
+By default, GitHub only sends emails on **failures**. To receive success emails too:
+
+1. Go to: https://github.com/settings/notifications
+2. Scroll to **"Actions"** section
+3. Configure workflow notifications:
+   - For failures only: Keep default settings
+   - For success AND failures: Enable "Send notifications for all workflows"
+4. You can also configure per-repository watching settings
+
+**Workflow Summaries:**
+Every deployment shows a summary at the top of the workflow run with:
+- ✅ Success indicator and deployment info
+- ❌ Failure indicator with troubleshooting links
+- Always visible in GitHub Actions UI
 
 ### View Logs on Server
 
