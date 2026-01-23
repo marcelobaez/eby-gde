@@ -41,6 +41,7 @@ import { canSearchExp } from "@/utils/featureGuards";
 import { AssociateByDoc } from "@/components/AssociateByDoc";
 import { createSearchLogData, logSearch } from "@/lib/searchLogger";
 import { useSession } from "next-auth/react";
+import { useSessionGuard } from "@/hooks/useSessionGuard";
 import dayjs from "dayjs";
 import { formatDateForAPI } from "@/utils";
 import { RangePickerProps } from "antd/es/date-picker";
@@ -94,6 +95,7 @@ const tabs = [
 ];
 
 function SearchGDEExps() {
+  useSessionGuard(); // Monitor session expiry
   const queryClient = useQueryClient();
   const router = useRouter();
   const { data: session } = useSession();

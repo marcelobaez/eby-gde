@@ -46,11 +46,13 @@ import dayjs from "dayjs";
 import type { RangePickerProps } from "antd/es/date-picker";
 import { parseISO, format } from "date-fns";
 import esLocale from "date-fns/locale/es";
+import { useSessionGuard } from "@/hooks/useSessionGuard";
 
 const { Text, Paragraph } = Typography;
 const { RangePicker } = DatePicker;
 
 export default function ToldoPage() {
+  useSessionGuard(); // Monitor session expiry
   const router = useRouter();
 
   const [openDrawer, setOpenDrawer] = React.useState(false);

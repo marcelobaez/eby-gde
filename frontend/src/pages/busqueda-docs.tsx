@@ -37,6 +37,7 @@ import { useMutation } from "@tanstack/react-query";
 import { message } from "antd";
 import { logSearch, createSearchLogData } from "@/lib/searchLogger";
 import { useSession } from "next-auth/react";
+import { useSessionGuard } from "@/hooks/useSessionGuard";
 import { HighlightedText } from "@/components/highlight-text";
 
 const { Text, Paragraph } = Typography;
@@ -92,6 +93,7 @@ function generateYearsToNow() {
 }
 
 export default function SearchPage() {
+  useSessionGuard(); // Monitor session expiry
   const queryClient = useQueryClient();
   const router = useRouter();
   const { data: session } = useSession();
