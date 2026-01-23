@@ -25,3 +25,30 @@ jobs:
       
       - name: Deploy with rollback capability
         run: bash scripts/deploy.sh
+      
+      - name: Deployment Success Summary
+        if: success()
+        run: |
+          echo "## ✅ Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All services are healthy and running." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**View logs:** \`tail -f /var/log/eby-gde/deployment-*.log\`" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Deployment Failure Summary
+        if: failure()
+        run: |
+          echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The deployment encountered errors and may have been rolled back." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Check logs:** \`tail -f /var/log/eby-gde/deployment-*.log\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Troubleshooting:** See docs/DEPLOYMENT.md" >> $GITHUB_STEP_SUMMARY
