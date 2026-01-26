@@ -92,3 +92,7 @@ Use the provided `docker-compose.yml` with:
 - Environment variables in root `.env` file
 - SSL certificates in `/certs/` directory for HTTPS
 - Host entries for `expedientes.eby.org.ar` and `gdeapi.eby.org.ar`
+
+### MCP para documentacion
+Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+

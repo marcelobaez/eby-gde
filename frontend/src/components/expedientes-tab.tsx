@@ -35,7 +35,7 @@ import {
   useQueryStates,
 } from "nuqs";
 import { message } from "antd";
-import { formatDateForAPI } from "@/utils";
+import { formatDateForAPI, sanitizeCSVField } from "@/utils";
 import { getDefaultDateRange, rangePresets } from "@/utils/date-range";
 import dayjs from "dayjs";
 import type { RangePickerProps } from "antd/es/date-picker";
@@ -127,19 +127,21 @@ export function ExpedientesTab() {
       });
 
       const transformedData = response.data.map((item) => ({
-        Código: `EX-${item.anio}-${item.numero}--GDEEBY-${item.codigo_reparticion_usuario}`,
-        Descripción: item.descripcion || "",
-        Estado: item.estado || "",
-        "Tipo Documento": item.tipo_documento || "",
-        Trámite: item.trata_nombre || "",
+        Código: sanitizeCSVField(
+          `EX-${item.anio}-${item.numero}--GDEEBY-${item.codigo_reparticion_usuario}`
+        ),
+        Descripción: sanitizeCSVField(item.descripcion),
+        Estado: sanitizeCSVField(item.estado),
+        "Tipo Documento": sanitizeCSVField(item.tipo_documento),
+        Trámite: sanitizeCSVField(item.trata_nombre),
         "Fecha Creación": item.fecha_creacion
           ? format(parseISO(item.fecha_creacion), "dd/MM/yyyy HH:mm", {
               locale: esLocale,
             })
           : "",
-        "Usuario Creador": item.usuario_creador || "",
-        "Usuario Creación": item.usuario_creacion || "",
-        Motivo: item.motivo || "",
+        "Usuario Creador": sanitizeCSVField(item.usuario_creador),
+        "Usuario Creación": sanitizeCSVField(item.usuario_creacion),
+        Motivo: sanitizeCSVField(item.motivo),
         Año: item.anio?.toString() || "",
       }));
 

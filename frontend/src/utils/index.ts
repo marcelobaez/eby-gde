@@ -378,3 +378,10 @@ export const getDefaultDateRange = (): [Dayjs, Dayjs] => {
   const startDate = dayjs().startOf("year");
   return [startDate, endDate];
 };
+
+// Sanitize CSV field values by removing newlines and carriage returns
+export function sanitizeCSVField(value: string | null | undefined): string {
+  if (!value) return "";
+  // Replace all newline characters (both \n and \r\n) with a space
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
