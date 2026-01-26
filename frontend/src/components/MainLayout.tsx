@@ -26,7 +26,6 @@ import { Image } from "antd";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React from "react";
-import { clearTokenCache } from "@/lib/axios";
 import {
   canAccessMesas,
   canEditAsociaciones,
@@ -123,7 +122,6 @@ export function MainLayout({
                   <a
                     href="#"
                     onClick={() => {
-                      clearTokenCache();
                       signOut();
                     }}
                   >

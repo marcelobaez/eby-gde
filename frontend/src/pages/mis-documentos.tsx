@@ -38,6 +38,7 @@ import {
   getDefaultDateRange,
   parseDocumentNumber,
 } from "@/utils";
+import { useSessionGuard } from "@/hooks/useSessionGuard";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -61,6 +62,8 @@ const rangePresets: TimeRangePickerProps["presets"] = [
 ];
 
 export default function MisDocumentosPage() {
+  useSessionGuard(); // Monitor session expiry
+  
   // Download mutation
   const downloadDocMutation = useMutation({
     mutationFn: async (docResult: SignedDocumentResult) => {
