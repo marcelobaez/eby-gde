@@ -137,11 +137,11 @@ export default async function handler(
         // Validate tipos parameter (comma-separated document types)
         let tiposFilter: string[] = [];
         if (tipos && typeof tipos === "string" && tipos.trim() !== "") {
-          // Sanitize: only allow alphanumeric, spaces, hyphens, underscores
+          // Sanitize: allow alphanumeric, spaces, hyphens, underscores, periods, parentheses, accented chars
           const tiposArray = tipos.split(",").map((t) => t.trim()).filter(Boolean);
-          const validPattern = /^[a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ]+$/;
+          const validPattern = /^[a-zA-Z0-9\s\-_\.\(\)áéíóúÁÉÍÓÚñÑ]+$/;
           for (const tipo of tiposArray) {
-            if (!validPattern.test(tipo) || tipo.length > 100) {
+            if (!validPattern.test(tipo) || tipo.length > 150) {
               return res.status(400).json({ error: "Invalid document type filter" });
             }
           }
