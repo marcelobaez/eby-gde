@@ -134,7 +134,7 @@ export default async function handler(
           FROM public.gedo_documento doc
           LEFT JOIN public.gedo_tipodocumento tip ON doc.tipo = tip.id
           LEFT JOIN DOCUMENTO EDOC ON doc.numero = EDOC.NUMERO_SADE
-          LEFT JOIN ee_expediente_documentos red ON EDOC.id = red.id_documento
+          LEFT JOIN ee_expediente_documentos_new red ON EDOC.id = red.id_documento
           LEFT JOIN EE_EXPEDIENTE_ELECTRONICO exp ON red.id = exp.id  
           WHERE doc.search_vector @@ websearch_to_tsquery('spanish', $1)
           ${yearFilter ? `AND doc.anio = $${++paramCount}` : ""}

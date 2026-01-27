@@ -8,6 +8,10 @@
         "CONTEXT7_API_KEY": "ctx7sk-e832a3f1-ae92-47e7-b9c4-c1f99e5645a2"
       },
       "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"]
     }
   }
 }

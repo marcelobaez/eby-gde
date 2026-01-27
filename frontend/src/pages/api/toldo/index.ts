@@ -245,7 +245,7 @@ export default async function handler(
           FROM public.gedo_documento doc
           LEFT JOIN public.gedo_tipodocumento tip ON doc.tipo = tip.id
           LEFT JOIN DOCUMENTO EDOC ON doc.numero = EDOC.NUMERO_SADE
-          LEFT JOIN ee_expediente_documentos red ON EDOC.id = red.id_documento
+          LEFT JOIN ee_expediente_documentos_new red ON EDOC.id = red.id_documento
           LEFT JOIN EE_EXPEDIENTE_ELECTRONICO exp ON red.id = exp.id
           ${whereClause}
           GROUP BY doc.id, doc.numero, doc.motivo, doc.usuariogenerador, doc.datos_usuario, doc.anio, doc.fechacreacion, tip.esconfidencial, tip.nombre
@@ -314,7 +314,7 @@ export default async function handler(
               FROM public.gedo_documento doc
               LEFT JOIN public.gedo_tipodocumento tip ON doc.tipo = tip.id
               LEFT JOIN DOCUMENTO EDOC ON doc.numero = EDOC.NUMERO_SADE
-              LEFT JOIN ee_expediente_documentos red ON EDOC.id = red.id_documento
+              LEFT JOIN ee_expediente_documentos_new red ON EDOC.id = red.id_documento
               LEFT JOIN EE_EXPEDIENTE_ELECTRONICO exp ON red.id = exp.id
               ${filteredStatsWhereClause}
               GROUP BY doc.id
@@ -331,7 +331,7 @@ export default async function handler(
               FROM public.gedo_documento doc
               LEFT JOIN public.gedo_tipodocumento tip ON doc.tipo = tip.id
               LEFT JOIN DOCUMENTO EDOC ON doc.numero = EDOC.NUMERO_SADE
-              LEFT JOIN ee_expediente_documentos red ON EDOC.id = red.id_documento
+              LEFT JOIN ee_expediente_documentos_new red ON EDOC.id = red.id_documento
               LEFT JOIN EE_EXPEDIENTE_ELECTRONICO exp ON red.id = exp.id
               ${filteredStatsWhereClause}
               AND tip.esconfidencial != '1'
