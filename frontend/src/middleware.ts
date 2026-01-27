@@ -38,7 +38,8 @@ export async function middleware(request: NextRequest) {
       );
     }
 
-    // Check if Azure token has expired
+    // Check if Strapi JWT has expired (configured for 8 hours in backend/config/plugins.js)
+    // Note: azureTokenExpires now represents the Strapi JWT expiration, not Azure AD token
     if (token.azureTokenExpires && Date.now() >= token.azureTokenExpires) {
       return NextResponse.json(
         { error: "Unauthorized - Session expired" },

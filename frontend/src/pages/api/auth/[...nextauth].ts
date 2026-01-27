@@ -43,7 +43,12 @@ export const authOptions: NextAuthOptions = {
           );
           token.jwt = data.jwt;
           token.id = data.user.id;
-          token.azureTokenExpires = account.expires_at * 1000;
+          
+          // Use Strapi JWT expiration (8 hours) instead of Azure token expiration (~1 hour)
+          // Strapi is configured to expire JWTs after 8 hours (see backend/config/plugins.js)
+          const strapiJwtExpiresIn = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+          token.azureTokenExpires = Date.now() + strapiJwtExpiresIn;
+          
           token.role = data.user.role.name.toLowerCase();
         } catch (error) {
           console.log("error res:", error);

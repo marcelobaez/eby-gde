@@ -2,12 +2,13 @@
  * Session Guard Hook
  * 
  * Monitors the user's session and automatically signs them out when the
- * Azure AD token expires. This is especially important for pages that
- * make direct API calls (not through the Strapi axios instance).
+ * Strapi JWT expires (configured for 8 hours in backend/config/plugins.js).
+ * This is especially important for pages that make direct API calls 
+ * (not through the Strapi axios instance).
  * 
  * Features:
  * - Checks session expiry every 30 seconds
- * - Silently redirects to login when token expires
+ * - Silently redirects to login when JWT expires
  * - Runs only on client-side
  * - Lightweight and non-intrusive
  * 
