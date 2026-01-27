@@ -9,6 +9,11 @@ declare module "next-auth" {
     jwt: string;
     id: string;
     role: string;
+    /**
+     * Strapi JWT expiration timestamp in milliseconds
+     * Note: Despite the name, this represents the Strapi JWT expiration (8 hours),
+     * not the Azure AD token expiration (~1 hour)
+     */
     azureTokenExpires: number;
   }
 
@@ -28,6 +33,11 @@ declare module "next-auth/jwt" {
     jwt: string;
     id: string;
     role: string;
+    /**
+     * Strapi JWT expiration timestamp in milliseconds
+     * Note: Despite the name, this represents the Strapi JWT expiration (8 hours),
+     * not the Azure AD token expiration (~1 hour)
+     */
     azureTokenExpires: number;
   }
 }
