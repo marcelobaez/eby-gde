@@ -3,18 +3,20 @@ import { DefaultJWT } from "next-auth/jwt";
 
 declare module "next-auth" {
   /**
-   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+   * Extends the default session object to include custom fields
    */
   interface Session extends DefaultSession {
+    /** Strapi JWT token */
     jwt: string;
+    /** User ID from Strapi */
     id: string;
-    role: string;
-    /**
+    /** 
      * Strapi JWT expiration timestamp in milliseconds
-     * Note: Despite the name, this represents the Strapi JWT expiration (8 hours),
-     * not the Azure AD token expiration (~1 hour)
+     * Decoded from the JWT's 'exp' claim (converted from seconds to ms)
      */
     azureTokenExpires: number;
+    /** User role from Strapi */
+    role: string;
   }
 
   interface Profile extends DefaultProfile {
@@ -29,15 +31,20 @@ declare module "next-auth" {
 }
 
 declare module "next-auth/jwt" {
+  /**
+   * Extends the default JWT token object to include custom fields
+   */
   interface JWT extends DefaultJWT {
-    jwt: string;
-    id: string;
-    role: string;
-    /**
+    /** Strapi JWT token */
+    jwt?: string;
+    /** User ID from Strapi */
+    id?: string;
+    /** 
      * Strapi JWT expiration timestamp in milliseconds
-     * Note: Despite the name, this represents the Strapi JWT expiration (8 hours),
-     * not the Azure AD token expiration (~1 hour)
+     * Decoded from the JWT's 'exp' claim (converted from seconds to ms)
      */
-    azureTokenExpires: number;
+    azureTokenExpires?: number;
+    /** User role from Strapi */
+    role?: string;
   }
 }

@@ -2,7 +2,7 @@
  * Session Guard Hook
  * 
  * Monitors the user's session and automatically signs them out when the
- * Strapi JWT expires (configured for 8 hours in backend/config/plugins.js).
+ * Strapi JWT expires. The expiration time is read from the JWT's 'exp' claim.
  * This is especially important for pages that make direct API calls 
  * (not through the Strapi axios instance).
  * 

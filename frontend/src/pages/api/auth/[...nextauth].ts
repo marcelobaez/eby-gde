@@ -3,6 +3,7 @@ import AzureADProvider from "next-auth/providers/azure-ad";
 import axios from "axios";
 import url from "url";
 import { NextApiRequest, NextApiResponse } from "next";
+import { decodeJwt } from "jose";
 
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
@@ -28,10 +29,10 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     session: async ({ session, token }) => {
-      session.jwt = token.jwt;
-      session.id = token.id;
-      session.azureTokenExpires = token.azureTokenExpires;
-      session.role = token.role;
+      session.jwt = token.jwt as string;
+      session.id = token.id as string;
+      session.azureTokenExpires = token.azureTokenExpires as number;
+      session.role = token.role as string;
 
       return session;
     },
@@ -44,10 +45,17 @@ export const authOptions: NextAuthOptions = {
           token.jwt = data.jwt;
           token.id = data.user.id;
           
-          // Use Strapi JWT expiration (8 hours) instead of Azure token expiration (~1 hour)
-          // Strapi is configured to expire JWTs after 8 hours (see backend/config/plugins.js)
-          const strapiJwtExpiresIn = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
-          token.azureTokenExpires = Date.now() + strapiJwtExpiresIn;
+          // Decode the Strapi JWT to extract the expiration claim
+          // The JWT contains an 'exp' claim (expiration time in seconds since epoch)
+          const decodedJwt = decodeJwt(data.jwt);
+          if (decodedJwt.exp) {
+            // Convert exp (seconds) to milliseconds for consistency with Date.now()
+            token.azureTokenExpires = decodedJwt.exp * 1000;
+          } else {
+            // Fallback: if exp claim is missing, log warning and use default 8 hours
+            console.warn("JWT missing 'exp' claim, using default 8h expiration");
+            token.azureTokenExpires = Date.now() + (8 * 60 * 60 * 1000);
+          }
           
           token.role = data.user.role.name.toLowerCase();
         } catch (error) {
