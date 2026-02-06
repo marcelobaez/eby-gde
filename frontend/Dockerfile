@@ -5,6 +5,10 @@ ENV TZ=America/Argentina/Buenos_Aires
 
 WORKDIR /app
 
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 # Omit --production flag for TypeScript devDependencies
@@ -29,7 +33,10 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Next.js collects completely anonymous telemetry data about general usage. Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line to disable telemetry at build time
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Set proper hostname for Docker networking
+ENV HOSTNAME="0.0.0.0"
 
 # Note: Don't expose ports here, Compose will handle that for us
 
@@ -40,6 +47,10 @@ RUN \
   elif [ -f pnpm-lock.yaml ]; then pnpm build; \
   else yarn build; \
   fi
+
+# Change ownership of app directory and switch to non-root user
+RUN chown -R nextjs:nodejs /app
+USER nextjs
 
 # Start Next.js based on the preferred package manager
 CMD \

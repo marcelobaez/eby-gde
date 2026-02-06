@@ -1,10 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // IMPORTANT: Do NOT use output: 'standalone' with oracledb Thick mode
+  // The oracledb package requires Oracle Instant Client libraries that must be
+  // available at the system level and cannot be traced by Next.js's file tracer.
+
+  // Exclude oracledb from bundling (it has native bindings)
+  serverExternalPackages: ['oracledb'],
+
   webpack: (config) => {
     config.resolve.fallback = { fs: false };
     return config;
   },
+
   transpilePackages: [
     "antd",
     "@ant-design/plots",
@@ -18,6 +27,21 @@ const nextConfig = {
     "rc-table",
     "rc-input",
   ],
+
+  // Enable streaming by disabling nginx buffering
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Accel-Buffering',
+            value: 'no',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
