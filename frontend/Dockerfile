@@ -5,9 +5,9 @@ ENV TZ=America/Argentina/Buenos_Aires
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+# Create non-root user for security (using Debian/Ubuntu commands)
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs --create-home nextjs
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
