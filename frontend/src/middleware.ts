@@ -24,6 +24,12 @@ export async function middleware(request: NextRequest) {
 
   // Check if this is an API route that needs protection
   if (pathname.startsWith("/api/")) {
+    // Allow internal service-to-service calls authenticated via API key
+    const apiKey = request.headers.get("x-api-key");
+    if (apiKey && apiKey === process.env.CRON_API_KEY) {
+      return NextResponse.next();
+    }
+
     // Get the JWT token from the request
     const token = await getToken({
       req: request,

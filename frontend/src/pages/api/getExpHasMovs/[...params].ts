@@ -7,10 +7,13 @@ export default async function hasMovsHandler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Validate session
-  const session = await getServerSession(req, res, authOptions);
-  if (!session) {
-    return res.status(401).json({ error: "Unauthorized" });
+  // Validate session or API key
+  const apiKey = req.headers["x-api-key"];
+  if (apiKey !== process.env.CRON_API_KEY) {
+    const session = await getServerSession(req, res, authOptions);
+    if (!session) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
   }
 
   let connection;

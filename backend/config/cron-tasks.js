@@ -78,6 +78,7 @@ module.exports = {
 
         // Obtener informacion de todos los expedientes desde oracle GDE (a traves de nextjs API route /api/gdeexps)
         const { data } = await axios.get(GDE_EXPS_URL, {
+          headers: { "x-api-key": process.env.CRON_API_KEY },
           params: {
             expIds,
           },
@@ -218,7 +219,8 @@ module.exports = {
         for (const expediente of expedientes) {
           try {
             const { data } = await axios.get(
-              `${GET_EXP_HAS_MOVS_URL}/${expediente.id_expediente}/${expediente.ult_mov_id}`
+              `${GET_EXP_HAS_MOVS_URL}/${expediente.id_expediente}/${expediente.ult_mov_id}`,
+              { headers: { "x-api-key": process.env.CRON_API_KEY } }
             );
 
             if (data.hasMovs && data.count > 0) {
