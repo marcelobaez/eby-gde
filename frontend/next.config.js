@@ -2,9 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // IMPORTANT: Do NOT use output: 'standalone' with oracledb Thick mode
-  // The oracledb package requires Oracle Instant Client libraries that must be
-  // available at the system level and cannot be traced by Next.js's file tracer.
+  // Standalone output for optimized Docker builds
+  output: 'standalone',
 
   // Exclude oracledb from bundling (it has native bindings)
   serverExternalPackages: ['oracledb'],
