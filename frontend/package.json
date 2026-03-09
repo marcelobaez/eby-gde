@@ -1,6 +1,7 @@
 {
   "name": "eby-gde-frontend",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "next",
     "build": "next build",

@@ -3,13 +3,8 @@ FROM marcelobaez/oracle8-ic-node24.13 AS base
 # Install dependencies
 FROM base AS deps
 WORKDIR /app
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && yarn install; \
-  fi
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 # Build the application
 FROM base AS builder
@@ -26,7 +21,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
-RUN npm run build
+RUN corepack enable pnpm && pnpm run build
 
 # Production image
 FROM base AS runner

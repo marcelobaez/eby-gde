@@ -11,7 +11,7 @@ services:
       - ./backend/config:/srv/backend/config
       - ./backend/src:/srv/backend/src
       - ./backend/package.json:/srv/backend/package.json
-      - ./backend/package-lock.json:/opt/package-lock.json
+      - ./backend/pnpm-lock.yaml:/opt/pnpm-lock.yaml
 
       - ./backend/.env:/srv/backend/.env
       - ./backend/public/uploads:/srv/backend/public/uploads

@@ -16,18 +16,18 @@ This is a document tracking system for the Argentine government called "eby-gde"
 ### Backend (Strapi)
 ```bash
 cd backend
-npm run develop    # Development server with auto-reload
-npm run build      # Build for production
-npm run start      # Start production server
+pnpm run develop    # Development server with auto-reload
+pnpm run build      # Build for production
+pnpm run start      # Start production server
 ```
 
 ### Frontend (Next.js)
 ```bash
 cd frontend
-npm run dev        # Development server
-npm run build      # Build for production
-npm run start      # Start production server
-npm run lint       # Run ESLint
+pnpm run dev        # Development server
+pnpm run build      # Build for production
+pnpm run start      # Start production server
+pnpm run lint       # Run ESLint
 ```
 
 ### Docker Deployment
