@@ -18,6 +18,7 @@ RUN pnpm run build
 FROM node:18-alpine
 # Installing libvips-dev for sharp Compatability
 RUN apk add --no-cache vips-dev
+RUN corepack enable
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 WORKDIR /opt/

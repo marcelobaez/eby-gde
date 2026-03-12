@@ -38,6 +38,9 @@ importers:
       export-to-csv:
         specifier: ^1.2.1
         version: 1.4.0
+      jose:
+        specifier: ^6.2.1
+        version: 6.2.1
       next:
         specifier: ^15.5.9
         version: 15.5.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1517,6 +1520,9 @@ packages:
 
   jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
+
+  jose@6.2.1:
+    resolution: {integrity: sha512-jUaKr1yrbfaImV7R2TN/b3IcZzsw38/chqMpo2XJ7i2F8AfM/lA4G1goC3JVEwg0H7UldTmSt3P68nt31W7/mw==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -4160,6 +4166,8 @@ snapshots:
       supports-color: 8.1.1
 
   jose@4.15.9: {}
+
+  jose@6.2.1: {}
 
   js-tokens@4.0.0: {}
 

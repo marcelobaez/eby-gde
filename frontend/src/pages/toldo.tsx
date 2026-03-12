@@ -31,7 +31,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { ToldoDocResponse, ToldoDocResult } from "./api/toldo";
 import { UsersByLocationResponse } from "./api/toldo/users";
 import { useRouter } from "next/router";
-import { DownloadOutlined, FileExcelOutlined, CheckCircleFilled } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  FileExcelOutlined,
+  CheckCircleFilled,
+} from "@ant-design/icons";
 import {
   parseAsString,
   parseAsInteger,
@@ -62,23 +66,23 @@ export default function ToldoPage() {
 
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<ToldoDocResult | null>(
-    null
+    null,
   );
 
   // URL state
   const [pageSize, setPageSize] = useQueryState(
     "pageSize",
-    parseAsInteger.withDefault(10)
+    parseAsInteger.withDefault(10),
   );
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
   const defaultRange = getDefaultDateRange();
   const [{ startDate, endDate }, setDateRange] = useQueryStates({
     startDate: parseAsString.withDefault(
-      formatDateForAPI(defaultRange[0].toDate())
+      formatDateForAPI(defaultRange[0].toDate()),
     ),
     endDate: parseAsString.withDefault(
-      formatDateForAPI(defaultRange[1].toDate())
+      formatDateForAPI(defaultRange[1].toDate()),
     ),
   });
 
@@ -146,7 +150,9 @@ export default function ToldoPage() {
   const toggleDocTypeFilter = (tipo: string) => {
     if (allTypesSelected && dataOracle?.stats?.docTypeStats) {
       // First click when all selected: deselect only this type (select all others)
-      const allTypes = dataOracle.stats.docTypeStats.map((s) => s.tipo_documento);
+      const allTypes = dataOracle.stats.docTypeStats.map(
+        (s) => s.tipo_documento,
+      );
       setPendingTypes(allTypes.filter((t) => t !== tipo));
     } else if (pendingTypes.includes(tipo)) {
       // Deselect this type
@@ -176,7 +182,7 @@ export default function ToldoPage() {
   const downloadDocMutation = useMutation({
     mutationFn: async (docResult: ToldoDocResult) => {
       const { type, year, number, system, location } = parseDocumentNumber(
-        docResult.numero
+        docResult.numero,
       );
 
       const resDoc = await axios.get("/api/documents/check", {
@@ -191,7 +197,7 @@ export default function ToldoPage() {
 
       // Fetch the file as a Blob
       const fileResponse = await fetch(
-        `/api/documents?path=${encodeURIComponent(resDoc.data.url)}`
+        `/api/documents?path=${encodeURIComponent(resDoc.data.url)}`,
       );
       if (!fileResponse.ok) throw new Error("No se pudo descargar el archivo");
       const blob = await fileResponse.blob();
@@ -207,7 +213,7 @@ export default function ToldoPage() {
       if (axios.isAxiosError(error) && error.response) {
         if (error.response.status === 404) {
           message.warning(
-            "El documento aun no se encuentra disponible para descargar"
+            "El documento aun no se encuentra disponible para descargar",
           );
         } else {
           message.error("Ocurrió un error al intentar descargar el archivo");
@@ -234,7 +240,7 @@ export default function ToldoPage() {
       }
 
       const { data } = await axios.get<ToldoDocResponse>(
-        `/api/toldo/oracle?${params.toString()}`
+        `/api/toldo/oracle?${params.toString()}`,
       );
       return data;
     },
@@ -267,73 +273,21 @@ export default function ToldoPage() {
 
       const csv = generateCsv(csvConfig)(transformedData);
       download(csvConfig)(csv);
-      message.success(`Se exportaron ${response.data.length} documentos desde Oracle`);
+      message.success(
+        `Se exportaron ${response.data.length} documentos desde Oracle`,
+      );
     },
     onError: () => {
       message.error("Error al exportar los datos desde Oracle");
     },
   });
 
-  // Export all data mutation from PostgreSQL
-  const exportMutation = useMutation({
-    mutationFn: async () => {
-      const params = new URLSearchParams({
-        page: "1",
-        pageSize: "5000",
-      });
-
-      if (startDate) params.append("startDate", startDate);
-      if (endDate) params.append("endDate", endDate);
-      if (activeTypes.length > 0) {
-        params.append("tipos", activeTypes.join(","));
-      }
-      if (usersToFilter.length > 0) {
-        params.append("usuarios", usersToFilter.join(","));
-      }
-
-      const { data } = await axios.get<ToldoDocResponse>(
-        `/api/toldo?${params.toString()}`
-      );
-      return data;
-    },
-    onSuccess: (response) => {
-      if (!response.data || response.data.length === 0) {
-        message.warning("No hay datos para exportar");
-        return;
-      }
-
-      const csvConfig = mkConfig({
-        useKeysAsHeaders: true,
-        filename: `toldo_documentos_${startDate}_${endDate}`,
-      });
-
-      const transformedData = response.data.map((item) => ({
-        Número: sanitizeCSVField(item.numero),
-        "Tipo Documento": sanitizeCSVField(item.tipo_documento),
-        Motivo: sanitizeCSVField(item.motivo),
-        "Fecha Creación": item.fechacreacion
-          ? format(parseISO(item.fechacreacion), "dd/MM/yyyy HH:mm", {
-              locale: esLocale,
-            })
-          : "",
-        Año: item.anio?.toString() || "",
-        "Usuario Generador": sanitizeCSVField(item.usuariogenerador),
-        "Datos Usuario": sanitizeCSVField(item.datos_usuario),
-        "Total Expedientes": item.total_expedientes?.toString() || "0",
-        "Expedientes Asociados": sanitizeCSVField(item.expedientes_asociados),
-      }));
-
-      const csv = generateCsv(csvConfig)(transformedData);
-      download(csvConfig)(csv);
-      message.success(`Se exportaron ${response.data.length} documentos`);
-    },
-    onError: () => {
-      message.error("Error al exportar los datos");
-    },
-  });
-
   // Fetch data from Oracle
-  const { data: dataOracle, status: statusOracle, isFetching: isFetchingOracle } = useQuery({
+  const {
+    data: dataOracle,
+    status: statusOracle,
+    isFetching: isFetchingOracle,
+  } = useQuery({
     queryKey: [
       "toldo-docs-oracle",
       page,
@@ -359,42 +313,7 @@ export default function ToldoPage() {
       }
 
       const { data } = await axios.get<ToldoDocResponse>(
-        `/api/toldo/oracle?${params.toString()}`
-      );
-      return data;
-    },
-    enabled: Boolean(startDate && endDate),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-
-  // Fetch data from PostgreSQL
-  const { data, status, isFetching } = useQuery({
-    queryKey: [
-      "toldo-docs",
-      page,
-      pageSize,
-      startDate,
-      endDate,
-      activeTypes,
-      usersToFilter,
-    ],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString(),
-      });
-
-      if (startDate) params.append("startDate", startDate);
-      if (endDate) params.append("endDate", endDate);
-      if (activeTypes.length > 0) {
-        params.append("tipos", activeTypes.join(","));
-      }
-      if (usersToFilter.length > 0) {
-        params.append("usuarios", usersToFilter.join(","));
-      }
-
-      const { data } = await axios.get<ToldoDocResponse>(
-        `/api/toldo?${params.toString()}`
+        `/api/toldo/oracle?${params.toString()}`,
       );
       return data;
     },
@@ -494,7 +413,9 @@ export default function ToldoPage() {
                           icon={<FileExcelOutlined />}
                           onClick={() => exportOracleMutation.mutate()}
                           loading={exportOracleMutation.isPending}
-                          disabled={isFetchingOracle || !dataOracle?.data?.length}
+                          disabled={
+                            isFetchingOracle || !dataOracle?.data?.length
+                          }
                         >
                           Exportar todo
                         </Button>
@@ -562,75 +483,80 @@ export default function ToldoPage() {
                       dataOracle.stats.docTypeStats.length > 0 && (
                         <>
                           <Row gutter={[4, 4]}>
-                            {dataOracle.stats.docTypeStats.map((stat, index) => {
-                              const colors = [
-                                "#1890ff",
-                                "#13c2c2",
-                                "#2f54eb",
-                                "#faad14",
-                                "#52c41a",
-                                "#fa8c16",
-                                "#eb2f96",
-                                "#722ed1",
-                              ];
-                              const color = colors[index % colors.length];
-                              const selected = isTypeSelected(
-                                stat.tipo_documento
-                              );
-                              return (
-                                <Col span={4} key={stat.tipo_documento || index}>
-                                  <Card
-                                    size="small"
-                                    hoverable
-                                    onClick={() =>
-                                      toggleDocTypeFilter(stat.tipo_documento)
-                                    }
-                                    style={{
-                                      borderLeft: `4px solid ${
-                                        selected ? color : "#d9d9d9"
-                                      }`,
-                                      opacity: selected ? 1 : 0.6,
-                                      cursor: "pointer",
-                                      position: "relative",
-                                    }}
-                                    styles={{ body: { padding: "8px 10px" } }}
+                            {dataOracle.stats.docTypeStats.map(
+                              (stat, index) => {
+                                const colors = [
+                                  "#1890ff",
+                                  "#13c2c2",
+                                  "#2f54eb",
+                                  "#faad14",
+                                  "#52c41a",
+                                  "#fa8c16",
+                                  "#eb2f96",
+                                  "#722ed1",
+                                ];
+                                const color = colors[index % colors.length];
+                                const selected = isTypeSelected(
+                                  stat.tipo_documento,
+                                );
+                                return (
+                                  <Col
+                                    span={4}
+                                    key={stat.tipo_documento || index}
                                   >
-                                    {selected && (
-                                      <CheckCircleFilled
-                                        style={{
-                                          position: "absolute",
-                                          top: 8,
-                                          right: 8,
-                                          fontSize: 16,
-                                          color: color,
+                                    <Card
+                                      size="small"
+                                      hoverable
+                                      onClick={() =>
+                                        toggleDocTypeFilter(stat.tipo_documento)
+                                      }
+                                      style={{
+                                        borderLeft: `4px solid ${
+                                          selected ? color : "#d9d9d9"
+                                        }`,
+                                        opacity: selected ? 1 : 0.6,
+                                        cursor: "pointer",
+                                        position: "relative",
+                                      }}
+                                      styles={{ body: { padding: "8px 10px" } }}
+                                    >
+                                      {selected && (
+                                        <CheckCircleFilled
+                                          style={{
+                                            position: "absolute",
+                                            top: 8,
+                                            right: 8,
+                                            fontSize: 16,
+                                            color: color,
+                                          }}
+                                        />
+                                      )}
+                                      <Statistic
+                                        title={
+                                          <Text
+                                            style={{
+                                              fontSize: "11px",
+                                              color: selected
+                                                ? undefined
+                                                : "#8c8c8c",
+                                            }}
+                                          >
+                                            {stat.tipo_documento}
+                                          </Text>
+                                        }
+                                        value={stat.count}
+                                        valueStyle={{
+                                          fontSize: "16px",
+                                          color: selected ? color : "#8c8c8c",
                                         }}
                                       />
-                                    )}
-                                    <Statistic
-                                      title={
-                                        <Text
-                                          style={{
-                                            fontSize: "11px",
-                                            color: selected
-                                              ? undefined
-                                              : "#8c8c8c",
-                                          }}
-                                        >
-                                          {stat.tipo_documento}
-                                        </Text>
-                                      }
-                                      value={stat.count}
-                                      valueStyle={{
-                                        fontSize: "16px",
-                                        color: selected ? color : "#8c8c8c",
-                                      }}
-                                    />
-                                  </Card>
-                                </Col>
-                              );
-                            })}
+                                    </Card>
+                                  </Col>
+                                );
+                              },
+                            )}
                           </Row>
-                          
+
                           {/* Apply Filters Button */}
                           <Flex justify="center" gap="small">
                             <Button
@@ -642,9 +568,7 @@ export default function ToldoPage() {
                               Aplicar filtros
                             </Button>
                             {filtersChanged && (
-                              <Button
-                                onClick={resetPendingFilters}
-                              >
+                              <Button onClick={resetPendingFilters}>
                                 Cancelar
                               </Button>
                             )}
@@ -744,7 +668,7 @@ export default function ToldoPage() {
                                           "PPP",
                                           {
                                             locale: esLocale,
-                                          }
+                                          },
                                         )}
                                       </Text>
                                       {item.total_expedientes > 0 && (
@@ -838,7 +762,7 @@ export default function ToldoPage() {
                   children: format(
                     parseISO(selectedItem.fechacreacion),
                     "PPP",
-                    { locale: esLocale }
+                    { locale: esLocale },
                   ),
                   span: 3,
                 },
@@ -905,7 +829,7 @@ export default function ToldoPage() {
                                       }}
                                       onClick={() =>
                                         router.push(
-                                          `/movimientos/${expedienteId}`
+                                          `/movimientos/${expedienteId}`,
                                         )
                                       }
                                     >
@@ -939,7 +863,7 @@ export default function ToldoPage() {
 }
 
 export async function getServerSideProps(
-  context: GetServerSidePropsContext
+  context: GetServerSidePropsContext,
 ): Promise<GetServerSidePropsResult<{}>> {
   const session = await getServerSession(context.req, context.res, authOptions);
 

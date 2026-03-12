@@ -7,6 +7,7 @@ import {
   validatePageNumber,
   validatePageSize,
 } from "@/utils/queryValidation";
+import { validateDateParam } from "@/utils/api-validation";
 
 export type ToldoDocResult = {
   numero: string;
@@ -61,30 +62,6 @@ const pool = new Pool({
   password: process.env.PG_DATABASE_PASSWORD,
   port: parseInt(process.env.PG_DATABASE_PORT),
 });
-
-// Validate date format (YYYY-MM-DD or ISO datetime)
-function validateDateParam(value: unknown): { isValid: boolean; value: string | null; error?: string } {
-  if (value === undefined || value === null || value === "") {
-    return { isValid: true, value: null };
-  }
-
-  if (typeof value !== "string") {
-    return { isValid: false, value: null, error: "Date must be a string" };
-  }
-
-  // Accept YYYY-MM-DD format or ISO datetime
-  const dateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/;
-  if (!dateRegex.test(value)) {
-    return { isValid: false, value: null, error: "Invalid date format. Expected YYYY-MM-DD" };
-  }
-
-  const date = new Date(value);
-  if (isNaN(date.getTime())) {
-    return { isValid: false, value: null, error: "Invalid date value" };
-  }
-
-  return { isValid: true, value: value };
-}
 
 export default async function handler(
   req: NextApiRequest,
