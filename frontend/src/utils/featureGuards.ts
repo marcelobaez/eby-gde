@@ -59,6 +59,6 @@ export const canAccessMesas = (role: Role) =>
   isAdmin(role) || isFullViewRestrictDadm(role) || isMesaOperator(role);
 
 export const canAccessOrdenesCompra = (role: Role) =>
-  isAdmin(role) || isFullViewRestrictDadm(role);
+  isAdmin(role);
 
 // Add more guards as needed for other features
