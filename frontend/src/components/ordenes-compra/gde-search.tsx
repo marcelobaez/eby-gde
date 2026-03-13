@@ -36,11 +36,6 @@ import { downloadBlob, parseDocumentNumber } from "@/utils";
 import { renderMotivoWithOCLink } from "@/utils/oc-extraction";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 
-type Reparticion = {
-  CODIGO_REPARTICION: string;
-  NOMBRE_REPARTICION: string;
-};
-
 type OrdenCompraResult = {
   numero: string;
   motivo: string;
@@ -86,28 +81,6 @@ export function GDESearch() {
     parseAsInteger.withDefault(10),
   );
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-
-  // const { data: reparticionesData } = useQuery({
-  //   queryKey: ["reparticiones"],
-  //   queryFn: async () => {
-  //     const { data } = await axios.get<Reparticion[]>(
-  //       "/api/ordenes-compra/reparticiones",
-  //     );
-  //     return data;
-  //   },
-  //   staleTime: Infinity,
-  // });
-
-  // const selectedReparticiones = reparticiones
-  //   ? reparticiones.split(",").filter(Boolean)
-  //   : [];
-
-  // const handleReparticionChange = (values: string[]) => {
-  //   setParams({ reparticiones: values.join(","), searchQuery: "" });
-  //   setSearchInput("");
-  //   setDebouncedSearchQuery("");
-  //   setPage(1);
-  // };
 
   const handleDateRangeChange: RangePickerProps["onChange"] = (dates) => {
     if (dates && dates[0] && dates[1]) {
@@ -195,9 +168,6 @@ export function GDESearch() {
         params.append("searchQuery", debouncedSearchQuery);
       if (resolvedStartDate) params.append("startDate", resolvedStartDate);
       if (resolvedEndDate) params.append("endDate", resolvedEndDate);
-      // if (selectedReparticiones.length > 0) {
-      //   params.append("reparticiones", selectedReparticiones.join(","));
-      // }
 
       const { data } = await axios.get<OrdenCompraDocResponse>(
         `/api/ordenes-compra?${params.toString()}`,
@@ -327,21 +297,6 @@ export function GDESearch() {
           allowClear={false}
           showTime={false}
         />
-        {/* <Select
-          mode="multiple"
-          style={{ minWidth: 180 }}
-          placeholder="Reparticiones"
-          value={selectedReparticiones}
-          onChange={handleReparticionChange}
-          options={reparticionesData
-            ?.sort((a: Reparticion, b: Reparticion) =>
-              a.CODIGO_REPARTICION.localeCompare(b.CODIGO_REPARTICION),
-            )
-            .map((rep: Reparticion) => ({
-              label: rep.CODIGO_REPARTICION,
-              value: rep.CODIGO_REPARTICION,
-            }))}
-        /> */}
         <Button variant="outlined" onClick={handleResetRange}>
           Restablecer
         </Button>

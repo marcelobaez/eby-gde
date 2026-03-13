@@ -5,7 +5,8 @@ import { getServerSession } from "next-auth";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { MainLayout } from "@/components/MainLayout";
-import { Card, Space, Typography } from "antd";
+import { Card, Space, Typography, Button } from "antd";
+import { LeftOutlined } from "@ant-design/icons";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
 import { GDESearch } from "@/components/ordenes-compra/gde-search";
 import { MaximoSearch } from "@/components/ordenes-compra/maximo-search";
@@ -30,6 +31,17 @@ export default function OrdenesCompra() {
   useSessionGuard();
   const router = useRouter();
   const [activeTabKey, setActiveTabKey] = useState<string>("gde");
+  const [canGoBack, setCanGoBack] = useState(false);
+
+  useEffect(() => {
+    if (router.isReady) {
+      const referrer = document.referrer;
+      const currentOrigin = window.location.origin;
+      const cameFromApp = referrer && referrer.startsWith(currentOrigin);
+      const hasHistory = window.history.length > 1;
+      setCanGoBack(!!cameFromApp || hasHistory);
+    }
+  }, [router.isReady]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -39,37 +51,33 @@ export default function OrdenesCompra() {
       } else {
         setActiveTabKey("gde");
       }
-
-      // oc param only makes sense on maximo tab — strip it otherwise
-      if (tab !== "maximo" && router.query.oc) {
-        const { oc, tab: _tab, ...rest } = router.query;
-        router.replace({ query: rest }, undefined, { shallow: true });
-      }
     }
-  }, [router.isReady, router.query.tab, router.query.oc]);
+  }, [router.isReady, router.query.tab]);
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
-    if (key === "maximo") {
-      const currentOc = router.query.oc;
-      router.push(
-        { query: currentOc ? { tab: key, oc: currentOc } : { tab: key } },
-        undefined,
-        { shallow: true },
-      );
-    } else {
-      // GDE tab: strip oc and tab params, keep date/search params
-      const { oc, tab, ...rest } = router.query;
-      router.push({ query: rest }, undefined, { shallow: true });
-    }
+    router.push({ query: { ...router.query, tab: key } }, undefined, {
+      shallow: true,
+    });
   };
 
   return (
     <MainLayout>
       <Space direction="vertical" size="large" style={{ display: "flex" }}>
-        <Typography.Title level={4} style={{ marginBottom: 0 }}>
-          Búsqueda de Órdenes de Compra
-        </Typography.Title>
+        <Space align="center">
+          {canGoBack && (
+            <Button
+              type="text"
+              icon={<LeftOutlined />}
+              onClick={() => router.back()}
+            >
+              Volver atrás
+            </Button>
+          )}
+          <Typography.Title level={4} style={{ marginBottom: 0 }}>
+            Búsqueda de Órdenes de Compra
+          </Typography.Title>
+        </Space>
         <Card
           style={{ width: "100%", maxHeight: "100%" }}
           tabList={tabList}
