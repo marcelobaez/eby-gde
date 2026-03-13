@@ -60,6 +60,9 @@ const Context = React.createContext({ name: "ListsContainer" });
 export function ListsContainer() {
   const router = useRouter();
 
+  const [rows, setRows] = useState(1);
+  const [expanded, setExpanded] = useState(false);
+
   const [api, contextHolder] = notification.useNotification();
 
   const listId = (router.query.id as string) || "";
@@ -117,7 +120,7 @@ export function ListsContainer() {
 
     setIsSearching(true);
     const { data: expedientes } = await axios.get(
-      `/api/gdeexps/${year}/${number}`
+      `/api/gdeexps/${year}/${number}`,
     );
 
     setIsSearching(false);
@@ -136,7 +139,7 @@ export function ListsContainer() {
   const handleTableChange: TableProps<ExtendedExp>["onChange"] = (
     pagination,
     _,
-    sorter
+    sorter,
   ) => {
     setTableParams({
       pagination,
@@ -177,12 +180,14 @@ export function ListsContainer() {
       title: "Expediente",
       dataIndex: "EXPEDIENTE",
       key: "EXPEDIENTE",
-      width: 220,
+      width: 240,
       defaultSortOrder: "descend",
       sorter: (a, b) => a.EXPEDIENTE.localeCompare(b.EXPEDIENTE),
       sortDirections: ["descend", "ascend"],
       render: (text, record) => (
-        <Link href={`/movimientos/${record.ID}`}>{text}</Link>
+        <Text copyable={{ text: record.EXPEDIENTE }}>
+          <Link href={`/movimientos/${record.ID}`}>{text}</Link>
+        </Text>
       ),
     },
     {
@@ -190,10 +195,22 @@ export function ListsContainer() {
       dataIndex: "DESCRIPCION",
       key: "DESCRIPCION",
       width: 320,
-      ellipsis: true,
       // defaultSortOrder: "descend",
       sorter: (a, b) => a.DESCRIPCION.localeCompare(b.DESCRIPCION),
       sortDirections: ["descend", "ascend"],
+      render: (text) => (
+        <Typography.Paragraph
+          ellipsis={{
+            rows,
+            expandable: "collapsible",
+            expanded,
+            onExpand: (_, info) => setExpanded(info.expanded),
+            symbol: expanded ? "Ver menos" : "Ver más",
+          }}
+        >
+          {text}
+        </Typography.Paragraph>
+      ),
     },
     {
       title: "Tiempo de vida",

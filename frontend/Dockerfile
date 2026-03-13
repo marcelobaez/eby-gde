@@ -1,50 +1,57 @@
-FROM marcelobaez/oracle8-ic-node20
+FROM marcelobaez/oracle8-ic-node24.13 AS base
 
-# Set timezone for Node.js process
-ENV TZ=America/Argentina/Buenos_Aires
-
+# Install dependencies
+FROM base AS deps
 WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-# Omit --production flag for TypeScript devDependencies
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i; \
-  # Allow install without lockfile, so example works even without Node.js installed locally
-  else echo "Warning: Lockfile not found. It is recommended to commit lockfiles to version control." && yarn install; \
-  fi
-
+# Build the application
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY src ./src
 COPY public ./public
 COPY next.config.js .
 COPY tsconfig.json .
 COPY typings ./typings
+COPY package.json .
 
-# Environment variables must be present at build time
-# https://github.com/vercel/next.js/discussions/14030
+ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
-# Next.js collects completely anonymous telemetry data about general usage. Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line to disable telemetry at build time
-ENV NEXT_TELEMETRY_DISABLED 1
+RUN corepack enable pnpm && pnpm run build
 
-# Note: Don't expose ports here, Compose will handle that for us
+# Production image
+FROM base AS runner
+WORKDIR /app
 
-# Build Next.js based on the preferred package manager
-RUN \
-  if [ -f yarn.lock ]; then yarn build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then pnpm build; \
-  else yarn build; \
-  fi
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV TZ=America/Argentina/Buenos_Aires
 
-# Start Next.js based on the preferred package manager
-CMD \
-  if [ -f yarn.lock ]; then yarn start; \
-  elif [ -f package-lock.json ]; then npm run start; \
-  elif [ -f pnpm-lock.yaml ]; then pnpm start; \
-  else yarn start; \
-  fi
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
+
+# Copy public and static files
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Remove incomplete oracledb from standalone and copy full version with native bindings
+RUN rm -rf ./node_modules/oracledb
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/oracledb ./node_modules/oracledb
+
+# Copy Oracle Instant Client from base image
+COPY --from=base /opt/oracle /opt/oracle
+COPY --from=base /etc/ld.so.conf.d/oracle-instantclient.conf /etc/ld.so.conf.d/
+RUN ldconfig
+
+USER nextjs
+
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
+EXPOSE 3000
+
+CMD ["node", "server.js"]

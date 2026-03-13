@@ -32,7 +32,8 @@ export default async function handler(
     });
 
     const sql = `select * from 
-    (select ee.id, ee.descripcion, mov.expediente, mov.estado, ee.fecha_creacion, mov.descripcion_reparticion_destin,mov.destinatario,mov.fecha_operacion, row_number ()  
+    (select ee.id, ee.descripcion, ee.tipo_documento || '-' || ee.anio || '-' || ee.numero || '--' ||
+            ee.codigo_reparticion_actuacion || '-' || ee.codigo_reparticion_usuario as EXPEDIENTE, mov.estado, ee.fecha_creacion, mov.descripcion_reparticion_destin,mov.destinatario,mov.fecha_operacion, row_number ()  
     over (partition by id_expediente order by ord_hist desc)
     rn from ee_ged.historialoperacion mov 
     INNER JOIN ee_ged.ee_expediente_electronico ee ON ee.id = mov.id_expediente

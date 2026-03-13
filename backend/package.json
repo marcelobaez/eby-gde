@@ -31,8 +31,9 @@
   },
   "engines": {
     "node": ">=18.0.0 <=20.x.x",
-    "npm": ">=6.0.0"
+    "pnpm": ">=9.0.0"
   },
+  "packageManager": "pnpm@9.15.4",
   "strapi": {
     "uuid": "e3cc2e44-028f-4e69-9045-c74eb4756e7f"
   },

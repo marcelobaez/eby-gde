@@ -33,6 +33,9 @@ const { Text } = Typography;
 export default function Movimiento() {
   const router = useRouter();
 
+  const [rows, setRows] = useState(1);
+  const [expanded, setExpanded] = useState(false);
+
   const [activeKey, setActiveKey] = useState("item-1");
 
   const expId = (router.query.id as string) || "";
@@ -95,7 +98,19 @@ export default function Movimiento() {
       dataIndex: "MOTIVO",
       key: "MOTIVO",
       width: 320,
-      ellipsis: true,
+      render: (text) => (
+        <Typography.Paragraph
+          ellipsis={{
+            rows,
+            expandable: "collapsible",
+            expanded,
+            onExpand: (_, info) => setExpanded(info.expanded),
+            symbol: expanded ? "Ver menos" : "Ver más",
+          }}
+        >
+          {text}
+        </Typography.Paragraph>
+      ),
     },
     { title: "Emisor", dataIndex: "USUARIO", key: "USUARIO", width: 180 },
     {
@@ -313,7 +328,7 @@ export default function Movimiento() {
 }
 
 export async function getServerSideProps(
-  context: GetServerSidePropsContext
+  context: GetServerSidePropsContext,
 ): Promise<GetServerSidePropsResult<{}>> {
   const session = await getServerSession(context.req, context.res, authOptions);
 

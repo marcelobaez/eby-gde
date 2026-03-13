@@ -20,6 +20,7 @@ import {
   SearchOutlined,
   FileSearchOutlined,
   DashboardOutlined,
+  ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { Image } from "antd";
@@ -28,6 +29,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import {
   canAccessMesas,
+  canAccessOrdenesCompra,
   canEditAsociaciones,
   canSearchDocs,
   canSearchExp,
@@ -63,6 +65,7 @@ export function MainLayout({
   const hasSearchPermissions = canSearchExp(session?.role);
   const hasDocPermissions = canSearchDocs(session?.role);
   const hasMesaPermissions = canAccessMesas(session?.role);
+  const hasOrdenesCompraPermissions = canAccessOrdenesCompra(session?.role);
 
   useEffect(() => {
     const path = router.pathname.split("/");
@@ -171,6 +174,16 @@ export function MainLayout({
                       label: <Link href="/toldo">TOLDO</Link>,
                     }
                   : null,
+                hasOrdenesCompraPermissions
+                  ? {
+                      key: "ordenes-compra",
+                      icon: <ShoppingCartOutlined />,
+                      label: (
+                        <Link href="/ordenes-compra">Ordenes de Compra</Link>
+                      ),
+                    }
+                  : null,
+
                 hasSearchPermissions
                   ? {
                       key: "busqueda",

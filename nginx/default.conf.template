@@ -50,7 +50,7 @@ server {
   ssl_certificate /etc/nginx/certs/eby.org.ar.chained.crt;
   ssl_certificate_key /etc/nginx/certs/eby.org.ar.key;
 
-  ssl_protocols              TLSv1.2;
+  ssl_protocols TLSv1.2 TLSv1.3;
   server_tokens off;
 
   gzip on;
@@ -64,9 +64,6 @@ server {
   proxy_buffer_size 64k;
   proxy_buffers 8 64k;
 
-  # proxy_busy_buffers_size   512k;
-  # proxy_buffers   4 512k;
-  # proxy_buffer_size   256k;
   proxy_http_version 1.1;
   proxy_set_header Upgrade $http_upgrade;
   proxy_set_header Connection 'upgrade';

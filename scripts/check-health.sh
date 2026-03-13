@@ -37,6 +37,10 @@ echo "Frontend (localhost:3000):"
 curl -I -s --max-time 5 http://localhost:3000 2>&1 | head -5 || echo "❌ Failed to connect"
 
 echo ""
+echo "Frontend Health Endpoint (localhost:3000/api/health):"
+curl -s --max-time 5 http://localhost:3000/api/health 2>&1 || echo "❌ Failed to connect"
+
+echo ""
 echo "Nginx (localhost:8080):"
 curl -I -s --max-time 5 http://localhost:8080 2>&1 | head -5 || echo "❌ Failed to connect"
 
