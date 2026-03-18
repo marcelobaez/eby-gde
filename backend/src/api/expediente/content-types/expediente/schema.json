@@ -47,6 +47,12 @@
     },
     "ult_mov_id": {
       "type": "biginteger"
+    },
+    "observaciones": {
+      "type": "text"
+    },
+    "alt_desc": {
+      "type": "text"
     }
   }
 }

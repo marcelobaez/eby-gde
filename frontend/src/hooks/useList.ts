@@ -26,9 +26,9 @@ export function useUpdateExpMutation() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (body: ExpedienteUpdateRequest) => {
-      // const { id, duracion_esperada } = body;
-      return await api.put(`/expedientes/${body.id}`, {
-        data: body,
+      const { id, ...data } = body;
+      return await api.put(`/expedientes/${id}`, {
+        data,
       });
     },
     onError: () => {

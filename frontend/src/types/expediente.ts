@@ -9,6 +9,8 @@ export type Expediente = {
     send_reminder_mov: boolean | null;
     reminder_sent_at: string | null;
     ult_mov_id: number | null;
+    observaciones: string | null;
+    alt_desc: string | null;
   };
 };
 
@@ -18,6 +20,8 @@ export type ExpedienteUpdateRequest = {
   send_reminder_mov?: boolean | null;
   reminder_sent_at?: string | null;
   duracion_esperada?: number | null;
+  observaciones?: string | null;
+  alt_desc?: string | null;
 };
 
 export type ExpedienteResponse = {

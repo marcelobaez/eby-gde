@@ -443,6 +443,7 @@ export interface ApiExpedienteExpediente extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
+    alt_desc: Attribute.Text;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::expediente.expediente',
@@ -457,6 +458,7 @@ export interface ApiExpedienteExpediente extends Schema.CollectionType {
       'manyToOne',
       'api::lista.lista'
     >;
+    observaciones: Attribute.Text;
     publishedAt: Attribute.DateTime;
     reminder_sent_at: Attribute.DateTime;
     reminder_sent_mov_at: Attribute.DateTime;

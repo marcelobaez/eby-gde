@@ -1,8 +1,6 @@
 import { Button } from "antd";
 import { FileExcelOutlined } from "@ant-design/icons";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { format, parseISO } from "date-fns";
-import esLocale from "date-fns/locale/es";
 
 interface ExportButtonProps<T> {
   data: T[];
@@ -11,7 +9,7 @@ interface ExportButtonProps<T> {
   columns: {
     key: string;
     label: string;
-    format?: (value: any) => string;
+    format?: (value: any, record: T) => string;
   }[];
 }
 
@@ -33,7 +31,7 @@ export function ExportButton<T>({
       columns.forEach(({ key, label, format }) => {
         const value = (item as any)[key];
         transformedItem[label] = format
-          ? format(value)
+          ? format(value, item)
           : value?.toString() || "";
       });
       return transformedItem;

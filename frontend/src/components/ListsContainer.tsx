@@ -17,6 +17,8 @@ import {
   Flex,
   Checkbox,
   notification,
+  Input,
+  Modal,
 } from "antd";
 import { SearchExpForm } from "./SearchExpForm";
 import { TableResults } from "./TableResults";
@@ -32,7 +34,7 @@ import {
   useToggleReminderMovMutation,
 } from "../hooks/useList";
 import { ModalSetDate } from "./ModalSetDate";
-import { CalendarOutlined, DeleteOutlined } from "@ant-design/icons";
+import { CalendarOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import esLocale from "date-fns/locale/es";
@@ -112,6 +114,16 @@ export function ListsContainer() {
   const [visible, setVisible] = useState(false);
   const [selectedID, setSelectedID] = useState<number>();
   const [value, setValue] = useState<number | null>(0);
+
+  type EditField = "alt_desc" | "observaciones";
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editField, setEditField] = useState<EditField>("alt_desc");
+  const [selectedExpForEdit, setSelectedExpForEdit] = useState<{
+    id: number;
+    currentValue: string;
+    originalDesc?: string;
+  } | null>(null);
+  const [editTextValue, setEditTextValue] = useState("");
 
   const movsData = data?.expedientes ?? [];
 
@@ -196,20 +208,42 @@ export function ListsContainer() {
       key: "DESCRIPCION",
       width: 320,
       // defaultSortOrder: "descend",
-      sorter: (a, b) => a.DESCRIPCION.localeCompare(b.DESCRIPCION),
+      sorter: (a, b) =>
+        (a.alt_desc || a.DESCRIPCION).localeCompare(
+          b.alt_desc || b.DESCRIPCION,
+        ),
       sortDirections: ["descend", "ascend"],
-      render: (text) => (
-        <Typography.Paragraph
-          ellipsis={{
-            rows,
-            expandable: "collapsible",
-            expanded,
-            onExpand: (_, info) => setExpanded(info.expanded),
-            symbol: expanded ? "Ver menos" : "Ver más",
-          }}
-        >
-          {text}
-        </Typography.Paragraph>
+      render: (text, record) => (
+        <Flex>
+          <Typography.Paragraph
+            style={{ marginBottom: 0 }}
+            ellipsis={{
+              rows,
+              expandable: "collapsible",
+              expanded,
+              onExpand: (_, info) => setExpanded(info.expanded),
+              symbol: expanded ? "Ver menos" : "Ver más",
+            }}
+          >
+            {record.alt_desc || text}
+          </Typography.Paragraph>
+          <Button
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditField("alt_desc");
+              const defaultValue = record.alt_desc || text;
+              setSelectedExpForEdit({
+                id: record.id_exp_list,
+                currentValue: defaultValue,
+                originalDesc: text,
+              });
+              setEditTextValue(defaultValue);
+              setEditModalVisible(true);
+            }}
+          />
+        </Flex>
       ),
     },
     {
@@ -297,6 +331,28 @@ export function ListsContainer() {
       // defaultSortOrder: "descend",
       sorter: (a, b) => a.DESTINATARIO.localeCompare(b.DESTINATARIO),
       sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Observaciones",
+      dataIndex: "observaciones",
+      key: "observaciones",
+      width: 200,
+      render: (text, record) => (
+        <div
+          onClick={() => {
+            setEditField("observaciones");
+            setSelectedExpForEdit({
+              id: record.id_exp_list,
+              currentValue: text ?? "",
+            });
+            setEditTextValue(text ?? "");
+            setEditModalVisible(true);
+          }}
+          style={{ cursor: "pointer", minHeight: "24px" }}
+        >
+          {text || <span style={{ color: "#bfbfbf" }}>Click para agregar</span>}
+        </div>
+      ),
     },
     {
       title: "Aviso Venc.",
@@ -392,10 +448,13 @@ export function ListsContainer() {
     {
       key: "DESCRIPCION",
       label: "Descripción",
+      format: (value: string, record: ExtendedExp) =>
+        (record.alt_desc || value || "").replace(/\n/g, " ").trim(),
     },
     {
       key: "lifetime",
       label: "Tiempo de vida",
+      format: (value: string) => (value || "").replace(/\n/g, " ").trim(),
     },
     {
       key: "ESTADO",
@@ -416,6 +475,17 @@ export function ListsContainer() {
     {
       key: "DESTINATARIO",
       label: "En poder",
+      format: (value: string) => (value || "").replace(/\n/g, " ").trim(),
+    },
+    {
+      key: "observaciones",
+      label: "Observaciones",
+      format: (value: string) => (value || "").replace(/\n/g, " ").trim(),
+    },
+    {
+      key: "alt_desc",
+      label: "Descripción Alternativa",
+      format: (value: string) => (value || "").replace(/\n/g, " ").trim(),
     },
   ];
 
@@ -507,6 +577,50 @@ export function ListsContainer() {
           onCreate={onCreate}
           value={value}
         />
+        <Modal
+          title={
+            editField === "alt_desc"
+              ? "Editar Descripción Alternativa"
+              : "Editar Observaciones"
+          }
+          open={editModalVisible}
+          onCancel={() => {
+            setEditModalVisible(false);
+            setSelectedExpForEdit(null);
+          }}
+          onOk={() => {
+            if (selectedExpForEdit) {
+              const updateData =
+                editField === "alt_desc"
+                  ? { alt_desc: editTextValue || null }
+                  : { observaciones: editTextValue || null };
+              updateExpMutation.mutate({
+                id: selectedExpForEdit.id,
+                ...updateData,
+              });
+              setEditModalVisible(false);
+              setSelectedExpForEdit(null);
+            }
+          }}
+          okText="Guardar"
+          cancelText="Cancelar"
+        >
+          {editField === "alt_desc" && (
+            <p style={{ marginBottom: 8, color: "#666" }}>
+              Descripción original: <em>{selectedExpForEdit?.originalDesc}</em>
+            </p>
+          )}
+          <Input.TextArea
+            value={editTextValue}
+            onChange={(e) => setEditTextValue(e.target.value)}
+            rows={4}
+            placeholder={
+              editField === "alt_desc"
+                ? "Ingrese descripción alternativa"
+                : "Ingrese observaciones"
+            }
+          />
+        </Modal>
       </Row>
     </Context.Provider>
   );

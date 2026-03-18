@@ -28,6 +28,8 @@ export type ExtendedExp = GDEExpResponse & {
   reminder_sent_at: string | null;
   reminder_sent_mov_at: string | null;
   ult_mov_id: number | null;
+  observaciones: string | null;
+  alt_desc: string | null;
 };
 
 export type ExtendedListResponse = {
@@ -119,6 +121,8 @@ export const useListInfoByID = (id: string) => {
             send_reminder_mov: matchingEl.attributes.send_reminder_mov,
             reminder_sent_at: matchingEl.attributes.reminder_sent_at,
             ult_mov_id: matchingEl.attributes.ult_mov_id,
+            observaciones: matchingEl.attributes.observaciones,
+            alt_desc: matchingEl.attributes.alt_desc,
           };
         })
         .filter((exp) => exp) as ExtendedExp[];
